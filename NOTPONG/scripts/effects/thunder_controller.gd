@@ -73,7 +73,7 @@ func setup_vertical_thunder():
 	# Calculate positions in world coordinates
 	var thunder_world_pos = global_position
 	var start_world = Vector2(thunder_world_pos.x + 5, global_position.y + 15)
-	var end_world = Vector2(thunder_world_pos.x + 5, BOTTOM_BOUNDARY)
+	var end_world = Vector2(thunder_world_pos.x + 5, BOTTOM_BOUNDARY - 9)
 	
 	# Convert to local coordinates relative to this thunder effect
 	var start_local = to_local(start_world)

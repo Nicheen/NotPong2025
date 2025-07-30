@@ -452,6 +452,7 @@ func _on_enemy_died(score_points: int):
 	# Check win condition - använd level manager istället för player_wins
 	if enemies_killed >= total_enemies:
 		if level_manager and level_manager.has_method("level_completed"):
+			current_level += 1
 			level_manager.level_completed()
 		else:
 			player_wins()  # Fallback
