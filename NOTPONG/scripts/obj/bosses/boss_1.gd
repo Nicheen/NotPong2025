@@ -1,4 +1,4 @@
-extends CharacterBody2D
+extends StaticBody2D
 
 # Enemy settings
 @export var max_health: int = 200

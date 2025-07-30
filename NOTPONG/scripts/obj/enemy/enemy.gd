@@ -1,4 +1,4 @@
-extends CharacterBody2D
+extends StaticBody2D
 
 # Enemy settings
 @export var max_health: int = 30
@@ -42,11 +42,7 @@ func _ready():
 	print("Enemy created with ", max_health, " health at position: ", global_position)
 
 func _physics_process(delta):
-	# Basic enemy doesn't move, but you can add movement here
-	# For now, just ensure it stays in place
-	if not is_dead:
-		velocity = Vector2.ZERO
-		move_and_slide()
+	pass
 
 func take_damage(damage: int):
 	if is_dead:

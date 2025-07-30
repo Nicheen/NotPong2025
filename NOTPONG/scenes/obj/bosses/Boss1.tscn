@@ -6,10 +6,13 @@
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_vo7dq"]
 size = Vector2(60, 60)
 
-[node name="Boss1" type="CharacterBody2D"]
+[node name="Boss1" type="StaticBody2D"]
 collision_layer = 16
 collision_mask = 0
 script = ExtResource("1_4no6o")
+max_health = null
+score_value = null
+enemy_type = null
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 position = Vector2(1.78813e-07, -2.26498e-06)

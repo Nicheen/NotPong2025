@@ -1,4 +1,4 @@
-extends CharacterBody2D
+extends StaticBody2D
 
 # Enemy settings
 @export var max_health: int = 20
@@ -61,10 +61,7 @@ func _ready():
 	print("Laser block created with ", max_health, " health at position: ", global_position)
 
 func _physics_process(delta):
-	# Basic enemy doesn't move
-	if not is_dead:
-		velocity = Vector2.ZERO
-		move_and_slide()
+	
 	
 	# Handle thunder timing
 	if thunder_ready and not thunder_activated and not is_dead:

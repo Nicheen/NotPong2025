@@ -7,10 +7,10 @@
 [ext_resource type="Script" uid="uid://2stp3m5gk2bv" path="res://scenes/spawner.gd" id="6_tefeu"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_o5qli"]
-size = Vector2(200, 648)
+size = Vector2(196, 648)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_0wfyh"]
-size = Vector2(200, 648)
+size = Vector2(194, 648)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_sugp2"]
 size = Vector2(752, 20)
@@ -89,7 +89,7 @@ collision_layer = 4
 collision_mask = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Borders/StaticBody2DLeft"]
-position = Vector2(100, 324)
+position = Vector2(98, 324)
 shape = SubResource("RectangleShape2D_o5qli")
 
 [node name="StaticBody2DRight" type="StaticBody2D" parent="Borders"]
@@ -97,7 +97,7 @@ collision_layer = 4
 collision_mask = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Borders/StaticBody2DRight"]
-position = Vector2(1052, 324)
+position = Vector2(1055, 324)
 shape = SubResource("RectangleShape2D_0wfyh")
 
 [node name="LevelManager" type="Node" parent="."]

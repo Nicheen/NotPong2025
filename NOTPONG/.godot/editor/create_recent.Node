@@ -1,9 +1,9 @@
+StaticBody2D
 DirectionalLight2D
 CollisionShape2D
 Area2D
 Label
 MarginContainer
 CanvasLayer
-StaticBody2D
 Panel
 Control
