@@ -371,7 +371,7 @@ func spawn_enemy_lazer_at_position(position: Vector2):
 	
 	# Add thunder as child of lazer block with relative positioning
 	lazer_block.add_child(thunder_effect)
-	thunder_effect.position = Vector2(5, 15)  # Relative to lazer block
+	thunder_effect.position = Vector2(0, 0)  # Relative to lazer block
 	
 	# Connect signals with distortion effects - pass position in closure
 	lazer_block.block_died.connect(func(score_points): _on_lazer_block_died_with_distortion(score_points, position))

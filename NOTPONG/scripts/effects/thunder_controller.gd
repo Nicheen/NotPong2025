@@ -4,21 +4,34 @@ extends Node2D
 @onready var animation_player: AnimationPlayer = $AnimationPlayer
 @onready var damage_area: Area2D = $DamageArea
 @onready var damage_collision: CollisionShape2D = $DamageArea/CollisionShape2D
+@onready var sparks: GPUParticles2D = $Sparks
+@onready var flare: GPUParticles2D = $Flare
+@onready var point_light: PointLight2D = $PointLight2D
 
 # Thunder settings
 @export var damage_amount: int = 20
-@export var damage_interval: float = 0.5  # Time between damage ticks
-@export var thunder_width: float = 150.0   # Width of the lightning
+@export var damage_interval: float = 0.5
+@export var thunder_width: float = 150.0
+@export var lightning_active_duration: float = 2.0  # How long lightning stays active
+@export var lightning_inactive_duration_min: float = 2.0  # Min time between lightning cycles
+@export var lightning_inactive_duration_max: float = 5.0  # Max time between lightning cycles
+
+# Game boundaries (adjust these to match your game)
+const TOP_BOUNDARY = 0
+const BOTTOM_BOUNDARY = 648
+const LEFT_BOUNDARY = 200
+const RIGHT_BOUNDARY = 952
 
 # Internal variables
 var is_active: bool = false
 var damage_timer: float = 0.0
+var cycle_timer: float = 0.0
 var players_in_area: Array[Node] = []
+var should_cycle: bool = false
+var is_lightning_active: bool = false
+var current_inactive_duration: float = 0.0
 
 func _ready():
-	# Set up damage area
-	setup_damage_area()
-	
 	# Connect animation signals
 	if animation_player.has_animation("start_animation"):
 		animation_player.animation_finished.connect(_on_animation_finished)
@@ -27,139 +40,192 @@ func _ready():
 	if damage_area:
 		damage_area.body_entered.connect(_on_body_entered)
 		damage_area.body_exited.connect(_on_body_exited)
+	
+	# Set collision layers - area detects players (layer 1)
+	damage_area.collision_layer = 0
+	damage_area.collision_mask = 1
 
 func _process(delta):
-	if is_active and players_in_area.size() > 0:
+	if is_active and players_in_area.size() > 0 and is_lightning_active:
 		damage_timer += delta
 		if damage_timer >= damage_interval:
 			damage_players_in_area()
 			damage_timer = 0.0
-
-func setup_damage_area():
-	# Create damage area if it doesn't exist
-	if not damage_area:
-		damage_area = Area2D.new()
-		damage_area.name = "DamageArea"
-		add_child(damage_area)
-		
-		# Create collision shape
-		damage_collision = CollisionShape2D.new()
-		damage_area.add_child(damage_collision)
-		
-		var rect_shape = RectangleShape2D.new()
-		damage_collision.shape = rect_shape
 	
-	# Set collision layers - area detects players (layer 1)
-	damage_area.collision_layer = 0  # Area doesn't exist on any layer
-	damage_area.collision_mask = 1   # Detects player (layer 1)
+	# Handle lightning cycling
+	if should_cycle:
+		cycle_timer += delta
+		
+		if is_lightning_active:
+			# Lightning is active - check if it should turn off
+			if cycle_timer >= lightning_active_duration:
+				end_lightning_cycle()
+		else:
+			# Lightning is inactive - check if it should turn on again
+			if cycle_timer >= current_inactive_duration:
+				start_lightning_cycle()
 
-func setup_thunder_line(start_pos: Vector2, end_pos: Vector2):
-	"""Configure the thunder line between two points"""
-	if not lightning:
-		print("ERROR: Lightning Line2D not found!")
-		return
+func setup_vertical_thunder():
+	"""Set up a vertical thunder bolt from top to bottom of screen"""
+	# Clear any existing positioning from the scene file
+	position = Vector2.ZERO
 	
-	# Set the line points
-	lightning.points = PackedVector2Array([start_pos, end_pos])
+	# Calculate positions in world coordinates
+	var thunder_world_pos = global_position
+	var start_world = Vector2(thunder_world_pos.x + 5, global_position.y + 15)
+	var end_world = Vector2(thunder_world_pos.x + 5, BOTTOM_BOUNDARY)
+	
+	# Convert to local coordinates relative to this thunder effect
+	var start_local = to_local(start_world)
+	var end_local = to_local(end_world)
+	
+	# Set the lightning line
+	lightning.points = PackedVector2Array([start_local, end_local])
 	lightning.width = thunder_width
 	
-	# Update damage area to match the lightning
-	update_damage_area_shape(start_pos, end_pos)
-	
-	print("Thunder line configured from ", start_pos, " to ", end_pos)
-
-func setup_vertical_thunder(spawn_position: Vector2, play_area_height: float = 648.0):
-	"""Set up a vertical thunder bolt from top to bottom"""
-	var start_pos = Vector2(0, -spawn_position.y)      # Top of screen (relative to thunder)
-	var end_pos = Vector2(0, play_area_height - spawn_position.y)  # Bottom of screen
-	
-	setup_thunder_line(start_pos, end_pos)
-
-func setup_horizontal_thunder(spawn_position: Vector2, play_area_width: float = 752.0):
-	"""Set up a horizontal thunder bolt from left to right"""
-	var start_pos = Vector2(-spawn_position.x + 200, 0)  # Left wall (relative to thunder)
-	var end_pos = Vector2(play_area_width - spawn_position.x + 200, 0)  # Right wall
-	
-	setup_thunder_line(start_pos, end_pos)
-
-func update_damage_area_shape(start_pos: Vector2, end_pos: Vector2):
-	"""Update the damage area to match the lightning bolt"""
-	if not damage_collision or not damage_collision.shape:
-		return
-	
+	# Update damage area
 	var rect_shape = damage_collision.shape as RectangleShape2D
-	if not rect_shape:
-		rect_shape = RectangleShape2D.new()
-		damage_collision.shape = rect_shape
-	
-	# Calculate the center point and size of the rectangle
-	var center = (start_pos + end_pos) * 0.5
-	var line_vector = end_pos - start_pos
-	var length = line_vector.length()
-	
-	# Set damage area size and position
-	if abs(line_vector.x) > abs(line_vector.y):
-		# Horizontal line
-		rect_shape.size = Vector2(length, thunder_width * 0.5)
-	else:
-		# Vertical line
+	if rect_shape:
+		var length = end_local.y - start_local.y
 		rect_shape.size = Vector2(thunder_width * 0.5, length)
+		damage_collision.position = Vector2(0, (start_local.y + end_local.y) * 0.5)
 	
-	# Position the collision shape
-	damage_collision.position = center
+	# Position effects at the bottom impact point
+	if sparks:
+		sparks.position = end_local
+	if flare:
+		flare.position = end_local
+	if point_light:
+		point_light.position = end_local
+	
+	print("Thunder world pos: ", thunder_world_pos)
+	print("Start world: ", start_world, " -> local: ", start_local)
+	print("End world: ", end_world, " -> local: ", end_local)
+
+func setup_horizontal_thunder():
+	"""Set up a horizontal thunder bolt from left to right wall"""
+	# Clear any existing positioning
+	position = Vector2.ZERO
+	
+	# Calculate positions in world coordinates
+	var thunder_world_pos = global_position
+	var start_world = Vector2(LEFT_BOUNDARY, thunder_world_pos.y)
+	var end_world = Vector2(RIGHT_BOUNDARY, thunder_world_pos.y)
+	
+	# Convert to local coordinates
+	var start_local = to_local(start_world)
+	var end_local = to_local(end_world)
+	
+	# Set the lightning line
+	lightning.points = PackedVector2Array([start_local, end_local])
+	lightning.width = thunder_width
+	
+	# Update damage area
+	var rect_shape = damage_collision.shape as RectangleShape2D
+	if rect_shape:
+		var length = end_local.x - start_local.x
+		rect_shape.size = Vector2(length, thunder_width * 0.5)
+		damage_collision.position = Vector2((start_local.x + end_local.x) * 0.5, 0)
+	
+	# Position effects at the right impact point
+	if sparks:
+		sparks.position = end_local
+	if flare:
+		flare.position = end_local
+	if point_light:
+		point_light.position = end_local
+	
+	print("Horizontal thunder - Start: ", start_local, " End: ", end_local)
 
 func start_thunder():
-	"""Start the thunder effect with animation"""
+	"""Start the thunder cycling system"""
 	is_active = true
+	should_cycle = true
+	visible = true
 	
-	if animation_player and animation_player.has_animation("start_animation"):
-		animation_player.play("start_animation")
-		print("Thunder started with animation")
-	else:
-		print("Thunder started without animation")
+	# Start with the first lightning cycle
+	start_lightning_cycle()
+	print("Thunder cycling started")
+
+func start_lightning_cycle():
+	"""Start a new lightning active period"""
+	is_lightning_active = true
+	cycle_timer = 0.0
+	
+	# Show the lightning visually
+	lightning.visible = true
+	if sparks:
+		sparks.emitting = true
+	if flare:
+		flare.emitting = true
+	if point_light:
+		point_light.energy = 2.0
+	
+	print("Lightning cycle started - will be active for ", lightning_active_duration, " seconds")
+
+func end_lightning_cycle():
+	"""End the current lightning cycle and start inactive period"""
+	is_lightning_active = false
+	cycle_timer = 0.0
+	
+	# Set random inactive duration between min and max
+	current_inactive_duration = randf_range(lightning_inactive_duration_min, lightning_inactive_duration_max)
+	
+	# Just hide the lightning visually - DON'T play end animation during cycling
+	lightning.visible = false
+	if sparks:
+		sparks.emitting = false
+	if flare:
+		flare.emitting = false
+	if point_light:
+		point_light.energy = 0.0
+	
+	print("Lightning cycle ended - will be inactive for ", current_inactive_duration, " seconds")
 
 func end_thunder():
-	"""End the thunder effect with animation"""
+	"""Completely stop the thunder system"""
+	should_cycle = false
+	is_lightning_active = false
+	
 	if animation_player and animation_player.has_animation("end_animation"):
 		animation_player.play("end_animation")
-		print("Thunder ending with animation")
+		print("Thunder system ending with animation")
 	else:
 		stop_thunder()
 
 func stop_thunder():
 	"""Immediately stop the thunder effect"""
 	is_active = false
+	should_cycle = false
+	is_lightning_active = false
 	players_in_area.clear()
 	damage_timer = 0.0
-	
-	# Hide the thunder effect
+	cycle_timer = 0.0
 	visible = false
-	print("Thunder stopped")
+	print("Thunder system stopped")
 
 func _on_animation_finished(animation_name: String):
-	"""Handle animation completion"""
 	if animation_name == "start_animation":
-		print("Thunder start animation completed")
-		# Thunder is now fully active
-	elif animation_name == "end_animation":
-		print("Thunder end animation completed")
-		stop_thunder()
+		if should_cycle and not is_lightning_active:
+			# This was the initial start animation - now begin cycling
+			start_lightning_cycle()
+			print("Initial animation completed - starting first lightning cycle")
+		else:
+			print("Lightning animation completed")
+	
 
 func _on_body_entered(body):
-	"""Handle when a body enters the damage area"""
 	if body.has_method("take_damage") and "player" in body.name.to_lower():
 		if not body in players_in_area:
 			players_in_area.append(body)
 			print("Player entered thunder area")
 
 func _on_body_exited(body):
-	"""Handle when a body exits the damage area"""
 	if body in players_in_area:
 		players_in_area.erase(body)
 		print("Player exited thunder area")
 
 func damage_players_in_area():
-	"""Deal damage to all players in the thunder area"""
 	for player in players_in_area:
 		if is_instance_valid(player) and player.has_method("take_damage"):
 			player.take_damage(damage_amount)
@@ -168,12 +234,12 @@ func damage_players_in_area():
 # Public methods for the laser block to use
 func activate_vertical_thunder():
 	"""Activate thunder as a vertical bolt"""
-	setup_vertical_thunder(global_position)
+	setup_vertical_thunder()
 	start_thunder()
 
 func activate_horizontal_thunder():
 	"""Activate thunder as a horizontal bolt"""
-	setup_horizontal_thunder(global_position)
+	setup_horizontal_thunder()
 	start_thunder()
 
 func deactivate_thunder():

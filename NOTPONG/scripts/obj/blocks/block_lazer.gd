@@ -71,12 +71,6 @@ func _physics_process(delta):
 		thunder_timer += delta
 		if thunder_timer >= thunder_activation_delay:
 			activate_thunder()
-	
-	# Handle thunder duration
-	if thunder_activated and not is_dead:
-		thunder_duration_timer += delta
-		if thunder_duration_timer >= thunder_duration:
-			deactivate_thunder()
 
 func setup_thunder_effect():
 	"""Configure the thunder effect for this laser block"""
