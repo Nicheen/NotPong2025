@@ -20,3 +20,6 @@ res://scripts/effects/thunder_controller.gd
 res://scripts/obj/bosses/boss_1.gd
 res://scripts/obj/blocks/block_lazer.gd
 res://scenes/obj/blocks/block_dropper.gd
+res://scripts/main.gd
+res://effects/thunder.tscn
+res://images/textures/thunder_shader.tres

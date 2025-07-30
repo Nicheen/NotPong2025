@@ -390,6 +390,7 @@ func spawn_player():
 	var player_scene = load(PLAYER_SCENE)
 	player = player_scene.instantiate()
 	add_child(player)
+	move_child(player, 1)
 	
 	# Set player position to center bottom
 	var bottom_y = play_area_center.y + (play_area_size.y * 0.5) - 50  # 50px från botten
