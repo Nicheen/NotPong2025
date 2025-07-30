@@ -1,8 +1,9 @@
-res://effects/thunder.tscn
+res://scenes/obj/blocks/BlockLazer.tscn
 res://images/textures/thunder_shader.tres
 res://scenes/menus/main_menu.tscn
 res://scenes/menus/hud.tscn
 res://scenes/menus/pause_menu.tscn
 res://scenes/obj/blocks/Block.tscn
-res://scenes/obj/blocks/BlockLazer.tscn
 res://scenes/menus/death_menu.tscn
+res://effects/thunder.tscn
+res://scripts/effects/thunder_controller.gd
