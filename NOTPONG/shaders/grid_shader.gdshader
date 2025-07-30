@@ -3,7 +3,7 @@ shader_type canvas_item;
 // Grid settings
 uniform float grid_size : hint_range(10.0, 200.0) = 50.0;
 uniform float line_width : hint_range(0.5, 10.0) = 2.0;
-uniform vec4 line_color : source_color = vec4(1.0, 1.0, 1.0, 1.0);
+uniform vec4 line_color : source_color = vec4(1.0, 1.0, 1.0, 0.75);
 uniform vec4 background_color : source_color = vec4(0.0, 0.0, 0.0, 1.0);
 uniform float line_alpha : hint_range(0.0, 1.0) = 0.3;
 

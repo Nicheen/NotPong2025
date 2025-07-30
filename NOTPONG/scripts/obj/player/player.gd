@@ -10,6 +10,10 @@ extends CharacterBody2D
 @export var play_area_size: Vector2 = Vector2(1000, 600)
 @export var play_area_center: Vector2 = Vector2(500, 300)
 
+# NEW: Top wall time limit settings
+@export var top_wall_max_time: float = 2.0  # Max seconds on top wall
+@export var top_wall_warning_time: float = 0.5  # Warning starts this many seconds before forced return
+
 # Shooting settings
 @export var projectile_scene: PackedScene = load("res://scenes/obj/Projectile.tscn")
 @export var projectile_speed: float = 500.0
@@ -22,6 +26,12 @@ extends CharacterBody2D
 # Wall state tracking
 enum WallSide { BOTTOM, TOP }
 var current_wall: WallSide = WallSide.BOTTOM
+
+# NEW: Top wall timing variables
+var top_wall_timer: float = 0.0
+var is_on_top_wall: bool = false
+var warning_active: bool = false
+var warning_tween: Tween  # Keep reference to stop it properly
 
 # Internal variables
 var teleport_timer: float = 0.0
@@ -43,6 +53,8 @@ func _ready():
 	# Set initial position and health
 	global_position = Vector2(500, 200)
 	current_health = max_health
+	current_wall = WallSide.BOTTOM
+	is_on_top_wall = false
 	
 	# Connect to projectile hits
 	connect_to_projectiles()
@@ -54,6 +66,9 @@ func _physics_process(delta):
 	handle_teleport_input()
 	handle_shoot_input()
 	handle_teleport_effect(delta)
+	
+	# NEW: Handle top wall time limit
+	handle_top_wall_timer(delta)
 	
 	# Apply movement
 	move_and_slide()
@@ -67,29 +82,23 @@ func handle_movement(delta):
 		WallSide.BOTTOM:
 			# Normal horizontal movement on bottom
 			if input_dir != 0:
-				# Kolla om vi byter riktning
 				var changing_direction = (velocity.x > 0 and input_dir < 0) or (velocity.x < 0 and input_dir > 0)
 				
 				if changing_direction:
-					# Mycket högre acceleration när vi byter riktning
 					velocity.x = move_toward(velocity.x, input_dir * speed, acceleration * 3 * delta)
 				else:
-					# Normal acceleration
 					velocity.x = move_toward(velocity.x, input_dir * speed, acceleration * delta)
 			else:
 				velocity.x = move_toward(velocity.x, 0, friction * delta)
 				
 		WallSide.TOP:
-			# Horizontal movement on top (samma logik)
+			# Horizontal movement on top (same logic)
 			if input_dir != 0:
-				# Kolla om vi byter riktning
 				var changing_direction = (velocity.x > 0 and input_dir < 0) or (velocity.x < 0 and input_dir > 0)
 				
 				if changing_direction:
-					# Mycket högre acceleration när vi byter riktning
 					velocity.x = move_toward(velocity.x, input_dir * speed, acceleration * 3 * delta)
 				else:
-					# Normal acceleration
 					velocity.x = move_toward(velocity.x, input_dir * speed, acceleration * delta)
 			else:
 				velocity.x = move_toward(velocity.x, 0, friction * delta)
@@ -102,12 +111,66 @@ func handle_teleport_input():
 	
 	# Use Input Map actions for teleporting
 	if Input.is_action_just_pressed("teleport_up"):
-		teleport_direction = Vector2(0, -1)
+		# Only allow teleport up if not already on top or if forced down recently
+		if current_wall == WallSide.BOTTOM:
+			teleport_direction = Vector2(0, -1)
 	elif Input.is_action_just_pressed("teleport_down"):
+		# Always allow teleport down
 		teleport_direction = Vector2(0, 1)
 	
 	if teleport_direction != Vector2.ZERO:
 		teleport_to_edge(teleport_direction)
+
+# NEW: Handle top wall timer and forced return
+func handle_top_wall_timer(delta):
+	if not is_on_top_wall:
+		return
+	
+	top_wall_timer += delta
+	
+	# Check for warning phase
+	if top_wall_timer >= (top_wall_max_time - top_wall_warning_time) and not warning_active:
+		start_warning_effect()
+		warning_active = true
+	
+	# Force return to bottom when time is up
+	if top_wall_timer >= top_wall_max_time:
+		force_return_to_bottom()
+
+func start_warning_effect():
+	"""Visual warning that player will be forced down soon"""
+	if sprite and not warning_active:
+		warning_active = true
+		warning_tween = create_tween()
+		warning_tween.set_loops()  # Loop indefinitely until stopped
+		warning_tween.tween_property(sprite, "modulate", Color.YELLOW, 0.2)
+		warning_tween.tween_property(sprite, "modulate", Color.WHITE, 0.2)
+		print("WARNING: You will be forced down in ", (top_wall_max_time - top_wall_timer), " seconds!")
+
+func force_return_to_bottom():
+	"""Force player back to bottom wall when time limit is reached"""
+	if current_wall == WallSide.TOP:
+		# Don't use teleport_to_edge to avoid triggering teleport cooldown
+		var new_position = global_position
+		var half_size = play_area_size * 0.5
+		var bottom_y = play_area_center.y + half_size.y - 50
+		
+		new_position.y = bottom_y
+		global_position = new_position
+		
+		# Save current x-velocity
+		var current_x_velocity = velocity.x
+		velocity = Vector2(current_x_velocity, 0)
+		
+		# Update wall state
+		current_wall = WallSide.BOTTOM
+		reset_top_wall_state()
+		
+		# Visual effect but no cooldown
+		start_teleport_effect()
+		update_sprite_rotation()
+		
+		print("Time limit reached! Forced back to bottom wall (no cooldown penalty)!")
 
 func handle_shoot_input():
 	if not can_shoot:
@@ -153,6 +216,7 @@ func shoot_projectile():
 	
 	# Start cooldown
 	start_shoot_cooldown()
+
 func teleport_to_edge(direction: Vector2):
 	var new_position = global_position
 	var half_size = play_area_size * 0.5
@@ -161,28 +225,62 @@ func teleport_to_edge(direction: Vector2):
 		"bottom": play_area_center.y + half_size.y
 	}
 	
-	# Spara nuvarande x-hastighet innan teleportering
+	# Save current x-velocity before teleporting
 	var current_x_velocity = velocity.x
 	
 	# Teleport to edge and update current wall (only up/down)
 	if direction.y > 0:  # Teleport down
 		new_position.y = bounds.bottom - 50
 		current_wall = WallSide.BOTTOM
+		
+		# NEW: Reset top wall timer and effects when going to bottom
+		if is_on_top_wall:
+			reset_top_wall_state()
+		
 	elif direction.y < 0:  # Teleport up
 		new_position.y = bounds.top + 50
 		current_wall = WallSide.TOP
+		
+		# NEW: Start top wall timer
+		start_top_wall_timer()
 	
 	# Apply teleportation
 	global_position = new_position
 	
-	# Behåll x-hastigheten, nollställ bara y-hastigheten
+	# Keep x-velocity, reset y-velocity
 	velocity = Vector2(current_x_velocity, 0)
 	
+	# ALWAYS apply teleport cooldown for voluntary teleports
 	start_teleport_cooldown()
 	start_teleport_effect()
 	
 	# Update sprite rotation based on wall
 	update_sprite_rotation()
+
+# NEW: Top wall timer management functions
+func start_top_wall_timer():
+	"""Start the timer when player reaches top wall"""
+	is_on_top_wall = true
+	top_wall_timer = 0.0
+	warning_active = false
+	print("Started top wall timer - you have ", top_wall_max_time, " seconds!")
+
+func reset_top_wall_state():
+	"""Reset all top wall related state when returning to bottom"""
+	is_on_top_wall = false
+	top_wall_timer = 0.0
+	warning_active = false
+	
+	# Stop the warning tween properly
+	if warning_tween and warning_tween.is_valid():
+		warning_tween.kill()
+		warning_tween = null
+	
+	# Reset sprite color immediately
+	if sprite:
+		sprite.modulate = Color.WHITE
+	
+	print("Top wall state reset - back to bottom wall")
 
 func start_teleport_cooldown():
 	can_teleport = false
@@ -230,12 +328,6 @@ func update_sprite_rotation():
 	if not sprite:
 		return
 	
-	match current_wall:
-		WallSide.BOTTOM:
-			sprite.rotation = 0.0  # Normal orientation
-		WallSide.TOP:
-			sprite.rotation = PI  # Upside down
-	
 	var tween = create_tween()
 	var target_rotation = 0.0
 	
@@ -270,7 +362,6 @@ func take_damage(amount: int):
 	# Check if player died
 	if current_health <= 0:
 		player_died.emit()
-		# Optional: disable movement or restart game
 		print("Player died!")
 
 func heal(amount: int):
@@ -283,3 +374,14 @@ func get_health() -> int:
 
 func get_max_health() -> int:
 	return max_health
+
+# NEW: Utility functions for checking top wall status
+func get_remaining_top_time() -> float:
+	"""Get remaining time on top wall"""
+	if not is_on_top_wall:
+		return 0.0
+	return max(0.0, top_wall_max_time - top_wall_timer)
+
+func is_in_warning_phase() -> bool:
+	"""Check if player is in warning phase on top wall"""
+	return warning_active
