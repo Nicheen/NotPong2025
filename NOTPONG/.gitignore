@@ -1,1 +1,8 @@
+gamejamsummer2025/project.godot
+*.godot
+gamejamsummer2025/addons/flowerwall_postprocess/shaders/dithering_shader.material
+gamejamsummer2025/addons/flowerwall_postprocess/shaders/crt_shader.material
+gamejamsummer2025/addons/flowerwall_postprocess/shaders/blury_shader.material
+gamejamsummer2025/addons/flowerwall_postprocess/shaders/blurx_shader.material
+gamejamsummer2025/addons/flowerwall_postprocess/shaders/bloom_shader.material
 
