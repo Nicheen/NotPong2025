@@ -1,0 +1,53 @@
+[gd_scene load_steps=2 format=3 uid="uid://dc25tu6hyq1e2"]
+
+[ext_resource type="Script" uid="uid://cg35xxx7b67c0" path="res://scenes/menus/hud.gd" id="1_xmy64"]
+
+[node name="Hud" type="CanvasLayer"]
+script = ExtResource("1_xmy64")
+
+[node name="Panel" type="Panel" parent="."]
+custom_minimum_size = Vector2(0, 32)
+anchors_preset = 10
+anchor_right = 1.0
+grow_horizontal = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 23.0
+grow_horizontal = 2
+alignment = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="Panel/HBoxContainer"]
+layout_mode = 2
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 10
+
+[node name="Level" type="Label" parent="Panel/HBoxContainer/MarginContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 0
+text = "Level: 1"
+
+[node name="MarginContainer3" type="MarginContainer" parent="Panel/HBoxContainer"]
+layout_mode = 2
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 10
+
+[node name="Score" type="Label" parent="Panel/HBoxContainer/MarginContainer3"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 0
+text = "Score: 0"
+
+[node name="MarginContainer2" type="MarginContainer" parent="Panel/HBoxContainer"]
+layout_mode = 2
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 13
+
+[node name="HighScore" type="Label" parent="Panel/HBoxContainer/MarginContainer2"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.823529, 0.447059, 0, 1)
+text = "HighScore: 0"

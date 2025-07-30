@@ -1,0 +1,42 @@
+[gd_scene load_steps=3 format=3 uid="uid://bxsxsg8svbiye"]
+
+[ext_resource type="Script" uid="uid://hxs1sdtlbjeo" path="res://scripts/menus/main_menu.gd" id="1_ovrgc"]
+[ext_resource type="Texture2D" uid="uid://cgppme0qncc68" path="res://images/background.svg" id="2_ovrgc"]
+
+[node name="MainMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 1151.0
+offset_bottom = 648.0
+script = ExtResource("1_ovrgc")
+
+[node name="TextureRect" type="TextureRect" parent="."]
+layout_mode = 0
+offset_right = 1152.0
+offset_bottom = 648.0
+texture = ExtResource("2_ovrgc")
+expand_mode = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 0
+offset_left = 432.0
+offset_top = 268.0
+offset_right = 723.0
+offset_bottom = 407.0
+alignment = 1
+
+[node name="btn_start" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+text = "START GAME"
+
+[node name="btn_options" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+text = "OPTIONS"
+
+[node name="btn_fullscreen" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+text = "FULLSCREEN"
+
+[node name="btn_quit" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+text = "QUIT"

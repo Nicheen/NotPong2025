@@ -1,0 +1,20 @@
+[gd_scene load_steps=4 format=3 uid="uid://b4dtnq2jnliqp"]
+
+[ext_resource type="Script" uid="uid://co6pi865vgmxp" path="res://scenes/obj/blocks/block_dropper.gd" id="1_l3hxy"]
+[ext_resource type="Texture2D" uid="uid://dtodey35upi55" path="res://images/lila.svg" id="2_v02br"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_v02br"]
+size = Vector2(30, 30)
+
+[node name="Node2D" type="CharacterBody2D"]
+collision_layer = 16
+collision_mask = 0
+script = ExtResource("1_l3hxy")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(3.8147e-07, -4.76837e-07)
+scale = Vector2(0.15, 0.15)
+texture = ExtResource("2_v02br")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_v02br")

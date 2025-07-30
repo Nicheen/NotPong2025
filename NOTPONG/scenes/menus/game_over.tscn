@@ -1,0 +1,57 @@
+[gd_scene load_steps=4 format=3 uid="uid://kd8016yiwya7"]
+
+[ext_resource type="Script" uid="uid://dbjmyt8kpmxfp" path="res://scripts/menus/death_menu.gd" id="1_asori"]
+[ext_resource type="Texture2D" uid="uid://c40o612s66c43" path="res://images/svart.png" id="2_gypcw"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_death"]
+texture = ExtResource("2_gypcw")
+modulate_color = Color(1, 1, 1, 0.8)
+
+[node name="GameOver" type="CanvasLayer"]
+script = ExtResource("1_asori")
+
+[node name="Panel" type="Panel" parent="."]
+modulate = Color(1, 1, 1, 0.843137)
+offset_right = 1152.0
+offset_bottom = 648.0
+theme_override_styles/panel = SubResource("StyleBoxTexture_death")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Panel"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel/HBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Panel/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+text = "YOU DIED"
+horizontal_alignment = 1
+
+[node name="ScoreLabel" type="Label" parent="Panel/HBoxContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Final Score: 0"
+horizontal_alignment = 1
+
+[node name="MarginContainer" type="MarginContainer" parent="Panel/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="GridContainer" type="GridContainer" parent="Panel/HBoxContainer/VBoxContainer/MarginContainer"]
+layout_mode = 2
+
+[node name="MainMenuButton" type="Button" parent="Panel/HBoxContainer/VBoxContainer/MarginContainer/GridContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "MAIN MENU"
+
+[node name="RestartButton" type="Button" parent="Panel/HBoxContainer/VBoxContainer/MarginContainer/GridContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "RESTART"
+
+[node name="QuitButton" type="Button" parent="Panel/HBoxContainer/VBoxContainer/MarginContainer/GridContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "QUIT"

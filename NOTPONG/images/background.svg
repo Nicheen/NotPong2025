@@ -1,0 +1,109 @@
+<svg width="1920" height="1080" viewBox="0 0 1920 1080" xmlns="http://www.w3.org/2000/svg">
+  <!-- Gradient bakgrund -->
+  <defs>
+    <radialGradient id="backgroundGradient" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#0a0a2e"/>
+      <stop offset="50%" stop-color="#16213e"/>
+      <stop offset="100%" stop-color="#0f3460"/>
+    </radialGradient>
+    
+    <!-- Neon glow effekt -->
+    <filter id="neonGlow">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- Grid pattern -->
+    <pattern id="gridPattern" x="0" y="0" width="50" height="50" patternUnits="userSpaceOnUse">
+      <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#ffffff" stroke-width="0.5" opacity="0.1"/>
+    </pattern>
+  </defs>
+  
+  <!-- Main background -->
+  <rect width="1920" height="1080" fill="url(#backgroundGradient)"/>
+  
+  <!-- Grid overlay -->
+  <rect width="1920" height="1080" fill="url(#gridPattern)"/>
+  
+  <!-- Main title "NOT PONG" -->
+  <text x="960" y="200" font-family="Arial Black, sans-serif" font-size="120" font-weight="bold" text-anchor="middle" fill="#00ffff" filter="url(#neonGlow)">
+    NOT PONG
+  </text>
+  
+  <!-- Subtitle -->
+  <text x="960" y="260" font-family="Arial, sans-serif" font-size="32" text-anchor="middle" fill="#ffffff" opacity="0.8">
+    A Modern Twist on the Classic
+  </text>
+  
+  <!-- Huvudkaraktär (din blå rektangel) -->
+  <g transform="translate(960, 400)">
+    <!-- Huvudkaraktärens kropp -->
+    <rect x="-100" y="-40" width="200" height="80" fill="#4a90e2" stroke="#ffffff" stroke-width="3" rx="10" filter="url(#neonGlow)"/>
+    
+    <!-- Ögon -->
+    <ellipse cx="-40" cy="-10" rx="15" ry="20" fill="#ffffff"/>
+    <ellipse cx="40" cy="-10" rx="15" ry="20" fill="#ffffff"/>
+    
+    <!-- Pupiller -->
+    <circle cx="-40" cy="-8" r="8" fill="#2c5aa0"/>
+    <circle cx="40" cy="-8" r="8" fill="#2c5aa0"/>
+    
+    <!-- Highlights i ögonen -->
+    <circle cx="-37" cy="-12" r="3" fill="#ffffff"/>
+    <circle cx="43" cy="-12" r="3" fill="#ffffff"/>
+    
+    <!-- Ögonbryn -->
+    <path d="M -55 -25 Q -40 -30 -25 -25" stroke="#ffffff" stroke-width="2" fill="none"/>
+    <path d="M 25 -25 Q 40 -30 55 -25" stroke="#ffffff" stroke-width="2" fill="none"/>
+    
+    <!-- Leende -->
+    <path d="M -30 15 Q 0 25 30 15" stroke="#ffffff" stroke-width="2" fill="none"/>
+    
+    <!-- Kindcirklar -->
+    <circle cx="-70" cy="10" r="5" fill="#ffffff" opacity="0.5"/>
+    <circle cx="70" cy="10" r="5" fill="#ffffff" opacity="0.5"/>
+  </g>
+  
+  <!-- Retro Pong-element -->
+  <!-- Vänster paddle -->
+  <rect x="100" y="300" width="20" height="120" fill="#00ff00" filter="url(#neonGlow)"/>
+  
+  <!-- Höger paddle -->
+  <rect x="1800" y="500" width="20" height="120" fill="#00ff00" filter="url(#neonGlow)"/>
+  
+  <!-- Pong ball trail -->
+  <circle cx="300" cy="360" r="8" fill="#ffff00" opacity="0.3"/>
+  <circle cx="350" cy="380" r="10" fill="#ffff00" opacity="0.5"/>
+  <circle cx="400" cy="400" r="12" fill="#ffff00" opacity="0.7"/>
+  <circle cx="450" cy="420" r="15" fill="#ffff00" filter="url(#neonGlow)"/>
+  
+  <!-- Pixel block elements -->
+  <rect x="200" y="800" width="40" height="40" fill="#ff0000" filter="url(#neonGlow)"/>
+  <rect x="260" y="800" width="40" height="40" fill="#ff0000" filter="url(#neonGlow)"/>
+  <rect x="320" y="800" width="40" height="40" fill="#ff0000" filter="url(#neonGlow)"/>
+  
+  <rect x="1500" y="800" width="40" height="40" fill="#ff0000" filter="url(#neonGlow)"/>
+  <rect x="1560" y="800" width="40" height="40" fill="#ff0000" filter="url(#neonGlow)"/>
+  <rect x="1620" y="800" width="40" height="40" fill="#ff0000" filter="url(#neonGlow)"/>
+  
+  <!-- Decorative neon lines -->
+  <line x1="0" y1="900" x2="1920" y2="900" stroke="#00ffff" stroke-width="2" opacity="0.3"/>
+  <line x1="0" y1="180" x2="1920" y2="180" stroke="#00ffff" stroke-width="2" opacity="0.3"/>
+  
+  <!-- Score display mockup -->
+  <text x="300" y="150" font-family="Arial Black, monospace" font-size="48" fill="#00ff00" filter="url(#neonGlow)">000</text>
+  <text x="1620" y="150" font-family="Arial Black, monospace" font-size="48" fill="#00ff00" filter="url(#neonGlow)">000</text>
+  
+  <!-- Glitch effect lines -->
+  <rect x="0" y="400" width="1920" height="2" fill="#ff00ff" opacity="0.3"/>
+  <rect x="0" y="680" width="1920" height="1" fill="#00ffff" opacity="0.5"/>
+  
+  <!-- Corner decorations -->
+  <circle cx="100" cy="100" r="30" fill="none" stroke="#00ffff" stroke-width="3" opacity="0.5"/>
+  <circle cx="1820" cy="100" r="30" fill="none" stroke="#00ffff" stroke-width="3" opacity="0.5"/>
+  <circle cx="100" cy="980" r="30" fill="none" stroke="#00ffff" stroke-width="3" opacity="0.5"/>
+  <circle cx="1820" cy="980" r="30" fill="none" stroke="#00ffff" stroke-width="3" opacity="0.5"/>
+</svg>

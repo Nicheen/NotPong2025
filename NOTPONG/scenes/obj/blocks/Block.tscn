@@ -1,0 +1,20 @@
+[gd_scene load_steps=4 format=3 uid="uid://bratwmq3f1ph3"]
+
+[ext_resource type="Script" uid="uid://cdvdmyb0wm0kp" path="res://scripts/obj/blocks/block.gd" id="1_6ttfv"]
+[ext_resource type="Texture2D" uid="uid://dgg1f2dgvhw1c" path="res://images/red_square.svg" id="2_b6h7s"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_eo5g6"]
+size = Vector2(30, 30)
+
+[node name="EnemyBlock" type="CharacterBody2D"]
+collision_layer = 16
+collision_mask = 0
+script = ExtResource("1_6ttfv")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(-5.06639e-07, -5.06639e-07)
+scale = Vector2(0.53125, 0.53125)
+texture = ExtResource("2_b6h7s")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_eo5g6")
