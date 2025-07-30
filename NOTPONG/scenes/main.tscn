@@ -1,10 +1,9 @@
-[gd_scene load_steps=20 format=3 uid="uid://b5flfw85xnn3s"]
+[gd_scene load_steps=19 format=3 uid="uid://b5flfw85xnn3s"]
 
 [ext_resource type="Script" uid="uid://c2dkvm0rwmi1d" path="res://scripts/main.gd" id="1_elqb8"]
 [ext_resource type="Script" uid="uid://8fvtdceyak8j" path="res://scripts/level_manager.gd" id="3_0bbpv"]
 [ext_resource type="PackedScene" uid="uid://dc25tu6hyq1e2" path="res://scenes/menus/hud.tscn" id="3_sugp2"]
 [ext_resource type="Script" path="res://scenes/bounds.gd" id="5_tbgi4"]
-[ext_resource type="Script" uid="uid://2stp3m5gk2bv" path="res://scenes/spawner.gd" id="6_tefeu"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_o5qli"]
 size = Vector2(196, 648)
@@ -116,10 +115,6 @@ position = Vector2(1152, 637)
 
 [node name="HUD" parent="." instance=ExtResource("3_sugp2")]
 unique_name_in_owner = true
-
-[node name="Spawner" type="Node2D" parent="."]
-unique_name_in_owner = true
-script = ExtResource("6_tefeu")
 
 [node name="Deathzone" type="Node2D" parent="."]
 
