@@ -57,7 +57,7 @@ curve = SubResource("Curve_ypvw2")
 [sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_o5pat"]
 particle_flag_disable_z = true
 emission_shape = 3
-emission_box_extents = Vector3(985, 20, 1)
+emission_box_extents = Vector3(987.5, 20, 1)
 direction = Vector3(-1, 0, 0)
 spread = 0.0
 gravity = Vector3(0, 0, 0)
