@@ -1,11 +1,11 @@
 [gd_scene load_steps=6 format=3 uid="uid://mhneu5sufe2j"]
 
 [ext_resource type="Script" uid="uid://cfxv5qdy0ce0w" path="res://scripts/obj/enemy/enemy.gd" id="1_enemy_script"]
-[ext_resource type="Texture2D" uid="uid://go0jsjs2iejv" path="res://images/white_circle.svg" id="2_gsmpp"]
+[ext_resource type="Texture2D" uid="uid://bpqbtx72d1cpt" path="res://images/Bomb.png" id="2_455qr"]
 [ext_resource type="AudioStream" uid="uid://m2nawbuan6pu" path="res://sounds/noels/blop1.wav" id="3_455qr"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_455qr"]
-radius = 16.0
+radius = 25.0
 
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_gsmpp"]
 blend_mode = 1
@@ -16,9 +16,8 @@ collision_mask = 0
 script = ExtResource("1_enemy_script")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
-modulate = Color(1, 0.5, 0.5, 1)
-scale = Vector2(0.5, 0.5)
-texture = ExtResource("2_gsmpp")
+scale = Vector2(1.5, 1.5)
+texture = ExtResource("2_455qr")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CircleShape2D_455qr")
@@ -26,9 +25,9 @@ shape = SubResource("CircleShape2D_455qr")
 [node name="HealthBar" type="ProgressBar" parent="."]
 material = SubResource("CanvasItemMaterial_gsmpp")
 offset_left = -10.0
-offset_top = -3.0
+offset_top = -32.0
 offset_right = 10.0
-offset_bottom = 2.0
+offset_bottom = -27.0
 value = 100.0
 show_percentage = false
 
