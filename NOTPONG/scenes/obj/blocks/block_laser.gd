@@ -3,7 +3,11 @@ extends StaticBody2D
 # Enemy settings
 @export var max_health: int = 20
 @export var score_value: int = 20  # Points awarded when killed
-@export var enemy_type: String = "basic"
+@export var enemy_type: String = "lazer"
+
+# laser settings
+@export var laser_activation_delay: float = 2.0  # Time before laser activates
+@export var laser_duration: float = 3.0  # How long laser stays active
 
 # Visual settings
 @onready var sprite: Sprite2D = $Sprite2D
@@ -13,6 +17,13 @@ extends StaticBody2D
 # Sprite textures
 var normal_texture: Texture2D
 var cracked_texture: Texture2D
+
+# laser effect
+var laser_effect: Node2D
+var laser_timer: float = 0.0
+var laser_duration_timer: float = 0.0
+var laser_activated: bool = false
+var laser_ready: bool = false
 
 # Regeneration settings
 @export var regeneration_delay: float = 3.0  # Time before regeneration starts
@@ -30,8 +41,8 @@ var is_regenerating: bool = false
 var regeneration_tween: Tween
 
 # Signals
-signal block_dropper_died(score_points: int)
-signal block_dropper_hit(damage: int)
+signal block_died(score_points: int)
+signal block_hit(damage: int)
 
 func _ready():
 	# Set up enemy
@@ -47,27 +58,58 @@ func _ready():
 		normal_texture = sprite.texture
 		
 		# Load the cracked texture
-		cracked_texture = load("res://images/BlockDropperCracked.png")
+		cracked_texture = load("res://images/BlockLaserCracked.png")
 		if not cracked_texture:
-			print("WARNING: Could not load cracked texture at res://images/BlockDropperCracked.png")
+			print("WARNING: Could not load cracked texture at res://images/BlockLaserCracked.png")
 	
-	print("Block Dropper created with ", max_health, " health at position: ", global_position)
-
-func _process(delta: float) -> void:
-	laser.is_casting = Input.is_action_pressed("shoot")
+	laser_ready = true
+	
+	print("Laser block created with ", max_health, " health at position: ", global_position)
 
 func _physics_process(delta):
+	# Handle laser timing
+	if laser_ready and not laser_activated and not is_dead:
+		laser_timer += delta
+		if laser_timer >= laser_activation_delay:
+			activate_laser()
+			
+	# Handle laser duration (THIS WAS MISSING!)
+	if laser_activated and not is_dead:
+		laser_duration_timer += delta
+		if laser_duration_timer >= laser_duration:
+			deactivate_laser()
+			# Reset for next cycle
+			laser_timer = 0.0
+			laser_ready = true  # Allow reactivation
+			
 	# Handle regeneration timing
 	if has_been_damaged and not is_dead and not is_regenerating:
 		regeneration_timer += delta
 		if regeneration_timer >= regeneration_delay:
 			start_regeneration()
 
+func activate_laser():
+	"""Activate the laser effect"""
+	
+	laser_activated = true
+	laser_duration_timer = 0.0
+	laser.is_casting = true
+	
+	print("laser activated on laser block at: ", global_position)
+
+func deactivate_laser():
+	"""Deactivate the laser effect"""
+	laser_activated = false
+	laser_duration_timer = 0.0
+	laser.is_casting = false
+	
+	print("laser deactivated on laser block")
+
 func take_damage(damage: int):
 	if is_dead:
 		return
 	
-	print("Block Dropper took ", damage, " damage")
+	print("Laser block took ", damage, " damage")
 	
 	current_health -= damage
 	current_health = max(0, current_health)
@@ -89,7 +131,7 @@ func take_damage(damage: int):
 	show_damage_effect()
 	
 	# Emit hit signal
-	block_dropper_hit.emit(damage)
+	block_hit.emit(damage)
 	
 	# Check if dead
 	if current_health <= 0:
@@ -108,10 +150,12 @@ func die():
 		return
 	
 	is_dead = true
-	print("Block Dropper died! Awarding ", score_value, " points")
+	print("Laser block died! Awarding ", score_value, " points")
 	
+	laser.is_casting = false
+
 	# Emit death signal with score
-	block_dropper_died.emit(score_value)
+	block_died.emit(score_value)
 	
 	play_death_effect()
 

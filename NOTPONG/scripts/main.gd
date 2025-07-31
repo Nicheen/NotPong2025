@@ -11,8 +11,8 @@ const pausemenu_scene:PackedScene = preload("res://scenes/menus/pause_menu.tscn"
 # Hardcoded scene paths
 const PLAYER_SCENE = "res://scenes/obj/Player.tscn"
 const ENEMY_SCENE = "res://scenes/obj/Enemy.tscn"
-const ENEMY_BLOCK_SCENE = "res://scenes/obj/blocks/Block.tscn"
-const ENEMY_BLOCK_LAZER_SCENE = "res://scenes/obj/blocks/BlockLazer.tscn"
+const ENEMY_BLOCK_SCENE = "res://scenes/obj/blocks/block.tscn"
+const ENEMY_BLOCK_LASER_SCENE = "res://scenes/obj/blocks/block_laser.tscn"
 const ENEMY_BLOCK_DROPPER_SCENE = "res://scenes/obj/blocks/block_dropper.tscn"
 const BOSS_SCENE = "res://scenes/obj/bosses/Boss1.tscn"
 const PAUSE_MENU_SCENE = "res://scenes/menus/pause_menu.tscn" 
@@ -354,10 +354,10 @@ func spawn_enemy_lazer():
 		spawn_enemy_lazer_at_position(available_positions[i])
 
 func spawn_enemy_lazer_at_position(position: Vector2):
-	var lazer_scene = load(ENEMY_BLOCK_LAZER_SCENE)
+	var lazer_scene = load(ENEMY_BLOCK_LASER_SCENE)
 	var thunder_scene = load(THUNDER)
 	if not lazer_scene:
-		print("ERROR: Could not load enemy lazer scene at: ", ENEMY_BLOCK_LAZER_SCENE)
+		print("ERROR: Could not load enemy lazer scene at: ", ENEMY_BLOCK_LASER_SCENE)
 		return
 		
 	if not thunder_scene:
@@ -365,13 +365,8 @@ func spawn_enemy_lazer_at_position(position: Vector2):
 		return
 		
 	var lazer_block = lazer_scene.instantiate()
-	var thunder_effect = thunder_scene.instantiate()
-	
+
 	lazer_block.global_position = position
-	
-	# Add thunder as child of lazer block with relative positioning
-	lazer_block.add_child(thunder_effect)
-	thunder_effect.position = Vector2(0, 0)  # Relative to lazer block
 	
 	# Connect signals with distortion effects - pass position in closure
 	lazer_block.block_died.connect(func(score_points): _on_lazer_block_died_with_distortion(score_points, position))
@@ -503,6 +498,7 @@ func create_grid_background():
 	grid_background.anchors_preset = Control.PRESET_FULL_RECT
 	grid_background.size = play_area_size
 	grid_background.position = Vector2.ZERO
+	grid_background.z_index = -10
 	
 	# Create shader material
 	shader_material = ShaderMaterial.new()

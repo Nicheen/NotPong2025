@@ -1,0 +1,31 @@
+[gd_scene load_steps=5 format=3 uid="uid://bqmoskdr4j5ub"]
+
+[ext_resource type="Script" uid="uid://damb12qgbc5xj" path="res://scenes/obj/blocks/block_laser.gd" id="1_cocgj"]
+[ext_resource type="Texture2D" uid="uid://cne04nv1b3frj" path="res://images/BlockLaser.png" id="2_pnst7"]
+[ext_resource type="PackedScene" uid="uid://derw0gqfqmsp2" path="res://effects/laser.tscn" id="3_idmc1"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_5u526"]
+size = Vector2(50, 50)
+
+[node name="EnemyBlockLazer" type="StaticBody2D"]
+collision_layer = 16
+collision_mask = 0
+script = ExtResource("1_cocgj")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(9.53674e-07, 0)
+scale = Vector2(1.5625, 1.5625)
+texture = ExtResource("2_pnst7")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+unique_name_in_owner = true
+shape = SubResource("RectangleShape2D_5u526")
+
+[node name="LaserBeam2D" parent="." instance=ExtResource("3_idmc1")]
+unique_name_in_owner = true
+rotation = 1.5708
+target_position = Vector2(2000, 0)
+max_length = 2000.0
+line_width = 10.0
+color = Color(0.133333, 1, 0.380392, 1)

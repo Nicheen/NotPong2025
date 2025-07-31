@@ -1,3 +1,7 @@
+WorldEnvironment
+GPUParticles2D
+Line2D
+RayCast2D
 PointLight2D
 StaticBody2D
 DirectionalLight2D

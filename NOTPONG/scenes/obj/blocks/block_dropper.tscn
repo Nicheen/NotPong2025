@@ -1,12 +1,13 @@
-[gd_scene load_steps=4 format=3 uid="uid://b4dtnq2jnliqp"]
+[gd_scene load_steps=5 format=3 uid="uid://b4dtnq2jnliqp"]
 
 [ext_resource type="Script" uid="uid://co6pi865vgmxp" path="res://scenes/obj/blocks/block_dropper.gd" id="1_l3hxy"]
 [ext_resource type="Texture2D" uid="uid://beijqhr7w4ud" path="res://images/BlockDropper.png" id="2_l3hxy"]
+[ext_resource type="PackedScene" uid="uid://derw0gqfqmsp2" path="res://effects/laser.tscn" id="3_v02br"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_v02br"]
 size = Vector2(50, 50)
 
-[node name="Node2D" type="StaticBody2D"]
+[node name="Dropper" type="StaticBody2D"]
 collision_layer = 16
 collision_mask = 0
 script = ExtResource("1_l3hxy")
@@ -18,3 +19,10 @@ texture = ExtResource("2_l3hxy")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("RectangleShape2D_v02br")
+
+[node name="LaserBeam2D" parent="." instance=ExtResource("3_v02br")]
+unique_name_in_owner = true
+rotation = 1.5708
+target_position = Vector2(2000, 0)
+max_length = 2000.0
+color = Color(0.133333, 1, 0.380392, 1)

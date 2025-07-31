@@ -1,4 +1,4 @@
-[gd_scene load_steps=19 format=3 uid="uid://b5flfw85xnn3s"]
+[gd_scene load_steps=20 format=3 uid="uid://b5flfw85xnn3s"]
 
 [ext_resource type="Script" uid="uid://c2dkvm0rwmi1d" path="res://scripts/main.gd" id="1_elqb8"]
 [ext_resource type="Script" uid="uid://8fvtdceyak8j" path="res://scripts/level_manager.gd" id="3_0bbpv"]
@@ -70,6 +70,15 @@ color_ramp = SubResource("GradientTexture1D_0wfyh")
 hue_variation_min = -0.1
 hue_variation_max = 0.1
 
+[sub_resource type="Environment" id="Environment_jyhfs"]
+background_mode = 3
+glow_enabled = true
+glow_levels/4 = 0.5
+glow_levels/5 = 0.3
+glow_blend_mode = 1
+glow_hdr_threshold = 0.9
+glow_hdr_scale = 0.0
+
 [node name="Main" type="Node2D"]
 script = ExtResource("1_elqb8")
 
@@ -122,14 +131,14 @@ unique_name_in_owner = true
 position = Vector2(-316.813, 0)
 scale = Vector2(1.56218, 1)
 points = PackedVector2Array(200, 5, 952, 5)
-default_color = Color(0.568627, 0.164706, 0.180392, 1)
+default_color = Color(1, 0.164706, 0.180392, 1)
 antialiased = true
 
 [node name="Line2D2Bot" type="Line2D" parent="Deathzone"]
 position = Vector2(-311.756, 4)
 scale = Vector2(1.57642, 1)
 points = PackedVector2Array(190, 639, 942, 639)
-default_color = Color(0.568627, 0.164706, 0.180392, 1)
+default_color = Color(1, 0.164706, 0.180392, 1)
 
 [node name="StaticBody2DTop" type="StaticBody2D" parent="Deathzone"]
 
@@ -157,3 +166,6 @@ trail_enabled = true
 trail_lifetime = 0.06
 trail_sections = 6
 process_material = SubResource("ParticleProcessMaterial_o5qli")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_jyhfs")
