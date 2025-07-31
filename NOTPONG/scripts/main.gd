@@ -571,14 +571,76 @@ func _on_enemy_died(score_points: int):
 	# Check win condition
 	if enemies_killed >= total_enemies:
 		if level_manager and level_manager.has_method("level_completed"):
-			current_level += 1
+			# Remove this line: current_level += 1
 			level_manager.level_completed()
 		else:
-			player_wins()  # Fallback
+			player_wins()  # Fallbackback
+			
+func damage_adjacent_blocks(enemy_position: Vector2, damage: int = 10):
+	"""Damage all blocks in adjacent tiles (8 surrounding tiles)"""
+	
+	# Get grid coordinates from the spawn manager's coordinate arrays
+	var x_positions = [926, 876, 826, 776, 726, 676, 626, 576, 526, 476, 426, 376, 326, 276, 226]
+	var y_positions = [124, 174, 224, 274, 324, 374, 424, 474, 524]
+	
+	# Find the grid index of the enemy position
+	var enemy_x_idx = x_positions.find(enemy_position.x)
+	var enemy_y_idx = y_positions.find(enemy_position.y)
+	
+	if enemy_x_idx == -1 or enemy_y_idx == -1:
+		print("Enemy position not found in grid: ", enemy_position)
+		return
+	
+	# Check all 8 adjacent positions (including diagonals)
+	var adjacent_offsets = [
+		Vector2(-1, -1), Vector2(0, -1), Vector2(1, -1),  # Top row
+		Vector2(-1,  0),                 Vector2(1,  0),  # Middle row (skip center)
+		Vector2(-1,  1), Vector2(0,  1), Vector2(1,  1)   # Bottom row
+	]
+	
+	for offset in adjacent_offsets:
+		var check_x_idx = enemy_x_idx + offset.x
+		var check_y_idx = enemy_y_idx + offset.y
+		
+		# Make sure we're within grid bounds
+		if check_x_idx < 0 or check_x_idx >= x_positions.size():
+			continue
+		if check_y_idx < 0 or check_y_idx >= y_positions.size():
+			continue
+		
+		# Get the world position to check
+		var check_position = Vector2(x_positions[check_x_idx], y_positions[check_y_idx])
+		
+		# Find any block at this position and damage it
+		var block_to_damage = find_block_at_position(check_position)
+		if block_to_damage and block_to_damage.has_method("take_damage"):
+			block_to_damage.take_damage(damage)
+			print("Enemy death damaged adjacent block at: ", check_position, " for ", damage, " damage")
 
+func find_block_at_position(position: Vector2):
+	"""Find any block (of any type) at the given position"""
+	# Check all block arrays
+	for block in blocks:
+		if is_instance_valid(block) and block.global_position == position:
+			return block
+	
+	for block in blue_blocks:
+		if is_instance_valid(block) and block.global_position == position:
+			return block
+	
+	for block in lazer_blocks:
+		if is_instance_valid(block) and block.global_position == position:
+			return block
+	
+	for block in block_droppers:
+		if is_instance_valid(block) and block.global_position == position:
+			return block
+	
+	return null
 func _on_enemy_died_with_distortion(score_points: int, death_position: Vector2):
 	"""Handle enemy death with distortion effect"""
 	create_enemy_death_distortion(death_position)
+	damage_adjacent_blocks(death_position, 10)
 	_on_enemy_died(score_points)
 
 func _on_boss_died_with_distortion(score_points: int, death_position: Vector2):
@@ -592,6 +654,14 @@ func _on_block_died(score_points: int):
 	
 	# Find and free the position of the destroyed block
 	cleanup_destroyed_entity_position()
+	
+	# Check win condition - ADD THIS PART
+	if enemies_killed >= total_enemies:
+		if level_manager and level_manager.has_method("level_completed"):
+			current_level += 1
+			level_manager.level_completed()
+		else:
+			player_wins() 
 
 func cleanup_destroyed_entity_position():
 	"""Clean up positions of destroyed entities"""
