@@ -22,6 +22,7 @@ extends RayCast2D
 
 var tween: Tween = null
 var current_hit_color := Color.WHITE
+var original_particle_color := Color.WHITE
 
 @onready var line_2d: Line2D = %Line2D
 @onready var casting_particles: GPUParticles2D = %CastingParticles2D
@@ -30,6 +31,8 @@ var current_hit_color := Color.WHITE
 @onready var hit_particles: GPUParticles2D = %HitParticles2D
 
 func _ready() -> void:
+	store_original_particle_color()
+	
 	var core_texture = create_laser_core_texture(color)
 	line_2d.texture = core_texture
 	line_2d.texture_mode = Line2D.LINE_TEXTURE_STRETCH
@@ -43,7 +46,27 @@ func _ready() -> void:
 	if not Engine.is_editor_hint():
 		set_physics_process(false)
 
-
+func get_current_hit_color() -> Color:
+	return current_hit_color
+	
+func store_original_particle_color():
+	# Try to get color from collision particles' gradient or modulate
+	if hit_particles:
+		if hit_particles.process_material:
+			var material = hit_particles.process_material as ParticleProcessMaterial
+			if material and material.color_ramp and material.color_ramp.gradient:
+				var gradient = material.color_ramp.gradient
+				if gradient.colors.size() > 0:
+					original_particle_color = gradient.colors[0]
+					print("Stored original particle color from gradient: ", original_particle_color)
+					return
+		
+		# Fallback to modulate if no gradient color found
+		original_particle_color = hit_particles.modulate
+		print("Stored original particle color from modulate: ", original_particle_color)
+	else:
+		print("Warning: collision_particles not found, using white as fallback")
+		
 func _physics_process(delta: float) -> void:
 	target_position = target_position.move_toward(Vector2.RIGHT * max_length, cast_speed * delta)
 
@@ -56,13 +79,13 @@ func _physics_process(delta: float) -> void:
 		collision_particles.position = laser_end_position
 		
 		hit_particles.global_rotation = get_collision_normal().angle()
-		hit_particles.position = laser_end_position
+		hit_particles.position = laser_end_position + Vector2(10, 0)
 		
 		var hit_body = get_collider()
 		current_hit_color = get_object_color(hit_body)
 		
-		var material = collision_particles.process_material as ParticleProcessMaterial
-		if material and material.color_ramp and current_hit_color != Color.WHITE:
+		var material = hit_particles.process_material as ParticleProcessMaterial
+		if material and material.color_ramp:
 			update_gradient_colors(material.color_ramp, current_hit_color)
 		
 		
@@ -82,37 +105,25 @@ func update_gradient_colors(gradient_texture: GradientTexture1D, hit_color: Colo
 	var gradient = gradient_texture.gradient
 	var colors = gradient.colors
 	
-	# Update the colors array - replace with hit color variations
-	# Index 0 = start color (full hit color)
-	# Index 1 = end color (transparent hit color)
-	
-	if colors.size() >= 2:
-		colors[0] = hit_color  # Start with full hit color
-		colors[1] = Color(hit_color.r, hit_color.g, hit_color.b, 0.0)  # End with transparent
+	colors[0] = hit_color  # Start with full hit color
 		
-		# If there are more colors, create a nice gradient
-		if colors.size() > 2:
-			for i in range(1, colors.size() - 1):
-				var alpha = 1.0 - (float(i) / float(colors.size() - 1))
-				colors[i] = Color(hit_color.r, hit_color.g, hit_color.b, alpha)
-	
 	# Apply the updated colors
 	gradient.colors = colors
-		
+	
 func ease_in_quint(x: float) -> float:
 	return pow(x, 5)
 	
 func ease_out_quint(x: float) -> float:
 	return 1.0 - pow(1.0 - x, 5)
 	
-func get_texture_dominant_color(texture: Texture2D, modulate_color: Color = Color.WHITE) -> Color:
+func get_texture_dominant_color(texture: Texture2D, modulate_color: Color) -> Color:
 	if not texture:
-		return Color.WHITE
+		return original_particle_color
 	
 	# Get the texture as an Image
 	var image = texture.get_image()
 	if not image:
-		return Color.WHITE
+		return original_particle_color
 	
 	# Sample key pixels to determine dominant color
 	var width = image.get_width()
@@ -169,12 +180,12 @@ func get_sprite_from_object(obj) -> Sprite2D:
 	
 func get_object_color(hit_object) -> Color:
 	if not hit_object:
-		return Color.WHITE
+		return original_particle_color
 	
 	# Try to get sprite from the hit object
 	var sprite = get_sprite_from_object(hit_object)
 	if not sprite:
-		return Color.WHITE
+		return original_particle_color
 	
 	# Get the texture color
 	var texture_color = get_texture_dominant_color(sprite.texture, sprite.modulate)
