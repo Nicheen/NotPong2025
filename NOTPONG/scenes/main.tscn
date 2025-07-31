@@ -1,6 +1,7 @@
-[gd_scene load_steps=22 format=3 uid="uid://b5flfw85xnn3s"]
+[gd_scene load_steps=23 format=3 uid="uid://b5flfw85xnn3s"]
 
 [ext_resource type="Script" uid="uid://c2dkvm0rwmi1d" path="res://scripts/main.gd" id="1_elqb8"]
+[ext_resource type="Texture2D" uid="uid://003gl8sksmsl" path="res://images/RutnatBakgrund.png" id="2_tbgi4"]
 [ext_resource type="Script" uid="uid://8fvtdceyak8j" path="res://scripts/level_manager.gd" id="3_0bbpv"]
 [ext_resource type="PackedScene" uid="uid://dc25tu6hyq1e2" path="res://scenes/menus/hud.tscn" id="3_sugp2"]
 [ext_resource type="Script" path="res://scenes/bounds.gd" id="5_tbgi4"]
@@ -95,12 +96,19 @@ background_mode = 3
 glow_enabled = true
 glow_levels/4 = 0.5
 glow_levels/5 = 0.3
+glow_normalized = true
+glow_intensity = 0.1
 glow_blend_mode = 1
 glow_hdr_threshold = 0.9
 glow_hdr_scale = 0.0
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_elqb8")
+
+[node name="Background" type="Sprite2D" parent="."]
+z_index = -2
+position = Vector2(576, 324)
+texture = ExtResource("2_tbgi4")
 
 [node name="Borders" type="Node2D" parent="."]
 

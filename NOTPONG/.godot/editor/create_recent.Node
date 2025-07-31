@@ -1,3 +1,6 @@
+Sprite2D
+ColorRect
+CanvasLayer
 WorldEnvironment
 GPUParticles2D
 Line2D
@@ -9,6 +12,4 @@ CollisionShape2D
 Area2D
 Label
 MarginContainer
-CanvasLayer
 Panel
-Control
