@@ -412,7 +412,7 @@ func connect_to_projectiles():
 	pass
 
 func _on_projectile_hit():
-	take_damage(damage_per_hit)
+	pass
 
 func take_damage(amount: int):
 	current_health -= amount

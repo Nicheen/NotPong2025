@@ -21,12 +21,13 @@ extends RayCast2D
 @export var is_casting := false: set = set_is_casting
 
 var tween: Tween = null
+var current_hit_color := Color.WHITE
 
 @onready var line_2d: Line2D = %Line2D
 @onready var casting_particles: GPUParticles2D = %CastingParticles2D
 @onready var collision_particles: GPUParticles2D = %CollisionParticles2D
 @onready var beam_particles: GPUParticles2D = %BeamParticles2D
-
+@onready var hit_particles: GPUParticles2D = %HitParticles2D
 
 func _ready() -> void:
 	var core_texture = create_laser_core_texture(color)
@@ -53,7 +54,18 @@ func _physics_process(delta: float) -> void:
 		laser_end_position = to_local(get_collision_point())
 		collision_particles.global_rotation = get_collision_normal().angle()
 		collision_particles.position = laser_end_position
-
+		
+		hit_particles.global_rotation = get_collision_normal().angle()
+		hit_particles.position = laser_end_position
+		
+		var hit_body = get_collider()
+		current_hit_color = get_object_color(hit_body)
+		
+		var material = collision_particles.process_material as ParticleProcessMaterial
+		if material and material.color_ramp and current_hit_color != Color.WHITE:
+			update_gradient_colors(material.color_ramp, current_hit_color)
+		
+		
 	line_2d.points[1] = laser_end_position
 
 	var laser_start_position := line_2d.points[0]
@@ -61,10 +73,113 @@ func _physics_process(delta: float) -> void:
 	beam_particles.process_material.emission_box_extents.x = laser_end_position.distance_to(laser_start_position) * 0.5
 
 	collision_particles.emitting = is_colliding()
+	hit_particles.emitting = is_colliding()
+	
+func update_gradient_colors(gradient_texture: GradientTexture1D, hit_color: Color):
+	if not gradient_texture or not gradient_texture.gradient:
+		return
+	
+	var gradient = gradient_texture.gradient
+	var colors = gradient.colors
+	
+	# Update the colors array - replace with hit color variations
+	# Index 0 = start color (full hit color)
+	# Index 1 = end color (transparent hit color)
+	
+	if colors.size() >= 2:
+		colors[0] = hit_color  # Start with full hit color
+		colors[1] = Color(hit_color.r, hit_color.g, hit_color.b, 0.0)  # End with transparent
+		
+		# If there are more colors, create a nice gradient
+		if colors.size() > 2:
+			for i in range(1, colors.size() - 1):
+				var alpha = 1.0 - (float(i) / float(colors.size() - 1))
+				colors[i] = Color(hit_color.r, hit_color.g, hit_color.b, alpha)
+	
+	# Apply the updated colors
+	gradient.colors = colors
+		
 func ease_in_quint(x: float) -> float:
 	return pow(x, 5)
+	
 func ease_out_quint(x: float) -> float:
 	return 1.0 - pow(1.0 - x, 5)
+	
+func get_texture_dominant_color(texture: Texture2D, modulate_color: Color = Color.WHITE) -> Color:
+	if not texture:
+		return Color.WHITE
+	
+	# Get the texture as an Image
+	var image = texture.get_image()
+	if not image:
+		return Color.WHITE
+	
+	# Sample key pixels to determine dominant color
+	var width = image.get_width()
+	var height = image.get_height()
+	
+	# Sample from the top area since that's where the laser hits
+	var sample_y = int(height * 0.2)  # Top 20% of the texture
+	var sample_count = 0
+	var total_color = Color.BLACK
+	
+	# Sample pixels across the width at the top area
+	var step = max(1, width / 10)  # Sample 10 points across
+	for x in range(0, width, step):
+		var pixel_color = image.get_pixel(x, sample_y)
+		
+		# Skip transparent pixels
+		if pixel_color.a > 0.1:
+			total_color += pixel_color
+			sample_count += 1
+	
+	# Calculate average color
+	if sample_count > 0:
+		total_color = total_color / sample_count
+		# Apply modulate color
+		total_color = total_color * modulate_color
+		return total_color
+	
+	return modulate_color
+	
+func get_sprite_from_object(obj) -> Sprite2D:
+	# Direct sprite check
+	if obj is Sprite2D:
+		return obj
+	
+	# Check if object has a Sprite2D child
+	if obj.has_method("get_children"):
+		for child in obj.get_children():
+			if child is Sprite2D:
+				return child
+			# Check nested children
+			var nested_sprite = get_sprite_from_object(child)
+			if nested_sprite:
+				return nested_sprite
+	
+	# Check for common sprite node names
+	var common_names = ["Sprite2D", "sprite", "Sprite", "sprite_2d"]
+	for name in common_names:
+		if obj.has_node(name):
+			var node = obj.get_node(name)
+			if node is Sprite2D:
+				return node
+	
+	return null
+	
+func get_object_color(hit_object) -> Color:
+	if not hit_object:
+		return Color.WHITE
+	
+	# Try to get sprite from the hit object
+	var sprite = get_sprite_from_object(hit_object)
+	if not sprite:
+		return Color.WHITE
+	
+	# Get the texture color
+	var texture_color = get_texture_dominant_color(sprite.texture, sprite.modulate)
+	
+	return texture_color
 	
 func create_laser_core_texture(base_color: Color) -> ImageTexture:
 	var size = 64
@@ -91,6 +206,7 @@ func create_laser_core_texture(base_color: Color) -> ImageTexture:
 	var texture = ImageTexture.new()
 	texture.set_image(image)
 	return texture
+	
 func set_is_casting(new_value: bool) -> void:
 	if is_casting == new_value:
 		return
@@ -113,8 +229,8 @@ func set_is_casting(new_value: bool) -> void:
 	else:
 		target_position = Vector2.ZERO
 		collision_particles.emitting = false
+		hit_particles.emitting = false
 		disappear()
-
 
 func appear() -> void:
 	line_2d.visible = true
@@ -129,7 +245,6 @@ func disappear() -> void:
 	tween = create_tween()
 	tween.tween_property(line_2d, "width", 0.0, growth_time).from_current()
 	tween.tween_callback(line_2d.hide)
-
 
 func set_color(new_color: Color) -> void:
 	color = new_color

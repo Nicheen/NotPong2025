@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3 uid="uid://derw0gqfqmsp2"]
+[gd_scene load_steps=24 format=3 uid="uid://derw0gqfqmsp2"]
 
 [ext_resource type="Script" uid="uid://dokiaupwsjld5" path="res://effects/laser.gd" id="1_ybewo"]
 
@@ -69,7 +69,7 @@ curve = SubResource("Curve_ypvw2")
 [sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_o5pat"]
 particle_flag_disable_z = true
 emission_shape = 3
-emission_box_extents = Vector3(980, 20, 1)
+emission_box_extents = Vector3(680, 20, 1)
 direction = Vector3(-1, 0, 0)
 spread = 0.0
 gravity = Vector3(0, 0, 0)
@@ -105,6 +105,26 @@ scale_max = 0.5
 scale_curve = SubResource("CurveTexture_v2imv")
 color_ramp = SubResource("GradientTexture1D_s6yp2")
 
+[sub_resource type="Gradient" id="Gradient_tefeu"]
+interpolation_mode = 1
+offsets = PackedFloat32Array(0.01, 0.52)
+colors = PackedColorArray(1, 1, 1, 0.941176, 1, 1, 1, 0.941176)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_o6xl0"]
+gradient = SubResource("Gradient_tefeu")
+fill = 2
+fill_from = Vector2(1, 1)
+fill_to = Vector2(0, 0)
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_ybewo"]
+particle_flag_disable_z = true
+direction = Vector3(0, -1, 0)
+initial_velocity_min = 10.0
+initial_velocity_max = 200.0
+gravity = Vector3(0, 98, 0)
+scale_min = 0.1
+scale_max = 0.1
+
 [node name="Laser" type="RayCast2D"]
 target_position = Vector2(1400, 0)
 collision_mask = 32769
@@ -113,7 +133,7 @@ script = ExtResource("1_ybewo")
 [node name="Line2D" type="Line2D" parent="."]
 unique_name_in_owner = true
 visible = false
-points = PackedVector2Array(40, 0, 0, 0)
+points = PackedVector2Array(40, 0, 1400, 0)
 texture = SubResource("ImageTexture_btyrk")
 texture_mode = 2
 begin_cap_mode = 2
@@ -151,3 +171,9 @@ texture = SubResource("GradientTexture2D_btyrk")
 lifetime = 0.3
 visibility_rect = Rect2(-2500, -2500, 5000, 5000)
 process_material = SubResource("ParticleProcessMaterial_fdrwo")
+
+[node name="HitParticles2D" type="GPUParticles2D" parent="."]
+unique_name_in_owner = true
+emitting = false
+texture = SubResource("GradientTexture2D_o6xl0")
+process_material = SubResource("ParticleProcessMaterial_ybewo")
