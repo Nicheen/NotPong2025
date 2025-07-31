@@ -7,6 +7,7 @@ const pausemenu_scene:PackedScene = preload("res://scenes/menus/pause_menu.tscn"
 @export var play_area_size: Vector2 = Vector2(1152, 648)  # Match your window size
 @export var play_area_center: Vector2 = Vector2(576, 324)  # Half of window size
 @onready var hud: HUD = %HUD as HUD
+@onready var spawn_manager: SpawnManager = %Spawner as SpawnManager
 
 # Hardcoded scene paths
 const PLAYER_SCENE = "res://scenes/obj/Player.tscn"
@@ -300,7 +301,6 @@ func spawn_enemies():
 	
 	for i in range(enemy_count):
 		spawn_enemy_at_position(available_positions[i])
-
 func spawn_enemy_at_position(position: Vector2):
 	var enemy_scene = load(ENEMY_SCENE)
 	if not enemy_scene:
@@ -310,13 +310,16 @@ func spawn_enemy_at_position(position: Vector2):
 	var enemy = enemy_scene.instantiate()
 	enemy.global_position = position
 	
-	# Connect enemy signals with distortion effects - pass position in closure
+	# Connect enemy signals with distortion effects
 	enemy.enemy_died.connect(func(score_points): _on_enemy_died_with_distortion(score_points, position))
 	enemy.enemy_hit.connect(_on_enemy_hit)
 	
 	add_child(enemy)
 	enemies.append(enemy)
 	total_enemies += 1
+	
+	# Reserve this position in spawn manager
+	spawn_manager.reserve_positions([position])
 	
 	print("Spawned enemy at: ", position)
 	
@@ -338,12 +341,8 @@ func generate_spawn_positions():
 	print("Generated ", all_spawn_positions.size(), " spawn positions")
 
 func get_random_spawn_positions(count: int) -> Array[Vector2]:
-	# Returnera random urval av spawn-positioner
-	var available_positions = all_spawn_positions.duplicate()
-	available_positions.shuffle()
-	
-	var selected_count = min(count, available_positions.size())
-	return available_positions.slice(0, selected_count)
+	"""Fallback random spawn positions that avoids overlaps"""
+	return spawn_manager.get_random_available_positions(count)
 
 func get_all_spawn_positions() -> Array[Vector2]:
 	# Returnera alla spawn-positioner
@@ -372,7 +371,7 @@ func spawn_blue_block_at_position(position: Vector2):
 	var block = block_scene.instantiate()
 	block.global_position = position
 	
-	# Connect signals WITHOUT distortion effects for blocks
+	# Connect signals
 	block.block_died.connect(_on_block_died)
 	block.block_hit.connect(_on_enemy_hit)
 	
@@ -380,8 +379,11 @@ func spawn_blue_block_at_position(position: Vector2):
 	blue_blocks.append(block)
 	total_enemies += 1
 	
+	# Reserve this position in spawn manager
+	spawn_manager.reserve_positions([position])
+	
 	print("Spawned blue block at: ", position)
-
+	
 func spawn_random_enemies(count: int):
 	# Förenklad version
 	var selected_positions = get_random_spawn_positions(count)
@@ -399,24 +401,27 @@ func spawn_boss_at_center():
 	print("Spawning boss at: ", boss_pos)
 
 func spawn_enemy_block_dropper_at_position(position: Vector2):
-	var block_scene = load(ENEMY_BLOCK_DROPPER_SCENE)  # Ladda kvadrat-scenen
+	var block_scene = load(ENEMY_BLOCK_DROPPER_SCENE)
 	if not block_scene:
-		print("ERROR: Could not load enemy kvadrat scene at: ", ENEMY_BLOCK_DROPPER_SCENE)
+		print("ERROR: Could not load block dropper scene at: ", ENEMY_BLOCK_DROPPER_SCENE)
 		return
 	
 	var block = block_scene.instantiate()
 	block.global_position = position
 	
-	# Connect signals WITHOUT distortion effects for blocks
+	# Connect signals
 	block.block_dropper_died.connect(_on_block_died)
 	block.block_dropper_hit.connect(_on_enemy_hit)
 	
 	add_child(block)
-	blocks.append(block)
+	block_droppers.append(block)
 	total_enemies += 1
 	
-	print("Spawned kvadrat enemy at: ", position)
-
+	# Reserve this position in spawn manager
+	spawn_manager.reserve_positions([position])
+	
+	print("Spawned block dropper at: ", position)
+	
 func spawn_blue_blocks(count: int):
 	var selected_positions = get_random_spawn_positions(count)
 	
@@ -424,15 +429,15 @@ func spawn_blue_blocks(count: int):
 		spawn_blue_block_at_position(pos)
 		
 func spawn_enemy_kvadrat_at_position(position: Vector2):
-	var block_scene = load(ENEMY_BLOCK_SCENE)  # Ladda kvadrat-scenen
+	var block_scene = load(ENEMY_BLOCK_SCENE)
 	if not block_scene:
-		print("ERROR: Could not load enemy kvadrat scene at: ", ENEMY_BLOCK_SCENE)
+		print("ERROR: Could not load enemy block scene at: ", ENEMY_BLOCK_SCENE)
 		return
 	
 	var block = block_scene.instantiate()
 	block.global_position = position
 	
-	# Connect signals WITHOUT distortion effects for blocks
+	# Connect signals
 	block.block_died.connect(_on_block_died)
 	block.block_hit.connect(_on_enemy_hit)
 	
@@ -440,9 +445,11 @@ func spawn_enemy_kvadrat_at_position(position: Vector2):
 	blocks.append(block)
 	total_enemies += 1
 	
-	print("Spawned kvadrat enemy at: ", position)
+	# Reserve this position in spawn manager
+	spawn_manager.reserve_positions([position])
 	
-	# Lägg till spawn-funktioner:
+	print("Spawned block at: ", position)
+	
 func spawn_enemy_lazer():
 	# Samla alla använda positioner från block och lazer-block
 	var used_positions: Array[Vector2] = []
@@ -472,29 +479,26 @@ func spawn_enemy_lazer():
 
 func spawn_enemy_lazer_at_position(position: Vector2):
 	var lazer_scene = load(ENEMY_BLOCK_LASER_SCENE)
-	var thunder_scene = load(THUNDER)
+	
 	if not lazer_scene:
-		print("ERROR: Could not load enemy lazer scene at: ", ENEMY_BLOCK_LASER_SCENE)
-		return
-		
-	if not thunder_scene:
-		print("ERROR: Could not load thunder effect scene at: ", THUNDER)
+		print("ERROR: Could not load laser scene")
 		return
 		
 	var lazer_block = lazer_scene.instantiate()
-
 	lazer_block.global_position = position
 	
-	# Connect signals WITHOUT distortion effects for laser blocks
+	# Connect signals
 	lazer_block.block_died.connect(_on_block_died)
 	lazer_block.block_hit.connect(_on_enemy_hit)
 	
 	add_child(lazer_block)
-
 	lazer_blocks.append(lazer_block)
 	total_enemies += 1
 	
-	print("Spawned lazer block at: ", position)
+	# Reserve this position in spawn manager
+	spawn_manager.reserve_positions([position])
+	
+	print("Spawned laser block at: ", position)
 	
 func spawn_player():
 	# Load and instantiate the player scene
@@ -583,9 +587,18 @@ func _on_boss_died_with_distortion(score_points: int, death_position: Vector2):
 	_on_enemy_died(score_points)
 
 func _on_block_died(score_points: int):
-	"""Handle block death WITHOUT distortion effect"""
-	_on_enemy_died(score_points)
-		
+	current_score += score_points
+	enemies_killed += 1
+	
+	# Find and free the position of the destroyed block
+	cleanup_destroyed_entity_position()
+
+func cleanup_destroyed_entity_position():
+	"""Clean up positions of destroyed entities"""
+	# This is called when entities die - you might want to track specific positions
+	# For now, we'll rely on the level clearing to reset positions
+	pass
+
 func _on_enemy_hit(damage: int):
 	# Optional: Add score for hitting enemies
 	current_score += damage
@@ -623,3 +636,94 @@ func create_grid_background():
 	# You can keep the original grid background if you want
 	# It won't have distortion anymore, but will provide the grid visual
 	pass
+
+func spawn_blocks_weighted(count: int):
+	"""Spawn regular blocks using weighted positioning"""
+	var positions = spawn_manager.get_weighted_spawn_positions("blocks", count)
+	
+	for pos in positions:
+		spawn_enemy_kvadrat_at_position(pos)
+
+func spawn_blue_blocks_weighted(count: int):
+	"""Spawn blue blocks using weighted positioning"""
+	var positions = spawn_manager.get_weighted_spawn_positions("blue_blocks", count)
+	
+	for pos in positions:
+		spawn_blue_block_at_position(pos)
+
+func spawn_laser_blocks_weighted(count: int):
+	"""Spawn laser blocks using weighted positioning"""
+	var positions = spawn_manager.get_weighted_spawn_positions("laser_blocks", count)
+	
+	for pos in positions:
+		spawn_enemy_lazer_at_position(pos)
+
+func spawn_block_droppers_weighted(count: int):
+	"""Spawn block droppers using weighted positioning"""
+	var positions = spawn_manager.get_weighted_spawn_positions("block_droppers", count)
+	
+	for pos in positions:
+		spawn_enemy_block_dropper_at_position(pos)
+
+func spawn_enemies_weighted(count: int):
+	"""Spawn enemies using weighted positioning, avoiding all block positions"""
+	var positions = spawn_manager.get_weighted_spawn_positions("enemies", count)
+	
+	for pos in positions:
+		spawn_enemy_at_position(pos)
+
+func clear_level_entities():
+	"""Clear all entities and reset spawn positions"""
+	# Clear all entities (your existing code)
+	for enemy in enemies:
+		if is_instance_valid(enemy):
+			enemy.queue_free()
+	
+	for block in blocks:
+		if is_instance_valid(block):
+			block.queue_free()
+	
+	for lazer_block in lazer_blocks:
+		if is_instance_valid(lazer_block):
+			lazer_block.queue_free()
+			
+	for block_dropper in block_droppers:
+		if is_instance_valid(block_dropper):
+			block_dropper.queue_free()
+	
+	for blue_block in blue_blocks:
+		if is_instance_valid(blue_block):
+			blue_block.queue_free()
+	
+	for boss in bosses:
+		if is_instance_valid(boss):
+			boss.queue_free()
+	
+	# Clear arrays
+	enemies.clear()
+	blocks.clear()
+	lazer_blocks.clear()
+	block_droppers.clear()
+	blue_blocks.clear()
+	bosses.clear()
+	
+	# Reset spawn manager positions
+	spawn_manager.clear_all_positions()
+	
+	# Reset counters
+	enemies_killed = 0
+	total_enemies = 0
+
+# Debug function to visualize spawn weights
+func debug_spawn_weights():
+	"""Print spawn weight visualizations for debugging"""
+	print("=== SPAWN WEIGHT DEBUG ===")
+	spawn_manager.print_spawn_heatmap("blocks")
+	print()
+	spawn_manager.print_spawn_heatmap("enemies")
+	print()
+	spawn_manager.print_spawn_heatmap("blue_blocks")
+	print()
+	spawn_manager.print_spawn_heatmap("laser_blocks")
+	print()
+	spawn_manager.print_spawn_heatmap("block_droppers")

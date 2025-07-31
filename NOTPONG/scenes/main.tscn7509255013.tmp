@@ -144,7 +144,6 @@ position = Vector2(1055, 324)
 shape = SubResource("RectangleShape2D_0wfyh")
 
 [node name="Spawner" type="Node" parent="."]
-unique_name_in_owner = true
 script = ExtResource("3_tefeu")
 spawn_gradient_texture = SubResource("GradientTexture2D_tipki")
 

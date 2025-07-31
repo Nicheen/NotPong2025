@@ -1,4 +1,4 @@
-[gd_scene load_steps=26 format=3 uid="uid://b5flfw85xnn3s"]
+[gd_scene load_steps=24 format=3 uid="uid://b5flfw85xnn3s"]
 
 [ext_resource type="Script" uid="uid://c2dkvm0rwmi1d" path="res://scripts/main.gd" id="1_elqb8"]
 [ext_resource type="Texture2D" uid="uid://003gl8sksmsl" path="res://images/RutnatBakgrund.png" id="2_tbgi4"]
@@ -12,12 +12,6 @@ size = Vector2(196, 648)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_0wfyh"]
 size = Vector2(194, 648)
-
-[sub_resource type="Gradient" id="Gradient_o6xl0"]
-
-[sub_resource type="GradientTexture2D" id="GradientTexture2D_tipki"]
-gradient = SubResource("Gradient_o6xl0")
-fill_from = Vector2(1, 0.619718)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_sugp2"]
 size = Vector2(752, 20)
@@ -144,9 +138,7 @@ position = Vector2(1055, 324)
 shape = SubResource("RectangleShape2D_0wfyh")
 
 [node name="Spawner" type="Node" parent="."]
-unique_name_in_owner = true
 script = ExtResource("3_tefeu")
-spawn_gradient_texture = SubResource("GradientTexture2D_tipki")
 
 [node name="LevelManager" type="Node" parent="."]
 script = ExtResource("3_0bbpv")

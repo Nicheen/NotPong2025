@@ -25,3 +25,4 @@ res://scenes/obj/blocks/block_blue.gd
 res://scripts/main.gd
 res://scripts/level_manager.gd
 res://scenes/menus/win_menu.tscn
+res://scenes/spawner.gd
