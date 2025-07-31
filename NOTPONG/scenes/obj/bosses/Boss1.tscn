@@ -4,7 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://kmwy7114j6fh" path="res://images/ChatGPT Image 29 juli 2025 11_23_47.png" id="2_7iye4"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_vo7dq"]
-size = Vector2(60, 60)
+size = Vector2(100, 100)
 
 [node name="Boss1" type="StaticBody2D"]
 collision_layer = 16
@@ -12,8 +12,8 @@ collision_mask = 0
 script = ExtResource("1_4no6o")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
-position = Vector2(1.78813e-07, -2.26498e-06)
-scale = Vector2(0.0585938, 0.0585937)
+position = Vector2(9.53674e-07, 2.86102e-06)
+scale = Vector2(0.0976563, 0.0976563)
 texture = ExtResource("2_7iye4")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
@@ -21,9 +21,9 @@ shape = SubResource("RectangleShape2D_vo7dq")
 
 [node name="HealthBar" type="ProgressBar" parent="."]
 offset_left = -32.0
-offset_top = -55.0
+offset_top = -76.0
 offset_right = 32.0
-offset_bottom = -45.0
+offset_bottom = -66.0
 value = 100.0
 show_percentage = false
 metadata/_edit_use_anchors_ = true

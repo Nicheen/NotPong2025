@@ -7,6 +7,7 @@ extends StaticBody2D
 
 # Visual settings
 @onready var sprite: Sprite2D = $Sprite2D
+@onready var audio_player: AudioStreamPlayer = $Audio
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
 @onready var health_bar: ProgressBar = get_node_or_null("HealthBar")
 
