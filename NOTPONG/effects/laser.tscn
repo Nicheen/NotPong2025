@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=3 uid="uid://derw0gqfqmsp2"]
+[gd_scene load_steps=26 format=3 uid="uid://derw0gqfqmsp2"]
 
 [ext_resource type="Script" uid="uid://dokiaupwsjld5" path="res://effects/laser.gd" id="1_ybewo"]
 
@@ -105,25 +105,30 @@ scale_max = 0.5
 scale_curve = SubResource("CurveTexture_v2imv")
 color_ramp = SubResource("GradientTexture1D_s6yp2")
 
-[sub_resource type="Gradient" id="Gradient_tefeu"]
-interpolation_mode = 1
-offsets = PackedFloat32Array(0.01, 0.52)
-colors = PackedColorArray(1, 1, 1, 0.941176, 1, 1, 1, 0.941176)
+[sub_resource type="Gradient" id="Gradient_ypvw2"]
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 1)
 
-[sub_resource type="GradientTexture2D" id="GradientTexture2D_o6xl0"]
-gradient = SubResource("Gradient_tefeu")
-fill = 2
-fill_from = Vector2(1, 1)
-fill_to = Vector2(0, 0)
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_aq7nb"]
+gradient = SubResource("Gradient_ypvw2")
+
+[sub_resource type="Gradient" id="Gradient_aq7nb"]
+offsets = PackedFloat32Array(0, 0.731183)
+colors = PackedColorArray(0.572669, 1.1792e-06, 3.36915e-07, 1, 0, 0.0117647, 0, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_o5pat"]
+gradient = SubResource("Gradient_aq7nb")
 
 [sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_ybewo"]
 particle_flag_disable_z = true
-direction = Vector3(0, -1, 0)
-initial_velocity_min = 10.0
-initial_velocity_max = 200.0
+angle_min = 30.0
+angle_max = 90.0
+spread = 30.0
+initial_velocity_min = 50.0
+initial_velocity_max = 120.0
 gravity = Vector3(0, 98, 0)
-scale_min = 0.1
+scale_min = 0.05
 scale_max = 0.1
+color_ramp = SubResource("GradientTexture1D_o5pat")
 
 [node name="Laser" type="RayCast2D"]
 target_position = Vector2(1400, 0)
@@ -175,5 +180,6 @@ process_material = SubResource("ParticleProcessMaterial_fdrwo")
 [node name="HitParticles2D" type="GPUParticles2D" parent="."]
 unique_name_in_owner = true
 emitting = false
-texture = SubResource("GradientTexture2D_o6xl0")
+amount = 18
+texture = SubResource("GradientTexture2D_aq7nb")
 process_material = SubResource("ParticleProcessMaterial_ybewo")
