@@ -1,0 +1,19 @@
+[gd_scene load_steps=4 format=3 uid="uid://sjwvyi0s8vtp"]
+
+[ext_resource type="Script" uid="uid://bcjncew85urkq" path="res://scenes/obj/blocks/block_blue.gd" id="1_pfsug"]
+[ext_resource type="Texture2D" uid="uid://qvp5udufiurl" path="res://images/BlockBlue.png" id="2_or6ig"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_h2hk5"]
+size = Vector2(50, 50)
+
+[node name="BlockBlue" type="StaticBody2D"]
+script = ExtResource("1_pfsug")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+unique_name_in_owner = true
+scale = Vector2(1.563, 1.563)
+texture = ExtResource("2_or6ig")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+unique_name_in_owner = true
+shape = SubResource("RectangleShape2D_h2hk5")
