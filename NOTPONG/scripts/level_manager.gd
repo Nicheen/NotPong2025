@@ -16,7 +16,6 @@ func start_level(level: int):
 	else:
 		spawn_normal_level(level)
 
-
 func is_boss_level(level: int) -> bool:
 	return level % 5 == 0  # Var tionde level (10, 20, 30, etc.)
 
@@ -51,6 +50,7 @@ func spawn_normal_level(level: int):
 	var base_enemies = 3
 	var base_block_dropper = 1
 	var base_lazer = 1
+	var base_thunder = 1
 	var base_blue_blocks = 2
 	
 	# Increase difficulty each level
@@ -58,13 +58,15 @@ func spawn_normal_level(level: int):
 	var enemies_count = base_enemies + (level - 1) * 1
 	var block_dropper_count = base_block_dropper + (level - 1) / 3
 	var lazer_count = base_lazer + (level - 1) / 3
+	var thunder_count = base_thunder + (level - 1) / 3
 	var blue_blocks_count = base_blue_blocks + (level - 1) / 2
 	
 	# Apply maximum limits
 	blocks_count = min(blocks_count, 20)
-	enemies_count = min(enemies_count, 10)
+	enemies_count = min(enemies_count, 5)
 	block_dropper_count = min(block_dropper_count, 5)
 	lazer_count = min(lazer_count, 5)
+	thunder_count = min(thunder_count, 3)
 	blue_blocks_count = min(blue_blocks_count, 8)
 	
 	# SPAWN IN STRATEGIC ORDER (blocks first, then special blocks, enemies last)
@@ -74,6 +76,7 @@ func spawn_normal_level(level: int):
 	
 	# 2. Spawn special blocks in strategic positions
 	main_scene.spawn_laser_blocks_weighted(lazer_count)
+	main_scene.spawn_thunder_blocks_weighted(thunder_count)
 	main_scene.spawn_blue_blocks_weighted(blue_blocks_count)
 	main_scene.spawn_block_droppers_weighted(block_dropper_count)
 	
@@ -84,11 +87,12 @@ func spawn_normal_level(level: int):
 	print("  - ", blocks_count, " regular blocks")
 	print("  - ", blue_blocks_count, " blue blocks") 
 	print("  - ", lazer_count, " laser blocks")
+	print("  - ", thunder_count, " thunder blocks")
 	print("  - ", block_dropper_count, " block droppers")
 	print("  - ", enemies_count, " enemies")
 	
 	# Optional: Debug spawn weights for this level
-	if level <= 3:  # Only show for first few levels
+	if level <= 2:  # Only show for first few levels
 		main_scene.debug_spawn_weights()
 		
 func spawn_boss(level: int):

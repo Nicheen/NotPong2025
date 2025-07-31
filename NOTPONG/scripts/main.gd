@@ -15,6 +15,7 @@ const ENEMY_SCENE = "res://scenes/obj/Enemy.tscn"
 const ENEMY_BLOCK_SCENE = "res://scenes/obj/blocks/block.tscn"
 const ENEMY_BLOCK_BLUE_SCENE = "res://scenes/obj/blocks/block_blue.tscn"
 const ENEMY_BLOCK_LASER_SCENE = "res://scenes/obj/blocks/block_laser.tscn"
+const ENEMY_BLOCK_THUNDER_SCENE = "res://scenes/obj/blocks/block_thunder.tscn"
 const ENEMY_BLOCK_DROPPER_SCENE = "res://scenes/obj/blocks/block_dropper.tscn"
 const BOSS_SCENE = "res://scenes/obj/bosses/Boss1.tscn"
 const PAUSE_MENU_SCENE = "res://scenes/menus/pause_menu.tscn" 
@@ -32,6 +33,7 @@ var enemies: Array[StaticBody2D] = []
 var blocks: Array[StaticBody2D] = []
 var blue_blocks: Array[StaticBody2D] = []
 var lazer_blocks: Array[StaticBody2D] = []
+var thunder_blocks: Array[StaticBody2D] = []
 var block_droppers: Array[StaticBody2D] = []
 var bosses: Array[StaticBody2D] = []
 var all_spawn_positions: Array[Vector2] = []
@@ -392,7 +394,6 @@ func spawn_random_enemies(count: int):
 	for pos in selected_positions:
 		spawn_enemy_kvadrat_at_position(pos)
 
-# Exempel: Spawna bossar på specifika positioner
 func spawn_boss_at_center():
 	# Hitta center-positioner
 	var center_positions = all_spawn_positions.filter(func(pos): return pos.y == 324)
@@ -559,7 +560,154 @@ func _on_player_died():
 		update_death_menu_score()
 		death_menu.show_death_menu()
 
-# Updated functions with separate handling for enemies vs blocks
+func spawn_thunder_block_at_position(position: Vector2):
+	"""Spawn a single thunder block at the specified position"""
+	var block_scene = load(ENEMY_BLOCK_THUNDER_SCENE)
+	if not block_scene:
+		print("ERROR: Could not load thunder block scene at: ", ENEMY_BLOCK_THUNDER_SCENE)
+		return
+	
+	var block = block_scene.instantiate()
+	block.global_position = position
+	
+	# Connect signals - use the correct signal name from the thunder block
+	block.block_destroyed.connect(_on_thunder_block_died)
+	
+	add_child(block)
+	thunder_blocks.append(block)
+	total_enemies += 1
+	
+	# Reserve 2x2 area (4 positions) in spawn manager
+	var positions_to_reserve = get_2x2_positions(position)
+	spawn_manager.reserve_positions(positions_to_reserve)
+	
+	print("Spawned 2x2 thunder block at: ", position)
+
+func get_2x2_positions(center_pos: Vector2) -> Array[Vector2]:
+	"""Get all 4 positions that a 2x2 block occupies"""
+	var positions: Array[Vector2] = []
+	
+	# Find the center position indices in the grid
+	var x_positions = spawn_manager.x_positions
+	var y_positions = spawn_manager.y_positions
+	
+	var center_x_idx = x_positions.find(int(center_pos.x))
+	var center_y_idx = y_positions.find(int(center_pos.y))
+	
+	if center_x_idx == -1 or center_y_idx == -1:
+		print("ERROR: Center position not found in grid")
+		return positions
+	
+	# Add all 4 positions (2x2 grid)
+	for x_offset in [-1, 0]:
+		for y_offset in [-1, 0]:
+			var x_idx = center_x_idx + x_offset
+			var y_idx = center_y_idx + y_offset
+			
+			# Check bounds
+			if x_idx >= 0 and x_idx < x_positions.size() and y_idx >= 0 and y_idx < y_positions.size():
+				positions.append(Vector2(x_positions[x_idx], y_positions[y_idx]))
+	
+	return positions
+
+func spawn_thunder_blocks(count: int):
+	"""Spawn multiple thunder blocks at random valid positions"""
+	var placed_count = 0
+	var attempts = 0
+	var max_attempts = count * 10  # Avoid infinite loops
+	
+	while placed_count < count and attempts < max_attempts:
+		attempts += 1
+		
+		# Get a random position that could fit a 2x2 block
+		var potential_center = get_random_2x2_center_position()
+		
+		if potential_center != Vector2.ZERO:
+			spawn_thunder_block_at_position(potential_center)
+			placed_count += 1
+		
+	print("Placed ", placed_count, " thunder blocks out of ", count, " requested")
+
+func get_random_2x2_center_position() -> Vector2:
+	"""Get a random position that can accommodate a 2x2 block"""
+	var x_positions = spawn_manager.x_positions
+	var y_positions = spawn_manager.y_positions
+	
+	# Thunder blocks need space for 2x2, so avoid edges
+	var valid_x_indices = range(1, x_positions.size() - 1)  # Exclude first and last
+	var valid_y_indices = range(1, y_positions.size() - 1)  # Exclude first and last
+	
+	# Shuffle for randomness
+	valid_x_indices.shuffle()
+	valid_y_indices.shuffle()
+	
+	# Try to find a valid center position
+	for x_idx in valid_x_indices:
+		for y_idx in valid_y_indices:
+			var center_pos = Vector2(x_positions[x_idx], y_positions[y_idx])
+			
+			if can_place_2x2_block(center_pos):
+				return center_pos
+	
+	print("WARNING: No valid 2x2 position found for thunder block")
+	return Vector2.ZERO
+
+func can_place_2x2_block(center_position: Vector2) -> bool:
+	"""Check if a 2x2 block can be placed at the given center position"""
+	var required_positions = get_2x2_positions(center_position)
+	
+	# Need exactly 4 positions for a 2x2 block
+	if required_positions.size() != 4:
+		return false
+	
+	# Check if all positions are available
+	for pos in required_positions:
+		if pos in spawn_manager.occupied_positions:
+			return false
+	
+	return true
+
+func spawn_thunder_blocks_weighted(count: int):
+	"""Spawn thunder blocks using weighted positioning (avoiding edges due to 2x2 size)"""
+	var placed_count = 0
+	var attempts = 0
+	var max_attempts = count * 15
+	
+	while placed_count < count and attempts < max_attempts:
+		attempts += 1
+		
+		# Get weighted positions but filter for 2x2 compatibility
+		var potential_positions = spawn_manager.get_weighted_spawn_positions("thunder_blocks", count * 3)
+		
+		for pos in potential_positions:
+			if can_place_2x2_block(pos):
+				spawn_thunder_block_at_position(pos)
+				placed_count += 1
+				break
+		
+		if placed_count >= count:
+			break
+	
+	print("Placed ", placed_count, " weighted thunder blocks out of ", count, " requested")
+
+func _on_thunder_block_died(score_points: int):
+	"""Handle thunder block death"""
+	current_score += score_points
+	enemies_killed += 1
+	
+	# Update HUD
+	if hud:
+		hud.update_score(current_score)
+
+	print("Thunder block destroyed! Score: ", score_points)
+	
+	# Check win condition
+	if enemies_killed >= total_enemies:
+		if level_manager and level_manager.has_method("level_completed"):
+			level_manager.level_completed()
+		else:
+			player_wins()
+
 func _on_enemy_died(score_points: int):
 	enemies_killed += 1
 	current_score += score_points
@@ -920,6 +1068,10 @@ func clear_level_entities():
 	for lazer_block in lazer_blocks:
 		if is_instance_valid(lazer_block):
 			lazer_block.queue_free()
+	
+	for thunder_block in thunder_blocks:
+		if is_instance_valid(thunder_block):
+			thunder_block.queue_free()
 			
 	for block_dropper in block_droppers:
 		if is_instance_valid(block_dropper):
@@ -937,6 +1089,7 @@ func clear_level_entities():
 	enemies.clear()
 	blocks.clear()
 	lazer_blocks.clear()
+	thunder_blocks.clear()
 	block_droppers.clear()
 	blue_blocks.clear()
 	bosses.clear()
@@ -959,5 +1112,7 @@ func debug_spawn_weights():
 	spawn_manager.print_spawn_heatmap("blue_blocks")
 	print()
 	spawn_manager.print_spawn_heatmap("laser_blocks")
+	print()
+	spawn_manager.print_spawn_heatmap("thunder_blocks")
 	print()
 	spawn_manager.print_spawn_heatmap("block_droppers")

@@ -1,6 +1,6 @@
 [gd_scene load_steps=6 format=3 uid="uid://bqmoskdr4j5ub"]
 
-[ext_resource type="Script" uid="uid://damb12qgbc5xj" path="res://scenes/obj/blocks/block_laser.gd" id="1_cocgj"]
+[ext_resource type="Script" uid="uid://d4h23pb1vxo1s" path="res://scenes/obj/blocks/block_thunder.gd" id="1_cocgj"]
 [ext_resource type="Texture2D" uid="uid://ryq0732d653j" path="res://images/BlockThunder.png" id="2_cocgj"]
 [ext_resource type="PackedScene" uid="uid://b4npt30yvwa8q" path="res://effects/thunder.tscn" id="3_cocgj"]
 
@@ -11,6 +11,7 @@ size = Vector2(100, 49)
 size = Vector2(52, 51)
 
 [node name="EnemyBlockThunder" type="StaticBody2D"]
+scale = Vector2(0.5, 0.5)
 collision_layer = 16
 collision_mask = 0
 script = ExtResource("1_cocgj")
@@ -31,3 +32,5 @@ position = Vector2(0, -24.5)
 shape = SubResource("RectangleShape2D_5u526")
 
 [node name="VFX_Thunder" parent="." instance=ExtResource("3_cocgj")]
+unique_name_in_owner = true
+position = Vector2(0, 50)

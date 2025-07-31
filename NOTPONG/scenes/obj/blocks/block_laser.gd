@@ -1,31 +1,31 @@
 extends StaticBody2D
 
 # Enemy settings
-@export var max_health: int = 20
-@export var score_value: int = 20  # Points awarded when killed
-@export var enemy_type: String = "lazer"
+@export var max_health: int = 30
+@export var score_value: int = 30  # Points awarded when killed
+@export var enemy_type: String = "laser"
 
-# thunder settings
-@export var thunder_activation_delay: float = 2.0  # Time before thunder activates
-@export var thunder_duration: float = 3.0  # How long thunder stays active
-@export var thunder_damage_per_second: float = 10.0
-@export var thunder_damage_interval: float = 0.1
+# laser settings
+@export var laser_activation_delay: float = 2.0  # Time before laser activates
+@export var laser_duration: float = 3.0  # How long laser stays active
+@export var laser_damage_per_second: float = 10.0
+@export var laser_damage_interval: float = 0.1
 
 # Visual settings
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
-@onready var thunder := $thunderBeam2D
+@onready var laser := $LaserBeam2D
 
 # Sprite textures
 var normal_texture: Texture2D
 var cracked_texture: Texture2D
 
-# thunder effect
-var thunder_timer: float = 0.0
-var thunder_duration_timer: float = 0.0
-var thunder_damage_timer: float = 0.0
-var thunder_activated: bool = false
-var thunder_ready: bool = false
+# laser effect
+var laser_timer: float = 0.0
+var laser_duration_timer: float = 0.0
+var laser_damage_timer: float = 0.0
+var laser_activated: bool = false
+var laser_ready: bool = false
 
 # Regeneration settings
 @export var regeneration_delay: float = 3.0  # Time before regeneration starts
@@ -60,43 +60,43 @@ func _ready():
 		normal_texture = sprite.texture
 		
 		# Load the cracked texture
-		cracked_texture = load("res://images/BlockthunderCracked.png")
+		cracked_texture = load("res://images/BlocklaserCracked.png")
 		if not cracked_texture:
-			print("WARNING: Could not load cracked texture at res://images/BlockthunderCracked.png")
+			print("WARNING: Could not load cracked texture at res://images/BlocklaserCracked.png")
 	
-	if thunder:
-		thunder.collision_mask = 1 + 16
+	if laser:
+		laser.collision_mask = 1 + 16
 	
-	thunder_ready = true
+	laser_ready = true
 	
-	print("thunder block created with ", max_health, " health at position: ", global_position)
+	print("laser block created with ", max_health, " health at position: ", global_position)
 
 func _physics_process(delta):
-	# Handle thunder timing
-	if thunder_ready and not thunder_activated and not is_dead:
-		thunder_timer += delta
-		if thunder_timer >= thunder_activation_delay:
-			activate_thunder()
+	# Handle laser timing
+	if laser_ready and not laser_activated and not is_dead:
+		laser_timer += delta
+		if laser_timer >= laser_activation_delay:
+			activate_laser()
 			
-	# Handle thunder duration
-	if thunder_activated and not is_dead:
-		thunder_duration_timer += delta
+	# Handle laser duration
+	if laser_activated and not is_dead:
+		laser_duration_timer += delta
 		
-		# NEW: Handle continuous thunder damage
-		if thunder.is_colliding():
-			thunder_damage_timer += delta
-			if thunder_damage_timer >= thunder_damage_interval:
-				apply_thunder_damage()
-				thunder_damage_timer = 0.0  # Reset damage timer
+		# NEW: Handle continuous laser damage
+		if laser.is_colliding():
+			laser_damage_timer += delta
+			if laser_damage_timer >= laser_damage_interval:
+				apply_laser_damage()
+				laser_damage_timer = 0.0  # Reset damage timer
 		else:
-			thunder_damage_timer = 0.0  # Reset if not hitting anything
+			laser_damage_timer = 0.0  # Reset if not hitting anything
 		
-		# Check if thunder duration is over
-		if thunder_duration_timer >= thunder_duration:
-			deactivate_thunder()
+		# Check if laser duration is over
+		if laser_duration_timer >= laser_duration:
+			deactivate_laser()
 			# Reset for next cycle
-			thunder_timer = 0.0
-			thunder_ready = true
+			laser_timer = 0.0
+			laser_ready = true
 			
 	# Handle regeneration timing
 	if has_been_damaged and not is_dead and not is_regenerating:
@@ -104,56 +104,56 @@ func _physics_process(delta):
 		if regeneration_timer >= regeneration_delay:
 			start_regeneration()
 			
-func apply_thunder_damage():
-	"""Apply continuous damage to whatever the thunder is hitting"""
-	if not thunder.is_colliding():
+func apply_laser_damage():
+	"""Apply continuous damage to whatever the laser is hitting"""
+	if not laser.is_colliding():
 		return
 		
-	var hit_body = thunder.get_collider()
+	var hit_body = laser.get_collider()
 	if not hit_body or not hit_body.has_method("take_damage"):
 		return
 	
 	# Calculate damage for this interval
-	var damage_amount = thunder_damage_per_second * thunder_damage_interval
+	var damage_amount = laser_damage_per_second * laser_damage_interval
 	
 	# Check what we're hitting
 	if hit_body.collision_layer == 16:  # It's a block
 		# Use the new silent damage method for blocks
-		if hit_body.has_method("take_thunder_damage"):
-			hit_body.take_thunder_damage(damage_amount)
-			print("thunder dealing ", damage_amount, " damage to block (no score)")
+		if hit_body.has_method("take_laser_damage"):
+			hit_body.take_laser_damage(damage_amount)
+			print("laser dealing ", damage_amount, " damage to block (no score)")
 		else:
 			# Fallback to regular damage if the method doesn't exist
 			hit_body.take_damage(damage_amount)
-			print("thunder dealing ", damage_amount, " damage to block (with score - fallback)")
+			print("laser dealing ", damage_amount, " damage to block (with score - fallback)")
 		
 	elif hit_body.collision_layer == 1:  # It's the player
 		hit_body.take_damage(damage_amount)
-		print("thunder dealing ", damage_amount, " damage to player")
+		print("laser dealing ", damage_amount, " damage to player")
 		
-func activate_thunder():
-	"""Activate the thunder effect"""
-	thunder_activated = true
-	thunder_duration_timer = 0.0
-	thunder_damage_timer = 0.0
-	thunder.is_casting = true
+func activate_laser():
+	"""Activate the laser effect"""
+	laser_activated = true
+	laser_duration_timer = 0.0
+	laser_damage_timer = 0.0
+	laser.is_casting = true
 	
-	print("thunder activated on thunder block at: ", global_position)
+	print("laser activated on laser block at: ", global_position)
 
-func deactivate_thunder():
-	"""Deactivate the thunder effect"""
-	thunder_activated = false
-	thunder_duration_timer = 0.0
-	thunder_damage_timer = 0.0
-	thunder.is_casting = false
+func deactivate_laser():
+	"""Deactivate the laser effect"""
+	laser_activated = false
+	laser_duration_timer = 0.0
+	laser_damage_timer = 0.0
+	laser.is_casting = false
 	
-	print("thunder deactivated on thunder block")
+	print("laser deactivated on laser block")
 
 func take_damage(damage: int):
 	if is_dead:
 		return
 	
-	print("thunder block took ", damage, " damage")
+	print("laser block took ", damage, " damage")
 	
 	current_health -= damage
 	current_health = max(0, current_health)
@@ -181,13 +181,13 @@ func take_damage(damage: int):
 	if current_health <= 0:
 		die()
 
-# NEW: Silent damage method for thunder kills (no score awarded)
-func take_thunder_damage(damage: int):
-	"""Take damage from thunder without awarding score when destroyed"""
+# NEW: Silent damage method for laser kills (no score awarded)
+func take_laser_damage(damage: int):
+	"""Take damage from laser without awarding score when destroyed"""
 	if is_dead:
 		return
 	
-	print("thunder block took ", damage, " thunder damage (no score on death)")
+	print("laser block took ", damage, " laser damage (no score on death)")
 	
 	current_health -= damage
 	current_health = max(0, current_health)
@@ -220,9 +220,9 @@ func die():
 		return
 	
 	is_dead = true
-	print("thunder block died! Awarding ", score_value, " points")
+	print("laser block died! Awarding ", score_value, " points")
 	
-	thunder.is_casting = false
+	laser.is_casting = false
 
 	# Emit death signal with score
 	block_died.emit(score_value)
@@ -231,14 +231,14 @@ func die():
 
 # NEW: Silent death method (no score awarded)
 func die_silently():
-	"""Die without awarding score - used for thunder kills"""
+	"""Die without awarding score - used for laser kills"""
 	if is_dead:
 		return
 	
 	is_dead = true
-	print("thunder block destroyed by thunder (no score awarded)")
+	print("laser block destroyed by laser (no score awarded)")
 	
-	thunder.is_casting = false
+	laser.is_casting = false
 	
 	# Don't emit the death signal that awards score
 	# Just play the death effect

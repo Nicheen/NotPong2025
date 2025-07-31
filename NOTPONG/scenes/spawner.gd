@@ -138,7 +138,35 @@ func create_dropper_gradient() -> Array[float]:
 			weights.append(height_factor * spread_factor * 1.5)
 	
 	return weights
+func create_thunder_gradient() -> Array[float]:
+	"""Thunder blocks prefer strategic positions - corners and middle areas"""
+	var weights: Array[float] = []
+	
+	for y in range(GRID_HEIGHT):
+		for x in range(GRID_WIDTH):
+			var weight = 0.1  # Base weight
+			
+			# Higher weight for corners
+			if (x == 0 or x == GRID_WIDTH-1) and (y == 0 or y == GRID_HEIGHT-1):
+				weight = 0.9
+			# Medium weight for edges
+			elif x == 0 or x == GRID_WIDTH-1 or y == 0 or y == GRID_HEIGHT-1:
+				weight = 0.6
+			# Medium weight for center area
+			elif abs(x - GRID_WIDTH/2) <= 2 and abs(y - GRID_HEIGHT/2) <= 1:
+				weight = 0.7
+			# Lower weight for middle areas (not too clustered)
+			else:
+				weight = 0.3
+			
+			weights.append(weight)
+	
+	return weights
 
+# Update your spawn_weights dictionary in SpawnManager._ready() to include:
+# "thunder_blocks": create_thunder_gradient(),
+
+		
 func get_weighted_spawn_positions(entity_type: String, count: int, avoid_positions: Array[Vector2] = []) -> Array[Vector2]:
 	"""Get spawn positions using weighted probability based on entity type"""
 	

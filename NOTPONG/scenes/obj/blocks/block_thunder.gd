@@ -1,218 +1,199 @@
 extends StaticBody2D
 
-# Enemy settings
-@export var max_health: int = 20
-@export var score_value: int = 20  # Points awarded when killed
-@export var enemy_type: String = "lazer"
+# Block settings
+@export var max_health: int = 30  # 3-hit kill (10 damage per hit)
+@export var score_value: int = 30  # Increased score for larger block
+@export var enemy_type: String = "thunder"
 
 # Thunder settings
-@export var thunder_activation_delay: float = 2.0  # Time before thunder activates
+@export var thunder_delay: float = 2.0  # Time before thunder activates
 @export var thunder_duration: float = 3.0  # How long thunder stays active
-@export var thunder_direction: String = "vertical"  # "vertical" or "horizontal"
+@export var thunder_damage_per_second: float = 15.0
+@export var thunder_damage_interval: float = 0.1
 
-# Visual settings
-@onready var sprite: Sprite2D = $Sprite2D
-@onready var collision_shape: CollisionShape2D = $CollisionShape2D
-@onready var health_bar: ProgressBar = get_node_or_null("HealthBar")
+# Node references
+@onready var sprite: Sprite2D = %Sprite2D
+@onready var thunder_effect: Node2D = $VFX_Thunder
+@onready var collision_shape: CollisionShape2D = %CollisionShape2D
 
-# Sprite textures
-var normal_texture: Texture2D
-var cracked_texture: Texture2D
+# Textures for different states - adjust paths as needed
+var textures = {
+	"normal": preload("res://images/BlockThunder.png"),
+	"attack": preload("res://images/BlockThunderAttack.png"),
+	"crack1": preload("res://images/BlockThunderCrack1.png"),
+	"crack2": preload("res://images/BlockThunderCrack2.png"),
+	"attack_crack1": preload("res://images/BlockThunderAttackCrack1.png"),
+	"attack_crack2": preload("res://images/BlockThunderAttackCrack2.png")
+}
 
-# Thunder effect
-var thunder_effect: Node2D
-var thunder_timer: float = 0.0
-var thunder_duration_timer: float = 0.0
-var thunder_activated: bool = false
-var thunder_ready: bool = false
-
-# Regeneration settings
-@export var regeneration_delay: float = 3.0  # Time before regeneration starts
-@export var regeneration_pulse_time: float = 1.0  # Time spent pulsing before healing
-
-# Internal variables
+# State variables
 var current_health: int
 var is_dead: bool = false
+var thunder_timer: float = 0.0
+var thunder_damage_timer: float = 0.0  # Timer for damage intervals
+var thunder_active: bool = false
 var original_color: Color
-var has_been_damaged: bool = false
 
-# Regeneration variables
-var regeneration_timer: float = 0.0
-var is_regenerating: bool = false
-var regeneration_tween: Tween
-
-# Signals
-signal block_died(score_points: int)
-signal block_hit(damage: int)
+# Signals - match the main scene's expected signal name
+signal block_destroyed(score: int)
 
 func _ready():
-	# Set up enemy
 	current_health = max_health
+	collision_layer = 16  # Enemy layer
+	collision_mask = 2    # Hit by projectiles
 	
-	# Set collision layer for enemy (let's use layer 5)
-	collision_layer = 16  # Layer 5 (2^4 = 16)
-	collision_mask = 2    # Can be hit by projectiles (layer 2)
-	
-	# Store original sprite color and texture
+	# Store original sprite color
 	if sprite:
 		original_color = sprite.modulate
-		normal_texture = sprite.texture
-		
-		# Load the cracked texture
-		cracked_texture = load("res://images/BlockLaserCracked.png")
-		if not cracked_texture:
-			print("WARNING: Could not load cracked texture at res://images/BlockLaserCracked.png")
+		# Ensure thunder block is properly sized (2x2 = 100x100 pixels)
+		# The sprite scale should be adjusted to make it 2x2 grid spaces
+		sprite.scale = Vector2(3.125, 3.125)  # Adjust based on your base sprite size
 	
-	# Set up health bar if it exists
-	if health_bar:
-		health_bar.max_value = max_health
-		health_bar.value = current_health
+	# Start thunder timer
+	thunder_timer = 0.0
 	
-	# Find thunder effect (should be a child of this block)
-	thunder_effect = get_node_or_null("VFX_Thunder")
+	# Hide thunder effect initially
 	if thunder_effect:
-		setup_thunder_effect()
-		# Start the thunder activation timer
-		thunder_ready = true
-		print("Thunder effect found and configured")
-	else:
-		print("WARNING: No thunder effect found on laser block")
+		thunder_effect.visible = false
 	
-	print("Laser block created with ", max_health, " health at position: ", global_position)
+	print("Thunder block created with ", max_health, " health at position: ", global_position)
 
 func _physics_process(delta):
-	# Handle thunder timing
-	if thunder_ready and not thunder_activated and not is_dead:
-		thunder_timer += delta
-		if thunder_timer >= thunder_activation_delay:
-			activate_thunder()
+	if is_dead:
+		return
 	
-	# Handle regeneration timing
-	if has_been_damaged and not is_dead and not is_regenerating:
-		regeneration_timer += delta
-		if regeneration_timer >= regeneration_delay:
-			start_regeneration()
+	# Handle thunder timing
+	thunder_timer += delta
+	
+	# Activate thunder after delay
+	if not thunder_active and thunder_timer >= thunder_delay:
+		activate_thunder()
+	
+	# Handle thunder damage while active
+	if thunder_active:
+		thunder_damage_timer += delta
+		if thunder_damage_timer >= thunder_damage_interval:
+			apply_thunder_damage()
+			thunder_damage_timer = 0.0
+	
+	# Deactivate thunder after duration
+	if thunder_active and thunder_timer >= thunder_delay + thunder_duration:
+		deactivate_thunder()
 
-func setup_thunder_effect():
-	"""Configure the thunder effect for this laser block"""
+func activate_thunder():
+	thunder_active = true
+	update_sprite()
+	
+	if thunder_effect:
+		thunder_effect.visible = true
+		# If thunder effect has activation method, call it
+		if thunder_effect.has_method("activate_thunder"):
+			thunder_effect.activate_thunder()
+	
+	print("Thunder activated on thunder block at: ", global_position)
+
+func deactivate_thunder():
+	thunder_active = false
+	update_sprite()
+	
+	if thunder_effect:
+		thunder_effect.visible = false
+		# If thunder effect has deactivation method, call it
+		if thunder_effect.has_method("deactivate_thunder"):
+			thunder_effect.deactivate_thunder()
+	
+	# Reset timer for next cycle
+	thunder_timer = 0.0
+	thunder_damage_timer = 0.0
+	
+	print("Thunder deactivated on thunder block")
+
+func apply_thunder_damage():
+	"""Apply continuous damage to whatever the thunder is hitting"""
 	if not thunder_effect:
 		return
 	
-	# Add the thunder controller script if it doesn't have one
-	if not thunder_effect.get_script():
-		var thunder_script = load("res://scripts/effects/thunder_controller.gd")
-		if thunder_script:
-			thunder_effect.set_script(thunder_script)
+	# If thunder effect has a method to check for collisions, use it
+	if thunder_effect.has_method("get_thunder_targets"):
+		var targets = thunder_effect.get_thunder_targets()
+		for target in targets:
+			if target and target.has_method("take_damage"):
+				var damage_amount = thunder_damage_per_second * thunder_damage_interval
+				target.take_damage(damage_amount)
+				print("Thunder dealing ", damage_amount, " damage to ", target.name)
 	
-	# Make sure thunder starts hidden
-	thunder_effect.visible = false
-
-func activate_thunder():
-	"""Activate the thunder effect"""
-	if not thunder_effect or thunder_activated:
-		return
-	
-	thunder_activated = true
-	thunder_duration_timer = 0.0
-	
-	# Make thunder visible and configure it
-	thunder_effect.visible = true
-	
-	# Choose thunder direction and activate
-	if thunder_direction == "horizontal":
-		if thunder_effect.has_method("activate_horizontal_thunder"):
-			thunder_effect.activate_horizontal_thunder()
-	else:
-		if thunder_effect.has_method("activate_vertical_thunder"):
-			thunder_effect.activate_vertical_thunder()
-	
-	print("Thunder activated on laser block at: ", global_position)
-
-func deactivate_thunder():
-	"""Deactivate the thunder effect"""
-	if not thunder_effect or not thunder_activated:
-		return
-	
-	if thunder_effect.has_method("deactivate_thunder"):
-		thunder_effect.deactivate_thunder()
-	
-	thunder_activated = false
-	thunder_ready = false  # Prevent reactivation
-	
-	print("Thunder deactivated on laser block")
+	# Alternative: Check for bodies in thunder area using Area2D
+	# This would require your thunder effect to have an Area2D component
 
 func take_damage(damage: int):
 	if is_dead:
 		return
 	
-	print("Laser block took ", damage, " damage")
+	print("Thunder block took ", damage, " damage. Health: ", current_health, " -> ", (current_health - damage))
 	
 	current_health -= damage
 	current_health = max(0, current_health)
 	
-	# Change sprite to cracked version after first damage
-	if not has_been_damaged and current_health < max_health:
-		change_to_cracked_sprite()
-		has_been_damaged = true
-		regeneration_timer = 0.0  # Start regeneration timer
-	
-	# Stop any ongoing regeneration
-	if is_regenerating:
-		stop_regeneration()
-	
-	# Reset regeneration timer on damage
-	regeneration_timer = 0.0
-	
-	# Update health bar
-	if health_bar:
-		health_bar.value = current_health
-	
-	# Visual damage feedback
+	update_sprite()  # Update sprite immediately after health change
 	show_damage_effect()
 	
-	# Emit hit signal
-	block_hit.emit(damage)
-	
-	# Check if dead
 	if current_health <= 0:
-		die()
+		destroy_block()
 
-func change_to_cracked_sprite():
-	"""Change the sprite to the cracked version"""
-	if sprite and cracked_texture:
-		sprite.texture = cracked_texture
-		print("Changed to cracked sprite")
-	else:
-		print("WARNING: Could not change to cracked sprite - missing sprite or texture")
-
-func die():
-	if is_dead:
+func update_sprite():
+	if not sprite or is_dead:
 		return
 	
-	is_dead = true
-	print("Laser block died! Awarding ", score_value, " points")
+	# Determine texture based on health and thunder state
+	var health_ratio = float(current_health) / float(max_health)
+	var texture_key = "normal"
 	
-	# Deactivate thunder before dying
-	if thunder_activated:
-		deactivate_thunder()
+	# Health states: 30hp = normal, 20hp = crack1, 10hp = crack2, 0hp = dead
+	if thunder_active:
+		# Thunder is active - use attack versions
+		if current_health > 20:  # 30-21 hp = normal attack
+			texture_key = "attack"
+		elif current_health > 10:  # 20-11 hp = crack1 attack
+			texture_key = "attack_crack1"
+		else:  # 10-1 hp = crack2 attack
+			texture_key = "attack_crack2"
+	else:
+		# Thunder is inactive - use normal versions
+		if current_health > 20:  # 30-21 hp = normal
+			texture_key = "normal"
+		elif current_health > 10:  # 20-11 hp = crack1
+			texture_key = "crack1"
+		else:  # 10-1 hp = crack2
+			texture_key = "crack2"
 	
-	# Emit death signal with score
-	block_died.emit(score_value)
-	
-	play_death_effect()
+	if textures.has(texture_key):
+		sprite.texture = textures[texture_key]
+		print("Thunder block health: ", current_health, "/", max_health, " - Using texture: ", texture_key)
 
 func show_damage_effect():
 	if not sprite:
-		return
-	
-	# Don't show damage effect if regenerating (green pulse takes priority)
-	if is_regenerating:
 		return
 	
 	# Flash red when hit
 	var tween = create_tween()
 	tween.tween_property(sprite, "modulate", Color.RED, 0.1)
 	tween.tween_property(sprite, "modulate", original_color, 0.1)
+
+func destroy_block():
+	if is_dead:
+		return
+	
+	is_dead = true
+	print("Thunder block destroyed! Awarding ", score_value, " points")
+	
+	# Deactivate thunder before dying
+	if thunder_active:
+		deactivate_thunder()
+	
+	# Emit destruction signal with score
+	block_destroyed.emit(score_value)
+	
+	play_death_effect()
 
 func play_death_effect():
 	if not sprite:
@@ -223,32 +204,36 @@ func play_death_effect():
 	if collision_shape:
 		collision_shape.disabled = true
 	
-	# Hide health bar
-	if health_bar:
-		health_bar.visible = false
-	
 	# Lock position so it doesn't move
 	var original_position = sprite.position
 	
-	# Super fast effect - only 0.1 seconds
+	# Death animation
 	var tween = create_tween()
-	tween.set_parallel(true)  # Allow parallel animations
+	tween.set_parallel(true)
 	
 	# Shrink the scale
-	tween.tween_property(sprite, "scale", Vector2.ZERO, 0.1)
+	tween.tween_property(sprite, "scale", Vector2.ZERO, 0.2)
 	
 	# Keep position fixed during animation
 	tween.tween_method(
 		func(pos): sprite.position = pos,
 		original_position, 
 		original_position, 
-		0.1
+		0.2
 	)
 	
 	# Destroy after animation
 	await tween.finished
 	queue_free()
 
+func _on_body_entered(body):
+	# Handle collision with player/projectiles
+	if body.has_method("take_damage"):
+		body.take_damage(1)
+	if body.has_method("destroy"):
+		body.destroy()
+
+# Utility methods
 func get_health() -> int:
 	return current_health
 
@@ -257,66 +242,3 @@ func get_max_health() -> int:
 
 func is_alive() -> bool:
 	return not is_dead and current_health > 0
-
-# Method called when projectile hits this enemy
-func _on_projectile_hit():
-	take_damage(10)  # Default damage from projectiles
-
-# Regeneration system functions
-func start_regeneration():
-	"""Start the regeneration process with green pulsing"""
-	if is_dead or not has_been_damaged:
-		return
-	
-	is_regenerating = true
-	print("Starting regeneration - pulsing green for ", regeneration_pulse_time, " seconds")
-	
-	# Start green pulsing effect
-	regeneration_tween = create_tween()
-	regeneration_tween.set_loops()
-	regeneration_tween.tween_property(sprite, "modulate", Color.GREEN, 0.3)
-	regeneration_tween.tween_property(sprite, "modulate", original_color, 0.3)
-	
-	# After pulse time, complete the regeneration
-	var regeneration_complete_timer = Timer.new()
-	regeneration_complete_timer.wait_time = regeneration_pulse_time
-	regeneration_complete_timer.one_shot = true
-	regeneration_complete_timer.timeout.connect(complete_regeneration)
-	add_child(regeneration_complete_timer)
-	regeneration_complete_timer.start()
-
-func complete_regeneration():
-	"""Complete the regeneration process"""
-	if is_dead:
-		return
-	
-	print("Regeneration complete - restored to full health")
-	
-	# Restore health
-	current_health = max_health
-	has_been_damaged = false
-	regeneration_timer = 0.0
-	
-	# Change back to normal sprite
-	if sprite and normal_texture:
-		sprite.texture = normal_texture
-	
-	# Update health bar
-	if health_bar:
-		health_bar.value = current_health
-	
-	# Stop regeneration effects
-	stop_regeneration()
-
-func stop_regeneration():
-	"""Stop the regeneration process"""
-	is_regenerating = false
-	
-	# Stop pulsing tween
-	if regeneration_tween and regeneration_tween.is_valid():
-		regeneration_tween.kill()
-		regeneration_tween = null
-	
-	# Reset sprite color
-	if sprite:
-		sprite.modulate = original_color
