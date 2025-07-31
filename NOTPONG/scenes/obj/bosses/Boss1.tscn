@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3 uid="uid://bq8u4jylrt5yo"]
 
 [ext_resource type="Script" uid="uid://dn5odpo46ndwg" path="res://scripts/obj/bosses/boss_1.gd" id="1_4no6o"]
-[ext_resource type="Texture2D" uid="uid://kmwy7114j6fh" path="res://images/ChatGPT Image 29 juli 2025 11_23_47.png" id="2_7iye4"]
+[ext_resource type="Texture2D" uid="uid://bo34tqi4j5br2" path="res://images/bosses/Boss1.png" id="2_4no6o"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_vo7dq"]
 size = Vector2(100, 100)
@@ -12,9 +12,9 @@ collision_mask = 0
 script = ExtResource("1_4no6o")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
-position = Vector2(9.53674e-07, 2.86102e-06)
-scale = Vector2(0.0976563, 0.0976563)
-texture = ExtResource("2_7iye4")
+position = Vector2(-1.90735e-06, -3.8147e-06)
+scale = Vector2(1.5625, 1.5625)
+texture = ExtResource("2_4no6o")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("RectangleShape2D_vo7dq")
