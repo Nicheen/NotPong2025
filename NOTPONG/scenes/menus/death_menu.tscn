@@ -8,6 +8,7 @@ texture = ExtResource("2_death_bg")
 modulate_color = Color(1, 1, 1, 0.8)
 
 [node name="DeathMenu" type="Control"]
+z_index = 1
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0

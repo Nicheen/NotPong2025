@@ -26,3 +26,4 @@ res://scripts/main.gd
 res://scripts/level_manager.gd
 res://scenes/menus/win_menu.tscn
 res://scenes/spawner.gd
+res://scenes/menus/game_over.tscn

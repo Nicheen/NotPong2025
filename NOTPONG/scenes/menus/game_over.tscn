@@ -12,6 +12,7 @@ script = ExtResource("1_asori")
 
 [node name="Panel" type="Panel" parent="."]
 modulate = Color(1, 1, 1, 0.843137)
+z_index = 1
 offset_right = 1152.0
 offset_bottom = 648.0
 theme_override_styles/panel = SubResource("StyleBoxTexture_death")

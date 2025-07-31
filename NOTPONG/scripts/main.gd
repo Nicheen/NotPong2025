@@ -28,12 +28,12 @@ var player: CharacterBody2D
 var pause_menu: Control
 var death_menu: Control
 var win_menu: Control
-var enemies: Array[CharacterBody2D] = []
-var blocks: Array[CharacterBody2D] = []
-var blue_blocks: Array[CharacterBody2D] = []
-var lazer_blocks: Array[CharacterBody2D] = []
-var block_droppers: Array[CharacterBody2D] = []
-var bosses: Array[CharacterBody2D] = []
+var enemies: Array[StaticBody2D] = []
+var blocks: Array[StaticBody2D] = []
+var blue_blocks: Array[StaticBody2D] = []
+var lazer_blocks: Array[StaticBody2D] = []
+var block_droppers: Array[StaticBody2D] = []
+var bosses: Array[StaticBody2D] = []
 var all_spawn_positions: Array[Vector2] = []
 
 # Game state
@@ -301,6 +301,8 @@ func spawn_enemies():
 	
 	for i in range(enemy_count):
 		spawn_enemy_at_position(available_positions[i])
+# In main.gd, update the spawn_enemy_at_position function:
+
 func spawn_enemy_at_position(position: Vector2):
 	var enemy_scene = load(ENEMY_SCENE)
 	if not enemy_scene:
@@ -310,8 +312,8 @@ func spawn_enemy_at_position(position: Vector2):
 	var enemy = enemy_scene.instantiate()
 	enemy.global_position = position
 	
-	# Connect enemy signals with distortion effects
-	enemy.enemy_died.connect(func(score_points): _on_enemy_died_with_distortion(score_points, position))
+	# Connect enemy signals - now the enemy will emit its position automatically
+	enemy.enemy_died.connect(_on_enemy_died_with_distortion)
 	enemy.enemy_hit.connect(_on_enemy_hit)
 	
 	add_child(enemy)
@@ -322,7 +324,6 @@ func spawn_enemy_at_position(position: Vector2):
 	spawn_manager.reserve_positions([position])
 	
 	print("Spawned enemy at: ", position)
-	
 func generate_spawn_positions():
 	# Rensa eventuella befintliga positioner
 	all_spawn_positions.clear()
@@ -576,20 +577,62 @@ func _on_enemy_died(score_points: int):
 		else:
 			player_wins()  # Fallbackback
 			
+# Replace the damage_adjacent_blocks function in main.gd with this improved version:
+
+# Replace the damage_adjacent_blocks function in main.gd with this version that uses the SpawnManager's arrays:
+
 func damage_adjacent_blocks(enemy_position: Vector2, damage: int = 10):
 	"""Damage all blocks in adjacent tiles (8 surrounding tiles)"""
 	
-	# Get grid coordinates from the spawn manager's coordinate arrays
-	var x_positions = [926, 876, 826, 776, 726, 676, 626, 576, 526, 476, 426, 376, 326, 276, 226]
-	var y_positions = [124, 174, 224, 274, 324, 374, 424, 474, 524]
+	# Use the spawn manager's coordinate arrays instead of hardcoded ones
+	if not spawn_manager:
+		print("ERROR: No spawn manager available for damage calculation")
+		return
+	
+	var x_positions = spawn_manager.x_positions
+	var y_positions = spawn_manager.y_positions
+	
+	print("DEBUG: Enemy position = ", enemy_position)
+	print("DEBUG: Enemy position x type = ", typeof(enemy_position.x))
+	print("DEBUG: Enemy position y type = ", typeof(enemy_position.y))
+	print("DEBUG: First x_position = ", x_positions[0], " type = ", typeof(x_positions[0]))
+	print("DEBUG: First y_position = ", y_positions[0], " type = ", typeof(y_positions[0]))
+	
+	# Convert enemy position to integers to match array values
+	var enemy_x = int(enemy_position.x)
+	var enemy_y = int(enemy_position.y)
+	
+	print("DEBUG: Converted enemy_x = ", enemy_x, " enemy_y = ", enemy_y)
 	
 	# Find the grid index of the enemy position
-	var enemy_x_idx = x_positions.find(enemy_position.x)
-	var enemy_y_idx = y_positions.find(enemy_position.y)
+	var enemy_x_idx = x_positions.find(enemy_x)
+	var enemy_y_idx = y_positions.find(enemy_y)
+	
+	print("DEBUG: enemy_x_idx = ", enemy_x_idx, " enemy_y_idx = ", enemy_y_idx)
 	
 	if enemy_x_idx == -1 or enemy_y_idx == -1:
-		print("Enemy position not found in grid: ", enemy_position)
-		return
+		print("Enemy position still not found after conversion: (", enemy_x, ", ", enemy_y, ")")
+		
+		# Manual search with debug info
+		print("Manual search for x = ", enemy_x)
+		for i in range(x_positions.size()):
+			print("  x_positions[", i, "] = ", x_positions[i], " match = ", (x_positions[i] == enemy_x))
+			if x_positions[i] == enemy_x:
+				enemy_x_idx = i
+				break
+		
+		print("Manual search for y = ", enemy_y)
+		for i in range(y_positions.size()):
+			print("  y_positions[", i, "] = ", y_positions[i], " match = ", (y_positions[i] == enemy_y))
+			if y_positions[i] == enemy_y:
+				enemy_y_idx = i
+				break
+		
+		if enemy_x_idx == -1 or enemy_y_idx == -1:
+			print("Manual search also failed. Aborting damage calculation.")
+			return
+	
+	print("Enemy died at grid position [", enemy_x_idx, ", ", enemy_y_idx, "] = (", enemy_x, ", ", enemy_y, ")")
 	
 	# Check all 8 adjacent positions (including diagonals)
 	var adjacent_offsets = [
@@ -598,47 +641,168 @@ func damage_adjacent_blocks(enemy_position: Vector2, damage: int = 10):
 		Vector2(-1,  1), Vector2(0,  1), Vector2(1,  1)   # Bottom row
 	]
 	
+	var blocks_damaged = 0
+	
 	for offset in adjacent_offsets:
 		var check_x_idx = enemy_x_idx + offset.x
 		var check_y_idx = enemy_y_idx + offset.y
 		
 		# Make sure we're within grid bounds
 		if check_x_idx < 0 or check_x_idx >= x_positions.size():
+			print("Adjacent position out of bounds X: ", check_x_idx)
 			continue
 		if check_y_idx < 0 or check_y_idx >= y_positions.size():
+			print("Adjacent position out of bounds Y: ", check_y_idx)
 			continue
 		
 		# Get the world position to check
 		var check_position = Vector2(x_positions[check_x_idx], y_positions[check_y_idx])
+		print("Checking adjacent position: ", check_position, " (grid [", check_x_idx, ", ", check_y_idx, "])")
 		
 		# Find any block at this position and damage it
 		var block_to_damage = find_block_at_position(check_position)
 		if block_to_damage and block_to_damage.has_method("take_damage"):
 			block_to_damage.take_damage(damage)
-			print("Enemy death damaged adjacent block at: ", check_position, " for ", damage, " damage")
+			blocks_damaged += 1
+			print("✓ Enemy death damaged adjacent block at: ", check_position, " for ", damage, " damage")
+		else:
+			print("✗ No block found at adjacent position: ", check_position)
+	
+	print("Total blocks damaged by explosion: ", blocks_damaged)
+	
+func find_closest_grid_position(position: Vector2, x_positions: Array, y_positions: Array) -> Vector2:
+	"""Find the closest valid grid position to the given position"""
+	var closest_x = x_positions[0]
+	var closest_y = y_positions[0]
+	var min_distance = 999999.0
+	
+	for x in x_positions:
+		for y in y_positions:
+			var grid_pos = Vector2(x, y)
+			var distance = position.distance_to(grid_pos)
+			if distance < min_distance:
+				min_distance = distance
+				closest_x = x
+				closest_y = y
+	
+	# Only return if the closest position is reasonably close (within 100 pixels)
+	if min_distance <= 100.0:
+		return Vector2(closest_x, closest_y)
+	else:
+		return Vector2.ZERO
 
+# Keep the improved find_block_at_position function:
 func find_block_at_position(position: Vector2):
 	"""Find any block (of any type) at the given position"""
-	# Check all block arrays
-	for block in blocks:
-		if is_instance_valid(block) and block.global_position == position:
-			return block
+	var tolerance = 10.0  # Large tolerance for testing
+	var closest_block = null
+	var closest_distance = 999999.0
 	
-	for block in blue_blocks:
-		if is_instance_valid(block) and block.global_position == position:
-			return block
+	print("=== SEARCHING FOR BLOCKS NEAR ", position, " ===")
+	print("Block array sizes:")
+	print("  blocks: ", blocks.size())
+	print("  blue_blocks: ", blue_blocks.size())
+	print("  lazer_blocks: ", lazer_blocks.size())
+	print("  block_droppers: ", block_droppers.size())
 	
-	for block in lazer_blocks:
-		if is_instance_valid(block) and block.global_position == position:
-			return block
+	# Check blocks array
+	print("Checking blocks array:")
+	for i in range(blocks.size()):
+		var block = blocks[i]
+		if is_instance_valid(block):
+			var distance = position.distance_to(block.global_position)
+			print("  blocks[", i, "]: ", block.global_position, " distance: ", distance)
+			if distance <= tolerance and distance < closest_distance:
+				closest_block = block
+				closest_distance = distance
+				print("    ^ NEW CLOSEST BLOCK!")
+		else:
+			print("  blocks[", i, "]: INVALID")
 	
-	for block in block_droppers:
-		if is_instance_valid(block) and block.global_position == position:
-			return block
+	# Check blue_blocks array
+	print("Checking blue_blocks array:")
+	for i in range(blue_blocks.size()):
+		var block = blue_blocks[i]
+		if is_instance_valid(block):
+			var distance = position.distance_to(block.global_position)
+			print("  blue_blocks[", i, "]: ", block.global_position, " distance: ", distance)
+			if distance <= tolerance and distance < closest_distance:
+				closest_block = block
+				closest_distance = distance
+				print("    ^ NEW CLOSEST BLOCK!")
+		else:
+			print("  blue_blocks[", i, "]: INVALID")
 	
-	return null
+	# Check lazer_blocks array
+	print("Checking lazer_blocks array:")
+	for i in range(lazer_blocks.size()):
+		var block = lazer_blocks[i]
+		if is_instance_valid(block):
+			var distance = position.distance_to(block.global_position)
+			print("  lazer_blocks[", i, "]: ", block.global_position, " distance: ", distance)
+			if distance <= tolerance and distance < closest_distance:
+				closest_block = block
+				closest_distance = distance
+				print("    ^ NEW CLOSEST BLOCK!")
+		else:
+			print("  lazer_blocks[", i, "]: INVALID")
+	
+	# Check block_droppers array
+	print("Checking block_droppers array:")
+	for i in range(block_droppers.size()):
+		var block = block_droppers[i]
+		if is_instance_valid(block):
+			var distance = position.distance_to(block.global_position)
+			print("  block_droppers[", i, "]: ", block.global_position, " distance: ", distance)
+			if distance <= tolerance and distance < closest_distance:
+				closest_block = block
+				closest_distance = distance
+				print("    ^ NEW CLOSEST BLOCK!")
+		else:
+			print("  block_droppers[", i, "]: INVALID")
+	
+	if closest_block:
+		print("RESULT: Found closest block at distance ", closest_distance, " from ", position)
+		print("        Block position: ", closest_block.global_position)
+	else:
+		print("RESULT: No blocks found within ", tolerance, " pixels of ", position)
+	
+	print("=== END BLOCK SEARCH ===")
+	return closest_block
+	
+func debug_game_state():
+	"""Print comprehensive game state for debugging"""
+	print("\n=== GAME STATE DEBUG ===")
+	print("Total enemies spawned: ", total_enemies)
+	print("Enemies killed: ", enemies_killed)
+	print("Current level: ", current_level)
+	
+	print("\nEntity counts:")
+	print("  enemies array: ", enemies.size())
+	print("  blocks array: ", blocks.size())
+	print("  blue_blocks array: ", blue_blocks.size())
+	print("  lazer_blocks array: ", lazer_blocks.size())
+	print("  block_droppers array: ", block_droppers.size())
+	print("  bosses array: ", bosses.size())
+	
+	print("\nSpawn manager state:")
+	if spawn_manager:
+		print("  Occupied positions: ", spawn_manager.occupied_positions.size())
+		print("  X positions: ", spawn_manager.x_positions.size())
+		print("  Y positions: ", spawn_manager.y_positions.size())
+	else:
+		print("  ERROR: No spawn manager!")
+	
+	print("\nAll spawn positions: ", all_spawn_positions.size())
+	print("=== END GAME STATE DEBUG ===\n")
+	
 func _on_enemy_died_with_distortion(score_points: int, death_position: Vector2):
 	"""Handle enemy death with distortion effect"""
+	print("\n🔥 ENEMY DIED AT: ", death_position, " 🔥")
+	
+	# Debug the game state first
+	debug_game_state()
+	
 	create_enemy_death_distortion(death_position)
 	damage_adjacent_blocks(death_position, 10)
 	_on_enemy_died(score_points)

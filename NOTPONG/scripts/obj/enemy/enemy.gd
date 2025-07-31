@@ -17,7 +17,7 @@ var is_dead: bool = false
 var original_color: Color
 
 # Signals
-signal enemy_died(score_points: int)
+signal enemy_died(score_points: int, death_position: Vector2)
 signal enemy_hit(damage: int)
 
 func _ready():
@@ -101,7 +101,7 @@ func die():
 	print("Enemy died! Awarding ", score_value, " points")
 	
 	# Emit death signal with score
-	enemy_died.emit(score_value)
+	enemy_died.emit(score_value, global_position)
 	
 	# Play death effect
 	play_death_effect()
@@ -243,9 +243,9 @@ func _on_projectile_hit():
 # NEW: Blast damage system
 func check_blast_damage():
 	"""Check if player is within blast radius and apply damage + knockback"""
-	var blast_radius = 120.0  # Blast radius in pixels
+	var blast_radius = 150.0  # Blast radius in pixels
 	var blast_damage = 25  # Significant damage
-	var knockback_force = 800.0  # Knockback strength
+	var knockback_force = 1200.0  # Knockback strength
 	
 	# Find the player in the scene
 	var player = find_player()

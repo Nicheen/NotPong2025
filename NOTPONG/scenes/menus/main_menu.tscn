@@ -4,6 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://cgppme0qncc68" path="res://images/background.svg" id="2_ovrgc"]
 
 [node name="MainMenu" type="Control"]
+z_index = 1
 layout_mode = 3
 anchors_preset = 0
 offset_right = 1151.0
