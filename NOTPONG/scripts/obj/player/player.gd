@@ -23,6 +23,15 @@ extends CharacterBody2D
 @export var max_health: int = 100
 @export var damage_per_hit: int = 10
 
+# NEW: Knockback settings
+@export var knockback_resistance: float = 0.3  # How much knockback is reduced (0.0 = full knockback, 1.0 = no knockback)
+@export var knockback_recovery_time: float = 0.5  # How long knockback effects last
+
+# NEW: Knockback state variables (add after existing internal variables)
+var knockback_velocity: Vector2 = Vector2.ZERO
+var knockback_timer: float = 0.0
+var is_being_knocked_back: bool = false
+
 # Wall state tracking
 enum WallSide { BOTTOM, TOP }
 var current_wall: WallSide = WallSide.BOTTOM
@@ -66,12 +75,71 @@ func _physics_process(delta):
 	handle_teleport_input()
 	handle_shoot_input()
 	handle_teleport_effect(delta)
-	
+	handle_knockback(delta)
 	# NEW: Handle top wall time limit
 	handle_top_wall_timer(delta)
 	
 	# Apply movement
 	move_and_slide()
+func apply_knockback(direction: Vector2, force: float):
+	"""Apply knockback to the player (X-axis only)"""
+	print("Applying knockback - Direction: ", direction, " Force: ", force)
+	
+	# Reduce knockback based on resistance
+	var final_force = force * (1.0 - knockback_resistance)
+	
+	# Only use the X component of direction - ignore Y
+	var horizontal_direction = Vector2(direction.x, 0.0).normalized()
+	
+	# Set knockback state (X-axis only)
+	knockback_velocity = Vector2(horizontal_direction.x * final_force, 0.0)
+	knockback_timer = knockback_recovery_time
+	is_being_knocked_back = true
+	
+	# Visual effect - flash player red briefly
+	if sprite:
+		var flash_tween = create_tween()
+		flash_tween.tween_property(sprite, "modulate", Color.RED, 0.1)
+		flash_tween.tween_property(sprite, "modulate", Color.WHITE, 0.2)
+	
+	print("Horizontal knockback applied: ", knockback_velocity)
+
+func handle_knockback(delta: float):
+	"""Handle knockback physics and recovery (X-axis only)"""
+	if not is_being_knocked_back:
+		return
+	
+	# Decrease knockback timer
+	knockback_timer -= delta
+	
+	# Apply knockback to velocity
+	if knockback_timer > 0:
+		# Gradually reduce knockback over time
+		var decay_factor = knockback_timer / knockback_recovery_time
+		var current_knockback = knockback_velocity * decay_factor
+		
+		# Add knockback to normal movement (X-axis only)
+		velocity.x += current_knockback.x * delta
+		# Don't modify velocity.y - keep vertical movement unchanged
+		
+		# Clamp horizontal velocity to prevent going too fast
+		var max_knockback_speed = 1200.0
+		if abs(velocity.x) > max_knockback_speed:
+			velocity.x = sign(velocity.x) * max_knockback_speed
+	else:
+		# Knockback finished
+		is_being_knocked_back = false
+		knockback_velocity = Vector2.ZERO
+		knockback_timer = 0.0
+		print("Knockback recovery complete")
+
+func get_knockback_info() -> Dictionary:
+	"""Get current knockback state for debugging"""
+	return {
+		"is_knocked_back": is_being_knocked_back,
+		"knockback_velocity": knockback_velocity,
+		"time_remaining": knockback_timer
+	}
 
 func handle_movement(delta):
 	# Get input direction using the Input Map actions

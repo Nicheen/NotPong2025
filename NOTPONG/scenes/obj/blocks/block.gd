@@ -139,6 +139,9 @@ func play_death_effect():
 	if health_bar:
 		health_bar.visible = false
 	
+	# NEW: Check for blast damage to player BEFORE starting visual effects
+	check_blast_damage()
+	
 	# Lås positionen så den inte rör sig
 	var original_position = sprite.position
 	
@@ -173,3 +176,52 @@ func is_alive() -> bool:
 # Method called when projectile hits this enemy
 func _on_projectile_hit():
 	take_damage(10)  # Default damage from projectiles
+
+# NEW: Blast damage system
+func check_blast_damage():
+	"""Check if player is within blast radius and apply damage + knockback"""
+	var blast_radius = 80.0  # Smaller blast radius for basic blocks
+	var blast_damage = 15  # Less damage than enemies
+	var knockback_force = 600.0  # Less knockback than enemies
+	
+	# Find the player in the scene
+	var player = find_player()
+	if not player:
+		return
+	
+	# Calculate distance to player
+	var distance_to_player = global_position.distance_to(player.global_position)
+	
+	# Check if player is within blast radius
+	if distance_to_player <= blast_radius:
+		# Calculate damage based on distance (closer = more damage)
+		var damage_multiplier = 1.0 - (distance_to_player / blast_radius)
+		var final_damage = int(blast_damage * damage_multiplier)
+		
+		# Calculate knockback direction (away from explosion)
+		var knockback_direction = (player.global_position - global_position).normalized()
+		var final_knockback = knockback_force * damage_multiplier
+		
+		print("BLOCK BLAST HIT! Damage: ", final_damage, " Knockback: ", final_knockback)
+		
+		# Apply damage to player
+		if player.has_method("take_damage"):
+			player.take_damage(final_damage)
+		
+		# Apply knockback to player
+		if player.has_method("apply_knockback"):
+			player.apply_knockback(knockback_direction, final_knockback)
+
+func find_player():
+	"""Find the player node in the scene"""
+	var scene_root = get_tree().current_scene
+	var player = scene_root.find_child("Player", true, false)
+	if player:
+		return player
+	
+	# Fallback: look for CharacterBody2D with player layer
+	for child in scene_root.get_children():
+		if child is CharacterBody2D and child.collision_layer == 1:
+			return child
+	
+	return null

@@ -140,6 +140,9 @@ func play_death_effect():
 	if health_bar:
 		health_bar.visible = false
 	
+	# NEW: Check for blast damage to player BEFORE starting visual effects
+	check_blast_damage()
+	
 	# Create explosion effect with sequential phases
 	var tween = create_tween()
 	
@@ -235,3 +238,71 @@ func is_alive() -> bool:
 # Method called when projectile hits this enemy
 func _on_projectile_hit():
 	take_damage(10)  # Default damage from projectiles
+
+# NEW: Blast damage system
+func check_blast_damage():
+	"""Check if player is within blast radius and apply damage + knockback"""
+	var blast_radius = 120.0  # Blast radius in pixels
+	var blast_damage = 25  # Significant damage
+	var knockback_force = 800.0  # Knockback strength
+	
+	# Find the player in the scene
+	var player = find_player()
+	if not player:
+		print("No player found for blast damage check")
+		return
+	
+	# Calculate distance to player
+	var distance_to_player = global_position.distance_to(player.global_position)
+	
+	print("Enemy explosion - Distance to player: ", distance_to_player, " Blast radius: ", blast_radius)
+	
+	# Check if player is within blast radius
+	if distance_to_player <= blast_radius:
+		# Calculate damage based on distance (closer = more damage)
+		var damage_multiplier = 1.0 - (distance_to_player / blast_radius)
+		var final_damage = int(blast_damage * damage_multiplier)
+		
+		# Calculate knockback direction (away from explosion)
+		var knockback_direction = (player.global_position - global_position).normalized()
+		var final_knockback = knockback_force * damage_multiplier
+		
+		print("BLAST HIT! Damage: ", final_damage, " Knockback: ", final_knockback)
+		
+		# Apply damage to player
+		if player.has_method("take_damage"):
+			player.take_damage(final_damage)
+		
+		# Apply knockback to player
+		if player.has_method("apply_knockback"):
+			player.apply_knockback(knockback_direction, final_knockback)
+		else:
+			print("Player doesn't have apply_knockback method - adding velocity directly")
+			# Fallback: try to add to player velocity directly
+			if "velocity" in player:
+				player.velocity += knockback_direction * final_knockback
+	else:
+		print("Player outside blast radius - no damage")
+
+func find_player():
+	"""Find the player node in the scene"""
+	# Try different ways to find the player
+	var scene_root = get_tree().current_scene
+	
+	# Method 1: Look for node named "Player"
+	var player = scene_root.find_child("Player", true, false)
+	if player:
+		return player
+	
+	# Method 2: Look through all children for player collision layer
+	for child in scene_root.get_children():
+		if child is CharacterBody2D and child.collision_layer == 1:  # Player layer
+			return child
+	
+	# Method 3: Look for anything with player methods
+	for child in scene_root.get_children():
+		if child.has_method("take_damage") and child.has_method("get_health"):
+			if "player" in child.name.to_lower():
+				return child
+	
+	return null
