@@ -118,8 +118,14 @@ func apply_laser_damage():
 	
 	# Check what we're hitting
 	if hit_body.collision_layer == 16:  # It's a block
-		hit_body.take_damage(damage_amount)
-		print("Laser dealing ", damage_amount, " damage to block")
+		# Use the new silent damage method for blocks
+		if hit_body.has_method("take_laser_damage"):
+			hit_body.take_laser_damage(damage_amount)
+			print("Laser dealing ", damage_amount, " damage to block (no score)")
+		else:
+			# Fallback to regular damage if the method doesn't exist
+			hit_body.take_damage(damage_amount)
+			print("Laser dealing ", damage_amount, " damage to block (with score - fallback)")
 		
 	elif hit_body.collision_layer == 1:  # It's the player
 		hit_body.take_damage(damage_amount)
@@ -175,13 +181,39 @@ func take_damage(damage: int):
 	if current_health <= 0:
 		die()
 
-func change_to_cracked_sprite():
-	"""Change the sprite to the cracked version"""
-	if sprite and cracked_texture:
-		sprite.texture = cracked_texture
-		print("Changed to cracked sprite")
-	else:
-		print("WARNING: Could not change to cracked sprite - missing sprite or texture")
+# NEW: Silent damage method for laser kills (no score awarded)
+func take_laser_damage(damage: int):
+	"""Take damage from laser without awarding score when destroyed"""
+	if is_dead:
+		return
+	
+	print("Laser block took ", damage, " laser damage (no score on death)")
+	
+	current_health -= damage
+	current_health = max(0, current_health)
+	
+	# Change sprite to cracked version after first damage
+	if not has_been_damaged and current_health < max_health:
+		change_to_cracked_sprite()
+		has_been_damaged = true
+		regeneration_timer = 0.0  # Start regeneration timer
+	
+	# Stop any ongoing regeneration
+	if is_regenerating:
+		stop_regeneration()
+	
+	# Reset regeneration timer on damage
+	regeneration_timer = 0.0
+	
+	# Visual damage feedback
+	show_damage_effect()
+	
+	# Emit hit signal (still show damage feedback)
+	block_hit.emit(damage)
+	
+	# Check if dead - but call the silent death method
+	if current_health <= 0:
+		die_silently()
 
 func die():
 	if is_dead:
@@ -196,6 +228,29 @@ func die():
 	block_died.emit(score_value)
 	
 	play_death_effect()
+
+# NEW: Silent death method (no score awarded)
+func die_silently():
+	"""Die without awarding score - used for laser kills"""
+	if is_dead:
+		return
+	
+	is_dead = true
+	print("Laser block destroyed by laser (no score awarded)")
+	
+	laser.is_casting = false
+	
+	# Don't emit the death signal that awards score
+	# Just play the death effect
+	play_death_effect()
+
+func change_to_cracked_sprite():
+	"""Change the sprite to the cracked version"""
+	if sprite and cracked_texture:
+		sprite.texture = cracked_texture
+		print("Changed to cracked sprite")
+	else:
+		print("WARNING: Could not change to cracked sprite - missing sprite or texture")
 
 func show_damage_effect():
 	if not sprite:

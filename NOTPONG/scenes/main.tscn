@@ -106,7 +106,7 @@ glow_hdr_scale = 0.0
 script = ExtResource("1_elqb8")
 
 [node name="Background" type="Sprite2D" parent="."]
-z_index = -2
+z_index = -10
 position = Vector2(576, 324)
 texture = ExtResource("2_tbgi4")
 

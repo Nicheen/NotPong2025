@@ -30,3 +30,5 @@ res://addons/flowerwall_postprocess/shaders/blurx_shader.material
 res://addons/flowerwall_postprocess/shaders/blury_shader.material
 res://addons/flowerwall_postprocess/shaders/crt_shader.material
 res://addons/flowerwall_postprocess/shaders/dithering_shader.material
+res://scenes/obj/blocks/block.gd
+res://scripts/obj/enemy/enemy.gd

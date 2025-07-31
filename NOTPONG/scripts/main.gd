@@ -256,6 +256,18 @@ func create_boss_death_distortion(boss_position: Vector2):
 	
 	create_distortion_effect(boss_position, force, radius, duration)
 
+# High Score Functions
+func check_and_update_high_score():
+	"""Check if current score is a new high score and update if needed"""
+	if current_score > Global.save_data.high_score:
+		Global.save_data.high_score = current_score
+		Global.save_data.save()  # Save to disk
+		print("NEW HIGH SCORE: ", current_score)
+		
+		# Update HUD to show new high score
+		if hud:
+			hud.high_score.text = "High Score: " + str(Global.save_data.high_score)
+
 # ... (keep all your existing spawn functions unchanged)
 
 func spawn_enemies():
@@ -506,6 +518,9 @@ func setup_win_menu():
 func _on_player_died():
 	print("Player died! Final score: ", current_score)
 	
+	# Check and update high score before showing death menu
+	check_and_update_high_score()
+	
 	# Show death menu with score
 	if death_menu and death_menu.has_method("show_death_menu"):
 		# Update score display in death menu
@@ -519,7 +534,7 @@ func _on_enemy_died(score_points: int):
 	
 	print("Enemy killed! Score: ", current_score, " Enemies remaining: ", (total_enemies - enemies_killed))
 	
-	# Update UI
+	# Update UI (this will also check for high score updates in real-time)
 	update_ui()
 	
 	# Check win condition
@@ -556,6 +571,9 @@ func player_wins():
 	game_won = true
 	print("PLAYER WINS! Final score: ", current_score)
 	
+	# Check and update high score before showing win menu
+	check_and_update_high_score()
+	
 	# Show win menu with score
 	if win_menu and win_menu.has_method("show_win_menu"):
 		win_menu.show_win_menu(current_score)
@@ -569,6 +587,10 @@ func update_death_menu_score():
 func update_ui():
 	hud.update_level(current_level)
 	hud.update_score(current_score)
+	
+	# Check for high score updates in real-time and update HUD
+	if current_score > Global.save_data.high_score:
+		check_and_update_high_score()
 
 func create_grid_background():
 	# You can keep the original grid background if you want

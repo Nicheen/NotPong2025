@@ -67,6 +67,31 @@ func take_damage(damage: int):
 	if current_health <= 0:
 		die()
 
+# NEW: Silent damage method for laser kills (no score awarded)
+func take_laser_damage(damage: int):
+	"""Take damage from laser without awarding score when destroyed"""
+	if is_dead:
+		return
+	
+	print("Enemy took ", damage, " laser damage (no score on death)")
+	
+	current_health -= damage
+	current_health = max(0, current_health)
+	
+	# Update health bar
+	if health_bar:
+		health_bar.value = current_health
+	
+	# Visual damage feedback
+	show_damage_effect()
+	
+	# DON'T emit hit signal - no score for laser damage
+	# enemy_hit.emit(damage)  # Commented out to prevent score
+	
+	# Check if dead - but call the silent death method
+	if current_health <= 0:
+		die_silently()
+
 func die():
 	if is_dead:
 		return
@@ -78,6 +103,19 @@ func die():
 	enemy_died.emit(score_value)
 	
 	# Play death effect
+	play_death_effect()
+
+# NEW: Silent death method (no score awarded)
+func die_silently():
+	"""Die without awarding score - used for laser kills"""
+	if is_dead:
+		return
+	
+	is_dead = true
+	print("Enemy destroyed by laser (no score awarded)")
+	
+	# Don't emit the death signal that awards score
+	# Just play the death effect
 	play_death_effect()
 
 func show_damage_effect():
