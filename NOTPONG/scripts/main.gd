@@ -373,6 +373,7 @@ func spawn_enemy_lazer_at_position(position: Vector2):
 	lazer_block.block_hit.connect(_on_enemy_hit)
 	
 	add_child(lazer_block)
+
 	lazer_blocks.append(lazer_block)
 	total_enemies += 1
 	

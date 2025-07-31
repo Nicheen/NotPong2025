@@ -8,6 +8,8 @@ extends StaticBody2D
 # laser settings
 @export var laser_activation_delay: float = 2.0  # Time before laser activates
 @export var laser_duration: float = 3.0  # How long laser stays active
+@export var laser_damage_per_second: float = 10.0
+@export var laser_damage_interval: float = 0.1
 
 # Visual settings
 @onready var sprite: Sprite2D = $Sprite2D
@@ -19,9 +21,9 @@ var normal_texture: Texture2D
 var cracked_texture: Texture2D
 
 # laser effect
-var laser_effect: Node2D
 var laser_timer: float = 0.0
 var laser_duration_timer: float = 0.0
+var laser_damage_timer: float = 0.0
 var laser_activated: bool = false
 var laser_ready: bool = false
 
@@ -62,6 +64,9 @@ func _ready():
 		if not cracked_texture:
 			print("WARNING: Could not load cracked texture at res://images/BlockLaserCracked.png")
 	
+	if laser:
+		laser.collision_mask = 1 + 16
+	
 	laser_ready = true
 	
 	print("Laser block created with ", max_health, " health at position: ", global_position)
@@ -73,26 +78,58 @@ func _physics_process(delta):
 		if laser_timer >= laser_activation_delay:
 			activate_laser()
 			
-	# Handle laser duration (THIS WAS MISSING!)
+	# Handle laser duration
 	if laser_activated and not is_dead:
 		laser_duration_timer += delta
+		
+		# NEW: Handle continuous laser damage
+		if laser.is_colliding():
+			laser_damage_timer += delta
+			if laser_damage_timer >= laser_damage_interval:
+				apply_laser_damage()
+				laser_damage_timer = 0.0  # Reset damage timer
+		else:
+			laser_damage_timer = 0.0  # Reset if not hitting anything
+		
+		# Check if laser duration is over
 		if laser_duration_timer >= laser_duration:
 			deactivate_laser()
 			# Reset for next cycle
 			laser_timer = 0.0
-			laser_ready = true  # Allow reactivation
+			laser_ready = true
 			
 	# Handle regeneration timing
 	if has_been_damaged and not is_dead and not is_regenerating:
 		regeneration_timer += delta
 		if regeneration_timer >= regeneration_delay:
 			start_regeneration()
-
+			
+func apply_laser_damage():
+	"""Apply continuous damage to whatever the laser is hitting"""
+	if not laser.is_colliding():
+		return
+		
+	var hit_body = laser.get_collider()
+	if not hit_body or not hit_body.has_method("take_damage"):
+		return
+	
+	# Calculate damage for this interval
+	var damage_amount = laser_damage_per_second * laser_damage_interval
+	
+	# Check what we're hitting
+	if hit_body.collision_layer == 16:  # It's a block
+		hit_body.take_damage(damage_amount)
+		print("Laser dealing ", damage_amount, " damage to block")
+		
+	elif hit_body.collision_layer == 1:  # It's the player
+		hit_body.take_damage(damage_amount)
+		print("Laser dealing ", damage_amount, " damage to player")
+		
 func activate_laser():
 	"""Activate the laser effect"""
-	
 	laser_activated = true
 	laser_duration_timer = 0.0
+	laser_damage_timer = 0.0
 	laser.is_casting = true
 	
 	print("laser activated on laser block at: ", global_position)
@@ -101,6 +138,7 @@ func deactivate_laser():
 	"""Deactivate the laser effect"""
 	laser_activated = false
 	laser_duration_timer = 0.0
+	laser_damage_timer = 0.0
 	laser.is_casting = false
 	
 	print("laser deactivated on laser block")

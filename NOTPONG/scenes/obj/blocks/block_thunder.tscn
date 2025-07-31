@@ -27,5 +27,4 @@ unique_name_in_owner = true
 rotation = 1.5708
 target_position = Vector2(2000, 0)
 max_length = 2000.0
-line_width = 10.0
 color = Color(0.133333, 1, 0.380392, 1)

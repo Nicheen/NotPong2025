@@ -8,7 +8,6 @@ extends StaticBody2D
 # Visual settings
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
-@onready var laser := $LaserBeam2D
 
 # Sprite textures
 var normal_texture: Texture2D
@@ -52,9 +51,6 @@ func _ready():
 			print("WARNING: Could not load cracked texture at res://images/BlockDropperCracked.png")
 	
 	print("Block Dropper created with ", max_health, " health at position: ", global_position)
-
-func _process(delta: float) -> void:
-	laser.is_casting = Input.is_action_pressed("shoot")
 
 func _physics_process(delta):
 	# Handle regeneration timing
