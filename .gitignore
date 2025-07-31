@@ -1,7 +1,17 @@
-gamejamsummer2025/project.godot
+# Ignore the main project file
+/project.godot
+
+# Ignore all Godot editor metadata
+.import/
+*.import
 *.godot
-gamejamsummer2025/addons/flowerwall_postprocess/shaders/dithering_shader.material
-gamejamsummer2025/addons/flowerwall_postprocess/shaders/crt_shader.material
-gamejamsummer2025/addons/flowerwall_postprocess/shaders/blury_shader.material
-gamejamsummer2025/addons/flowerwall_postprocess/shaders/blurx_shader.material
-gamejamsummer2025/addons/flowerwall_postprocess/shaders/bloom_shader.material
+
+# Ignore shader material files (if you don't want to track them)
+/addons/flowerwall_postprocess/shaders/*.material
+
+# Optional: Ignore everything in addons (if addons are external)
+#/addons/
+
+# Optional: Ignore user/editor-specific files
+*.cfg
+*.tres
