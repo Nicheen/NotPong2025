@@ -108,8 +108,9 @@ func spawn_boss(level: int):
 	if boss.has_method("set_health_multiplier"):
 		boss.set_health_multiplier(boss_health_multiplier)
 	
-	# Connect boss signals
-	boss.boss_died.connect(_on_boss_died)
+	# Connect boss signals WITH distortion effects
+	var boss_position = boss.global_position
+	boss.boss_died.connect(func(score_points): main_scene._on_boss_died_with_distortion(score_points, boss_position))
 	boss.boss_hit.connect(main_scene._on_enemy_hit)
 	
 	main_scene.add_child(boss)
@@ -117,7 +118,6 @@ func spawn_boss(level: int):
 	main_scene.total_enemies += 1
 	
 	print("Boss spawned for level ", level, " with health multiplier: ", boss_health_multiplier)
-
 func _on_boss_died(score_points: int):
 	# Boss ger mycket mer poäng
 	var boss_bonus = current_level * 100  # Extra bonus baserat på level

@@ -40,19 +40,17 @@ var enemies_killed: int = 0
 var total_enemies: int = 0
 var game_won: bool = false
 
-
-# Distortion effect system
-var grid_background: ColorRect
-var shader_material: ShaderMaterial
+# Screen distortion effect system
+var distortion_overlay: Control
+var distortion_material: ShaderMaterial
 var active_distortions: Array[Dictionary] = []
 var distortion_id_counter: int = 0
-var time_accumulator: float = 0.0
 const MAX_DISTORTIONS = 5
 
-# Distortion settings
-var default_force: float = 20.0
-var default_radius: float = 200.0
-var default_duration: float = 2.0
+# Distortion settings for more realistic explosion effects
+var default_force: float = 15.0  # Reduced for more subtle effect
+var default_radius: float = 400.0  # Larger radius for bigger explosions
+var default_duration: float = 3.0  # Longer duration for better visual
 
 func _ready():
 	# Set up the game
@@ -64,23 +62,18 @@ func _ready():
 	setup_pause_menu()
 	setup_death_menu()
 	setup_win_menu()
+	setup_screen_distortion()
 	
 	print("Game scene ready!")
 	print("Total enemies spawned: ", total_enemies)
 
 func _process(delta):
 	"""Update distortion effects each frame"""
-	time_accumulator += delta
-	
-	# Update time uniform for base animation
-	if shader_material:
-		shader_material.set_shader_parameter("time", time_accumulator)
-	
 	update_distortions(delta)
-	update_shader_uniforms()
+	update_distortion_shader()
 
 func setup_play_area():
-	# Create grid background with distortion support
+	# You can still keep the grid background if you want
 	create_grid_background()
 
 func setup_level_manager():
@@ -89,8 +82,83 @@ func setup_level_manager():
 	add_child(level_manager)
 	level_manager.set_script(load("res://scripts/level_manager.gd"))
 	
-	# Ge level manager tillgång till main-scenen
+	# Give level manager access to main scene
 	level_manager.main_scene = self
+
+func setup_screen_distortion():
+	"""Create a screen-space distortion overlay that affects everything"""
+	# Create a ColorRect that covers the entire screen
+	distortion_overlay = ColorRect.new()
+	distortion_overlay.name = "DistortionOverlay"
+	distortion_overlay.size = play_area_size
+	distortion_overlay.position = Vector2.ZERO
+	distortion_overlay.z_index = 100  # Render on top of everything
+	distortion_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Don't block input
+	
+	# Create shader material for screen distortion
+	distortion_material = ShaderMaterial.new()
+	
+	# Load the screen distortion shader
+	var distortion_shader = load("res://shaders/screen_distortion.gdshader")
+	if distortion_shader == null:
+		print("ERROR: Could not load screen distortion shader")
+		return
+	
+	distortion_material.shader = distortion_shader
+	
+	# Load distortion texture (create a simple gradient if none exists)
+	var distortion_texture = load("res://images/textures/VFX_NOEL_CIRCLE.jpg")
+	if distortion_texture == null:
+		# Create a simple radial gradient texture as fallback
+		distortion_texture = create_distortion_texture()  
+	
+	distortion_material.set_shader_parameter("distortionTexture", distortion_texture)
+	
+	# Initialize distortion parameters
+	var empty_centers: Array[Vector2] = []
+	var empty_forces: Array[float] = []
+	var empty_radiuses: Array[float] = []
+	var empty_times: Array[float] = []
+	
+	for i in range(MAX_DISTORTIONS):
+		empty_centers.append(Vector2.ZERO)
+		empty_forces.append(0.0)
+		empty_radiuses.append(0.0)
+		empty_times.append(0.0)
+	
+	distortion_material.set_shader_parameter("distortion_centers", empty_centers)
+	distortion_material.set_shader_parameter("distortion_forces", empty_forces)
+	distortion_material.set_shader_parameter("distortion_radiuses", empty_radiuses)
+	distortion_material.set_shader_parameter("distortion_times", empty_times)
+	distortion_material.set_shader_parameter("active_distortions", 0)
+	
+	# Apply material to overlay
+	distortion_overlay.material = distortion_material
+	
+	# Add as last child so it renders on top
+	add_child(distortion_overlay)
+	
+	print("Screen distortion overlay created successfully")
+
+func create_distortion_texture() -> ImageTexture:
+	"""Create a simple gradient texture for distortion if none exists"""
+	var image = Image.create(256, 256, false, Image.FORMAT_RGB8)
+	
+	for x in range(256):
+		for y in range(256):
+			# Create a radial gradient from center
+			var center = Vector2(128, 128)
+			var distance = Vector2(x, y).distance_to(center) / 128.0
+			distance = clamp(distance, 0.0, 1.0)
+			
+			# Smooth gradient that's stronger at the edge
+			var intensity = 1.0 - smoothstep(0.0, 1.0, distance)
+			var color = Color(intensity, intensity, intensity)
+			image.set_pixel(x, y, color)
+	
+	var texture = ImageTexture.new()
+	texture.set_image(image)
+	return texture
 
 func create_distortion_effect(center: Vector2, force: float = -1.0, radius: float = -1.0, duration: float = -1.0) -> int:
 	"""Create a new distortion effect at the given position"""
@@ -122,7 +190,7 @@ func create_distortion_effect(center: Vector2, force: float = -1.0, radius: floa
 	
 	active_distortions.append(distortion)
 	
-	print("Created distortion effect at ", center, " with force ", force)
+	print("Created screen distortion effect at ", center, " with force ", force)
 	return distortion.id
 
 func update_distortions(delta: float):
@@ -136,13 +204,13 @@ func update_distortions(delta: float):
 		# Remove expired distortions
 		if distortion.current_time >= distortion.duration:
 			active_distortions.remove_at(i)
-			print("Distortion effect expired")
+			print("Screen distortion effect expired")
 		
 		i -= 1
 
-func update_shader_uniforms():
+func update_distortion_shader():
 	"""Update shader uniforms with current distortion data"""
-	if not shader_material:
+	if not distortion_material:
 		return
 	
 	# Prepare arrays for shader uniforms
@@ -166,19 +234,29 @@ func update_shader_uniforms():
 		times.append(0.0)
 	
 	# Update shader parameters
-	shader_material.set_shader_parameter("distortion_centers", centers)
-	shader_material.set_shader_parameter("distortion_forces", forces)
-	shader_material.set_shader_parameter("distortion_radiuses", radiuses)
-	shader_material.set_shader_parameter("distortion_times", times)
-	shader_material.set_shader_parameter("active_distortions", active_distortions.size())
+	distortion_material.set_shader_parameter("distortion_centers", centers)
+	distortion_material.set_shader_parameter("distortion_forces", forces)
+	distortion_material.set_shader_parameter("distortion_radiuses", radiuses)
+	distortion_material.set_shader_parameter("distortion_times", times)
+	distortion_material.set_shader_parameter("active_distortions", active_distortions.size())
 
 func create_enemy_death_distortion(enemy_position: Vector2):
 	"""Create a distortion effect specifically for enemy death"""
-	var force = randf_range(15.0, 25.0)
-	var radius = randf_range(150.0, 250.0)
-	var duration = randf_range(1.5, 2.5)
+	var force = randf_range(12.0, 20.0)  # More controlled force
+	var radius = randf_range(100.0, 100.0)  # Bigger explosion radius
+	var duration = randf_range(2.5, 3.5)  # Longer lasting effect
 	
 	create_distortion_effect(enemy_position, force, radius, duration)
+
+func create_boss_death_distortion(boss_position: Vector2):
+	"""Create a stronger distortion effect for boss death"""
+	var force = randf_range(25.0, 35.0)  # Much stronger for bosses
+	var radius = randf_range(200.0, 200.0)  # Massive explosion radius
+	var duration = randf_range(4.0, 5.0)  # Long lasting boss explosion
+	
+	create_distortion_effect(boss_position, force, radius, duration)
+
+# ... (keep all your existing spawn functions unchanged)
 
 func spawn_enemies():
 	# Samla alla använda positioner från kvadrater
@@ -296,8 +374,8 @@ func spawn_enemy_block_dropper_at_position(position: Vector2):
 	var block = block_scene.instantiate()
 	block.global_position = position
 	
-	# Connect enemy signals with distortion effects - pass position in closure
-	block.block_dropper_died.connect(func(score_points): _on_block_died_with_distortion(score_points, position))
+	# Connect signals WITHOUT distortion effects for blocks
+	block.block_dropper_died.connect(_on_block_died)
 	block.block_dropper_hit.connect(_on_enemy_hit)
 	
 	add_child(block)
@@ -315,8 +393,8 @@ func spawn_enemy_kvadrat_at_position(position: Vector2):
 	var block = block_scene.instantiate()
 	block.global_position = position
 	
-	# Connect enemy signals with distortion effects - pass position in closure
-	block.block_died.connect(func(score_points): _on_block_died_with_distortion(score_points, position))
+	# Connect signals WITHOUT distortion effects for blocks
+	block.block_died.connect(_on_block_died)
 	block.block_hit.connect(_on_enemy_hit)
 	
 	add_child(block)
@@ -368,8 +446,8 @@ func spawn_enemy_lazer_at_position(position: Vector2):
 
 	lazer_block.global_position = position
 	
-	# Connect signals with distortion effects - pass position in closure
-	lazer_block.block_died.connect(func(score_points): _on_lazer_block_died_with_distortion(score_points, position))
+	# Connect signals WITHOUT distortion effects for laser blocks
+	lazer_block.block_died.connect(_on_block_died)
 	lazer_block.block_hit.connect(_on_enemy_hit)
 	
 	add_child(lazer_block)
@@ -378,8 +456,6 @@ func spawn_enemy_lazer_at_position(position: Vector2):
 	total_enemies += 1
 	
 	print("Spawned lazer block at: ", position)
-	
-	
 	
 func spawn_player():
 	# Load and instantiate the player scene
@@ -436,7 +512,7 @@ func _on_player_died():
 		update_death_menu_score()
 		death_menu.show_death_menu()
 
-# Fixed functions that capture position before object is freed
+# Updated functions with separate handling for enemies vs blocks
 func _on_enemy_died(score_points: int):
 	enemies_killed += 1
 	current_score += score_points
@@ -446,24 +522,26 @@ func _on_enemy_died(score_points: int):
 	# Update UI
 	update_ui()
 	
-	# Check win condition - använd level manager istället för player_wins
+	# Check win condition
 	if enemies_killed >= total_enemies:
 		if level_manager and level_manager.has_method("level_completed"):
 			current_level += 1
 			level_manager.level_completed()
 		else:
 			player_wins()  # Fallback
+
 func _on_enemy_died_with_distortion(score_points: int, death_position: Vector2):
 	"""Handle enemy death with distortion effect"""
 	create_enemy_death_distortion(death_position)
 	_on_enemy_died(score_points)
-	
-func _on_block_died_with_distortion(score_points: int, death_position: Vector2):
-	"""Handle regular block death with distortion effect"""
+
+func _on_boss_died_with_distortion(score_points: int, death_position: Vector2):
+	"""Handle boss death with stronger distortion effect"""
+	create_boss_death_distortion(death_position)
 	_on_enemy_died(score_points)
 
-func _on_lazer_block_died_with_distortion(score_points: int, death_position: Vector2):
-	"""Handle lazer block death with stronger distortion effect"""
+func _on_block_died(score_points: int):
+	"""Handle block death WITHOUT distortion effect"""
 	_on_enemy_died(score_points)
 		
 func _on_enemy_hit(damage: int):
@@ -493,57 +571,6 @@ func update_ui():
 	hud.update_score(current_score)
 
 func create_grid_background():
-	# Create a ColorRect that covers the entire screen
-	grid_background = ColorRect.new()
-	grid_background.name = "GridBackground"
-	grid_background.anchors_preset = Control.PRESET_FULL_RECT
-	grid_background.size = play_area_size
-	grid_background.position = Vector2.ZERO
-	grid_background.z_index = -10
-	
-	# Create shader material
-	shader_material = ShaderMaterial.new()
-	
-	# Try to load the enhanced shader file
-	var grid_shader = load("res://shaders/grid_shader.gdshader")
-	if grid_shader == null:
-		print("ERROR: Could not load grid shader at res://shaders/grid_shader.gdshader")
-		print("Make sure the shader file exists in the shaders folder")
-		return
-	
-	shader_material.shader = grid_shader
-	
-	# Set shader parameters
-	shader_material.set_shader_parameter("grid_size", 50.0)
-	shader_material.set_shader_parameter("line_width", 2.0)
-	shader_material.set_shader_parameter("line_color", Color.WHITE)
-	shader_material.set_shader_parameter("background_color", Color.BLACK)
-	shader_material.set_shader_parameter("line_alpha", 0.3)
-	
-	# Initialize distortion parameters
-	var empty_centers: Array[Vector2] = []
-	var empty_forces: Array[float] = []
-	var empty_radiuses: Array[float] = []
-	var empty_times: Array[float] = []
-	
-	for i in range(MAX_DISTORTIONS):
-		empty_centers.append(Vector2.ZERO)
-		empty_forces.append(0.0)
-		empty_radiuses.append(0.0)
-		empty_times.append(0.0)
-	
-	shader_material.set_shader_parameter("distortion_centers", empty_centers)
-	shader_material.set_shader_parameter("distortion_forces", empty_forces)
-	shader_material.set_shader_parameter("distortion_radiuses", empty_radiuses)
-	shader_material.set_shader_parameter("distortion_times", empty_times)
-	shader_material.set_shader_parameter("active_distortions", 0)
-	shader_material.set_shader_parameter("time", 0.0)
-	
-	# Apply material to background
-	grid_background.material = shader_material
-	
-	# Add as first child so it renders behind everything
-	add_child(grid_background)
-	move_child(grid_background, 0)
-	
-	print("Enhanced grid shader with distortion effects applied successfully")
+	# You can keep the original grid background if you want
+	# It won't have distortion anymore, but will provide the grid visual
+	pass

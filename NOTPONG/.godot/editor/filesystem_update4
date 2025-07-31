@@ -22,3 +22,6 @@ res://scenes/obj/blocks/block_laser.gd
 res://scenes/obj/blocks/block.tscn
 res://scenes/obj/blocks/block_thunder.tscn
 res://scripts/main.gd
+res://shaders/screen_distortion.gdshader
+res://scripts/level_manager.gd
+res://shaders/shockwave.gdshader
