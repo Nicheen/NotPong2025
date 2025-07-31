@@ -12,6 +12,7 @@ const pausemenu_scene:PackedScene = preload("res://scenes/menus/pause_menu.tscn"
 const PLAYER_SCENE = "res://scenes/obj/Player.tscn"
 const ENEMY_SCENE = "res://scenes/obj/Enemy.tscn"
 const ENEMY_BLOCK_SCENE = "res://scenes/obj/blocks/block.tscn"
+const ENEMY_BLOCK_BLUE_SCENE = "res://scenes/obj/blocks/block_blue.tscn"
 const ENEMY_BLOCK_LASER_SCENE = "res://scenes/obj/blocks/block_laser.tscn"
 const ENEMY_BLOCK_DROPPER_SCENE = "res://scenes/obj/blocks/block_dropper.tscn"
 const BOSS_SCENE = "res://scenes/obj/bosses/Boss1.tscn"
@@ -28,6 +29,7 @@ var death_menu: Control
 var win_menu: Control
 var enemies: Array[CharacterBody2D] = []
 var blocks: Array[CharacterBody2D] = []
+var blue_blocks: Array[CharacterBody2D] = []
 var lazer_blocks: Array[CharacterBody2D] = []
 var block_droppers: Array[CharacterBody2D] = []
 var bosses: Array[CharacterBody2D] = []
@@ -361,6 +363,25 @@ func spawn_enemy_block_dropper():
 	for pos in selected_positions:
 		spawn_enemy_block_dropper_at_position(pos)
 
+func spawn_blue_block_at_position(position: Vector2):
+	var block_scene = load(ENEMY_BLOCK_BLUE_SCENE)
+	if not block_scene:
+		print("ERROR: Could not load blue block scene at: ", ENEMY_BLOCK_BLUE_SCENE)
+		return
+	
+	var block = block_scene.instantiate()
+	block.global_position = position
+	
+	# Connect signals WITHOUT distortion effects for blocks
+	block.block_died.connect(_on_block_died)
+	block.block_hit.connect(_on_enemy_hit)
+	
+	add_child(block)
+	blue_blocks.append(block)
+	total_enemies += 1
+	
+	print("Spawned blue block at: ", position)
+
 func spawn_random_enemies(count: int):
 	# Förenklad version
 	var selected_positions = get_random_spawn_positions(count)
@@ -396,6 +417,12 @@ func spawn_enemy_block_dropper_at_position(position: Vector2):
 	
 	print("Spawned kvadrat enemy at: ", position)
 
+func spawn_blue_blocks(count: int):
+	var selected_positions = get_random_spawn_positions(count)
+	
+	for pos in selected_positions:
+		spawn_blue_block_at_position(pos)
+		
 func spawn_enemy_kvadrat_at_position(position: Vector2):
 	var block_scene = load(ENEMY_BLOCK_SCENE)  # Ladda kvadrat-scenen
 	if not block_scene:

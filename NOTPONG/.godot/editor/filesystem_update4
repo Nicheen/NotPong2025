@@ -20,3 +20,8 @@ res://effects/laser.tscn
 res://scripts/obj/enemy/enemy.gd
 res://scripts/obj/player/player.gd
 res://scenes/obj/blocks/block.gd
+res://scenes/obj/blocks/block_blue.tscn
+res://scenes/obj/blocks/block_blue.gd
+res://scripts/main.gd
+res://scripts/level_manager.gd
+res://scenes/menus/win_menu.tscn
