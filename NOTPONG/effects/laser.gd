@@ -106,7 +106,6 @@ func update_gradient_colors(gradient_texture: GradientTexture1D, hit_color: Colo
 	var colors = gradient.colors
 	
 	colors[0] = hit_color  # Start with full hit color
-	colors[1] = Color.BLACK # End with black
 		
 	# Apply the updated colors
 	gradient.colors = colors

@@ -113,7 +113,7 @@ gradient = SubResource("Gradient_ypvw2")
 
 [sub_resource type="Gradient" id="Gradient_aq7nb"]
 offsets = PackedFloat32Array(0, 0.731183)
-colors = PackedColorArray(0.572669, 1.1792e-06, 3.36915e-07, 1, 0, 0.0117647, 0, 1)
+colors = PackedColorArray(0.572669, 1.1792e-06, 3.36915e-07, 1, 0, 0.0117647, 0, 0.866667)
 
 [sub_resource type="GradientTexture1D" id="GradientTexture1D_o5pat"]
 gradient = SubResource("Gradient_aq7nb")
@@ -179,6 +179,7 @@ process_material = SubResource("ParticleProcessMaterial_fdrwo")
 
 [node name="HitParticles2D" type="GPUParticles2D" parent="."]
 unique_name_in_owner = true
+z_index = 1
 emitting = false
 amount = 18
 texture = SubResource("GradientTexture2D_aq7nb")

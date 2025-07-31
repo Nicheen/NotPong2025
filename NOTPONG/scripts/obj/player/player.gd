@@ -64,9 +64,6 @@ func _ready():
 	current_health = max_health
 	current_wall = WallSide.BOTTOM
 	is_on_top_wall = false
-	
-	# Connect to projectile hits
-	connect_to_projectiles()
 
 func _physics_process(delta):
 	handle_teleport_cooldown(delta)
@@ -277,9 +274,6 @@ func shoot_projectile():
 	# Initialize the projectile
 	projectile.initialize(shoot_direction, projectile_speed)
 	
-	# Connect the hit signal
-	projectile.hit_player.connect(_on_projectile_hit)
-	
 	print("Projectile setup complete")
 	
 	# Start cooldown
@@ -374,7 +368,7 @@ func start_teleport_effect():
 	is_teleporting = true
 	if sprite:
 		var tween = create_tween()
-		tween.tween_method(set_sprite_modulate, Color.WHITE, Color.CYAN, 0.1)
+		tween.tween_method(set_sprite_modulate, Color.WHITE, Color.CYAN, 0.3)
 		tween.tween_method(set_sprite_modulate, Color.CYAN, Color.WHITE, 0.1)
 
 func handle_teleport_effect(delta):
@@ -405,14 +399,7 @@ func update_sprite_rotation():
 		WallSide.TOP:
 			target_rotation = PI  # Upside down
 	
-	tween.tween_property(sprite, "rotation", target_rotation, 0.2)
-
-func connect_to_projectiles():
-	# This function can be used to connect to existing projectiles if needed
-	pass
-
-func _on_projectile_hit():
-	pass
+	tween.tween_property(sprite, "rotation", target_rotation, 0.0)
 
 func take_damage(amount: int):
 	current_health -= amount

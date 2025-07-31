@@ -276,6 +276,7 @@ script = ExtResource("1_ghp0e")
 
 [node name="Lightning" type="Line2D" parent="."]
 unique_name_in_owner = true
+visible = false
 material = SubResource("ShaderMaterial_16fuu")
 points = PackedVector2Array(0, 0, 0, 618)
 width = 150.0
@@ -285,6 +286,7 @@ texture_mode = 2
 [node name="Sparks" type="GPUParticles2D" parent="."]
 material = SubResource("CanvasItemMaterial_16fuu")
 position = Vector2(0, 648)
+emitting = false
 amount = 16
 texture = ExtResource("3_x802k")
 lifetime = 0.15
@@ -294,6 +296,7 @@ process_material = SubResource("ParticleProcessMaterial_lebgi")
 [node name="Flare" type="GPUParticles2D" parent="."]
 material = SubResource("CanvasItemMaterial_6w4db")
 position = Vector2(0, 648)
+emitting = false
 amount = 1
 texture = ExtResource("3_x802k")
 lifetime = 0.15
@@ -309,6 +312,7 @@ position = Vector2(0, 324)
 shape = SubResource("RectangleShape2D_damage")
 
 [node name="PointLight2D" type="PointLight2D" parent="."]
+visible = false
 position = Vector2(5.00002, 635)
 scale = Vector2(1.93359, 1.80664)
 color = Color(1, 0.862745, 0.0156863, 1)

@@ -168,6 +168,7 @@ unique_name_in_owner = true
 [node name="Deathzone" type="Node2D" parent="."]
 
 [node name="Line2DTop" type="Line2D" parent="Deathzone"]
+z_index = 2
 position = Vector2(-316.813, 0)
 scale = Vector2(1.56218, 1)
 points = PackedVector2Array(200, 5, 952, 5)
@@ -175,6 +176,7 @@ default_color = Color(1, 0.164706, 0.180392, 1)
 antialiased = true
 
 [node name="Line2D2Bot" type="Line2D" parent="Deathzone"]
+z_index = 2
 position = Vector2(-311.756, 4)
 scale = Vector2(1.57642, 1)
 points = PackedVector2Array(190, 639, 942, 639)
