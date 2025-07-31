@@ -44,7 +44,7 @@ text = "Score: 0"
 [node name="MarginContainer2" type="MarginContainer" parent="Panel/HBoxContainer"]
 layout_mode = 2
 theme_override_constants/margin_top = 4
-theme_override_constants/margin_right = 13
+theme_override_constants/margin_right = 30
 
 [node name="HighScore" type="Label" parent="Panel/HBoxContainer/MarginContainer2"]
 unique_name_in_owner = true

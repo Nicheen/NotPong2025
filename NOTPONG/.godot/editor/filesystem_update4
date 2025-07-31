@@ -25,3 +25,8 @@ res://scripts/main.gd
 res://shaders/screen_distortion.gdshader
 res://scripts/level_manager.gd
 res://shaders/shockwave.gdshader
+res://addons/flowerwall_postprocess/shaders/bloom_shader.material
+res://addons/flowerwall_postprocess/shaders/blurx_shader.material
+res://addons/flowerwall_postprocess/shaders/blury_shader.material
+res://addons/flowerwall_postprocess/shaders/crt_shader.material
+res://addons/flowerwall_postprocess/shaders/dithering_shader.material

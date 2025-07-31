@@ -108,6 +108,7 @@ end_cap_mode = 2
 
 [node name="CastingParticles2D" type="GPUParticles2D" parent="."]
 unique_name_in_owner = true
+z_index = -2
 position = Vector2(40, 0)
 emitting = false
 texture = SubResource("GradientTexture2D_btyrk")
@@ -117,6 +118,7 @@ process_material = SubResource("ParticleProcessMaterial_vps6g")
 
 [node name="BeamParticles2D" type="GPUParticles2D" parent="."]
 unique_name_in_owner = true
+z_index = -2
 position = Vector2(720, 0)
 emitting = false
 amount = 50
@@ -129,6 +131,7 @@ process_material = SubResource("ParticleProcessMaterial_o5pat")
 [node name="CollisionParticles2D" type="GPUParticles2D" parent="."]
 unique_name_in_owner = true
 show_behind_parent = true
+z_index = -2
 emitting = false
 amount = 16
 texture = SubResource("GradientTexture2D_btyrk")

@@ -29,6 +29,9 @@ var tween: Tween = null
 
 
 func _ready() -> void:
+	var core_texture = create_laser_core_texture(color)
+	line_2d.texture = core_texture
+	line_2d.texture_mode = Line2D.LINE_TEXTURE_STRETCH
 	set_color(color)
 	set_is_casting(is_casting)
 	line_2d.points[0] = Vector2.RIGHT * start_distance
@@ -58,8 +61,36 @@ func _physics_process(delta: float) -> void:
 	beam_particles.process_material.emission_box_extents.x = laser_end_position.distance_to(laser_start_position) * 0.5
 
 	collision_particles.emitting = is_colliding()
-
-
+func ease_in_quint(x: float) -> float:
+	return pow(x, 5)
+func ease_out_quint(x: float) -> float:
+	return 1.0 - pow(1.0 - x, 5)
+	
+func create_laser_core_texture(base_color: Color) -> ImageTexture:
+	var size = 64
+	var image = Image.create(size, size, false, Image.FORMAT_RGBA8)
+	
+	var center_y = size / 2.0
+	
+	for x in range(size):
+		for y in range(size):
+			var distance_from_center = abs(y - center_y) / center_y
+			distance_from_center = clamp(distance_from_center, 0.0, 1.0)
+			
+			# Alpha fades out toward the edges
+			var alpha = 1.0 - ease_in_quint(distance_from_center)
+			
+			# Color goes from base to bright toward the edges
+			var bright_color = base_color.lerp(Color.WHITE, 0.8)
+			var color_mix = ease_in_quint(distance_from_center)
+			var final_color = base_color.lerp(bright_color, color_mix)
+			final_color.a = alpha
+			
+			image.set_pixel(x, y, final_color)
+	
+	var texture = ImageTexture.new()
+	texture.set_image(image)
+	return texture
 func set_is_casting(new_value: bool) -> void:
 	if is_casting == new_value:
 		return
@@ -102,7 +133,7 @@ func disappear() -> void:
 
 func set_color(new_color: Color) -> void:
 	color = new_color
-
+	
 	if line_2d == null:
 		return
 
