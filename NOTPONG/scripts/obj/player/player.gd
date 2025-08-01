@@ -27,7 +27,7 @@ extends CharacterBody2D
 @export var knockback_resistance: float = 0.3  # How much knockback is reduced (0.0 = full knockback, 1.0 = no knockback)
 @export var knockback_recovery_time: float = 0.5  # How long knockback effects last
 
-@export var dash_distance: float = 120.0  # Distance to dash
+@export var dash_distance: float = 100.0  # Distance to dash
 @export var dash_cooldown: float = 1.5   # Cooldown time in seconds
 @export var dash_grace_period: float = 1.5
 
@@ -578,22 +578,27 @@ func create_single_afterimage(start_pos: Vector2, dash_direction: Vector2, index
 	var target_pos = current_pos + (dash_direction * dash_distance)
 	var half_size = play_area_size * 0.5
 	var diff = 0
+	var outside = false
 	var min_x = play_area_center.x - half_size.x + 25  
 	var max_x = play_area_center.x + half_size.x - 25
+	
 	if target_pos.x <= 196:
 		target_pos.x = 196
-		diff = global_position.x - target_pos.x 
+		outside = true
 	elif target_pos.x >= 956:
 		target_pos.x = 956
-		diff = global_position.x - target_pos.x 
+		outside = true
 	else:
 		target_pos.x = clamp(target_pos.x, min_x, max_x)
-		diff = dash_distance
 		
 	var progress_along_dash = float(index) / float(total_count - 1)  # 0.0, 0.5, 1.0
-	var afterimage_pos = start_pos + (dash_direction * dash_distance * diff * progress_along_dash)
 	
-	afterimage.global_position = afterimage_pos
+	var afterimage_pos = start_pos + (dash_direction * dash_distance * progress_along_dash)
+	
+	if not outside:
+		afterimage.global_position = afterimage_pos
+	else:
+		afterimage.global_position = start_pos
 	
 	# Set transparency - mest genomskinlig längst bak, minst genomskinlig närmast spelaren
 	# index 0 (start) = mest genomskinlig (0.3)
@@ -614,7 +619,7 @@ func create_single_afterimage(start_pos: Vector2, dash_direction: Vector2, index
 	
 	# Fade out mycket snabbare
 	afterimage_tween.tween_property(afterimage, "modulate:a", 0.0, fade_duration)
-	
+	if outside: return
 	# Slight forward movement (mindre rörelse, snabbare)
 	var drift_distance = 8  # Mindre drift än tidigare (8 istället för 15)
 	var drift_target = afterimage_pos + (dash_direction * drift_distance)

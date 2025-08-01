@@ -1,5 +1,9 @@
 extends Control
 
+signal new_highscore
+
+@onready var high_score_label = $Panel/HighScoreLabel
+
 func _ready():
 	# Connect buttons
 	$Panel/VBoxContainer/btn_restart.pressed.connect(_on_restart_pressed)
@@ -8,9 +12,15 @@ func _ready():
 	
 	# Hide death menu initially
 	visible = false
+	high_score_label.visible = false
 	
 	# Set process mode to always process (so it works when game is paused)
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	
+func show_new_highscore_label():
+	if high_score_label:
+		high_score_label.text = "NEW HIGHSCORE!"
+		high_score_label.visible = true
 
 func show_death_menu():
 	visible = true
