@@ -16,11 +16,13 @@ extends CharacterBody2D
 
 # Shooting settings
 @export var projectile_scene: PackedScene = load("res://scenes/obj/Projectile.tscn")
+@onready var player_damaged_texture_1 = preload("res://images/NewPlayerDamaged1.png")
+@onready var player_damaged_texture_2 = preload("res://images/NewPlayerDamaged2.png")
 @export var projectile_speed: float = 500.0
 @export var shoot_cooldown: float = 0.1
 
 # Health settings
-@export var max_health: int = 100
+@export var max_health: int = 40
 @export var damage_per_hit: int = 10
 
 # NEW: Knockback settings
@@ -91,6 +93,17 @@ func _physics_process(delta):
 	
 	# Apply movement
 	move_and_slide()
+	
+func update_sprite():
+	if sprite == null:
+		print("ERROR: Sprite2D not found!")
+		return
+		
+	if current_health == 20:
+		sprite.texture = player_damaged_texture_1
+	elif current_health == 10:
+		sprite.texture = player_damaged_texture_2
+
 func apply_knockback(direction: Vector2, force: float):
 	"""Apply knockback to the player (X-axis only)"""
 	print("Applying knockback - Direction: ", direction, " Force: ", force)
@@ -417,7 +430,7 @@ func update_sprite_rotation():
 func take_damage(amount: int):
 	current_health -= amount
 	current_health = max(0, current_health)
-	
+	update_sprite()
 	# Emit health changed signal
 	health_changed.emit(current_health)
 	
@@ -435,6 +448,7 @@ func take_damage(amount: int):
 func heal(amount: int):
 	current_health += amount
 	current_health = min(max_health, current_health)
+	update_sprite()
 	health_changed.emit(current_health)
 
 func get_health() -> int:
