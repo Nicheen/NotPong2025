@@ -21,3 +21,10 @@ res://scenes/obj/blocks/block_blue.gd
 res://scenes/obj/blocks/block_dropper.gd
 res://scripts/obj/enemy/enemy.gd
 res://scripts/obj/bosses/boss_1.gd
+res://scenes/obj/Projectile.tscn
+res://scenes/menus/main_menu.tscn
+res://scripts/obj/player/player.gd
+res://effects/laser.gd
+res://effects/thunder.gd
+res://scripts/obj/projectile/projectile_boundary_handler.gd
+res://scripts/obj/projectile/projectile_collision_handler.gd
