@@ -142,15 +142,9 @@ script = ExtResource("1_ybewo")
 [node name="Line2D" type="Line2D" parent="."]
 unique_name_in_owner = true
 visible = false
-<<<<<<< Updated upstream
-points = PackedVector2Array(40, 0, 0, 0)
-=======
 points = PackedVector2Array(40, 0, 639, 0)
->>>>>>> Stashed changes
 texture = SubResource("ImageTexture_btyrk")
 texture_mode = 2
-begin_cap_mode = 2
-end_cap_mode = 2
 
 [node name="CastingParticles2D" type="GPUParticles2D" parent="."]
 unique_name_in_owner = true
