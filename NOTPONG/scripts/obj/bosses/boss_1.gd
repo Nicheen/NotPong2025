@@ -1,7 +1,7 @@
 extends StaticBody2D
 
 # Enemy settings
-@export var max_health: int = 200
+@export var max_health: int = 240
 @export var score_value: int = 500  # Points awarded when killed
 @export var enemy_type: String = "boss"
 
@@ -10,10 +10,35 @@ extends StaticBody2D
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
 @onready var health_bar: ProgressBar = get_node_or_null("HealthBar")
 
+
+var textures = {
+	"normal": preload("res://images/bosses/Boss1.png"),
+	"crack1": preload("res://images/bosses/Boss1Cracked1.png"),
+	"crack2": preload("res://images/bosses/Boss1Cracked2.png"),
+	"crack3": preload("res://images/bosses/Boss1Cracked3.png"),
+	"crack4": preload("res://images/bosses/Boss1Cracked4.png"),
+	"crack5": preload("res://images/bosses/Boss1Cracked5.png"),
+	"crack6": preload("res://images/bosses/Boss1Cracked6.png"),
+	"armour": preload("res://images/bosses/Boss1Armour1&2.png"),
+	"armour_crack3": preload("res://images/bosses/Boss1Armour3.png"),
+	"armour_crack4": preload("res://images/bosses/Boss1Armour4.png"),
+	"armour_crack5": preload("res://images/bosses/Boss1Armour5.png"),
+	"armour_crack6": preload("res://images/bosses/Boss1Armour6.png"),
+}
 # Internal variables
 var current_health: int
 var is_dead: bool = false
+var armour_duration: float = randf_range(4.0, 6.0)
+var armour_active: bool = false
 var original_color: Color
+var armour_timer: float = 0.0
+var is_transitioning: bool = false
+var original_rotation: float = 0.0
+var armour_rotation: float = 0.0
+
+var activate_armour_duration: float = randf_range(2.0, 6.0)
+var activate_armour_timer: float = 0.0
+
 
 # Signals
 signal boss_died(score_points: int)
@@ -41,31 +66,151 @@ func _ready():
 	
 	print("Enemy created with ", max_health, " health at position: ", global_position)
 
+func deactivate_armoured_mode():
+	"""Simple armoured mode deactivation"""
+	
+	print("🛡️ DEACTIVATING ARMOURED MODE")
+	
+	armour_active = false
+	is_transitioning = true
+	collision_layer = 16  # Back to enemy layer
+	
+	var tween = create_tween()
+	tween.tween_property(sprite, "rotation_degrees", original_rotation, 0.25)
+	
+	await tween.finished
+	
+	is_transitioning = false
+	armour_active = false
+	update_sprite()
+	print("🛡️ ARMOURED MODE DEACTIVATED")
+	
+	
+	
 func _physics_process(delta):
-	pass
+	# Handle armoured mode timing
+	if armour_active and not is_transitioning:
+		armour_timer += delta
+		if armour_timer >= armour_duration:
+			armour_timer = 0.0
+			armour_duration = randf_range(4.0, 6.0)
+			deactivate_armoured_mode()
+			
+	if not armour_active and not is_transitioning:
+		activate_armour_timer += delta
+		if activate_armour_timer >= activate_armour_duration:
+			activate_armour_timer = 0.0
+			activate_armour_duration = randf_range(2.0, 6.0)
+			activate_armoured_mode()
 
 func take_damage(damage: int):
 	if is_dead:
+		print("   Boss already dead - ignoring")
 		return
 	
-	print("Enemy took ", damage, " damage")
+	# If armoured, block damage and show effect
+	if armour_active:
+		print("   🛡️ DAMAGE BLOCKED BY ARMOUR!")
+		show_armour_block_effect()
+		return
 	
+	# Apply damage - EXAKT som andra enemies
+	var old_health = current_health
 	current_health -= damage
 	current_health = max(0, current_health)
 	
-	# Update health bar
+	print("   Health changed: ", old_health, " -> ", current_health)
+	
+	# Update health bar - EXAKT som andra enemies
 	if health_bar:
 		health_bar.value = current_health
-	
-	# Visual damage feedback
-	show_damage_effect()
-	
-	# Emit hit signal
-	boss_hit.emit(damage)
-	
-	# Check if dead
 	if current_health <= 0:
 		die()
+
+	# Update sprite
+	update_sprite()
+	
+	# Visual feedback - EXAKT som andra enemies
+	show_damage_effect()
+	if current_health % 50 == 0:
+		activate_armoured_mode()
+	
+func show_armour_block_effect():
+	"""Blue flash when armour blocks"""
+	if not sprite:
+		return
+	
+	var tween = create_tween()
+	tween.tween_property(sprite, "modulate", Color.CYAN, 0.1)
+	tween.tween_property(sprite, "modulate", original_color, 0.1)
+	
+func update_sprite():
+	if not sprite or is_dead:
+		return
+	print("Changing Sprite..." + str(armour_active))
+	# Determine texture based on health and thunder state
+	var health_ratio = float(current_health) / float(max_health)
+	var texture_key = "normal"
+	
+	if armour_active:
+		if current_health > 160:  # 30-21 hp = normal attack
+			texture_key = "armour"
+		elif current_health > 120:  # 20-11 hp = crack1 attack
+			texture_key = "armour_crack3"
+		elif current_health > 80:  # 20-11 hp = crack1 attack
+			texture_key = "armour_crack4"
+		elif current_health > 40:  # 20-11 hp = crack1 attack
+			texture_key = "armour_crack5"
+		else:  # 10-1 hp = crack2 attack
+			texture_key = "armour_crack6"
+	else:
+		# Thunder is inactive - use normal versions
+		if current_health > 230:  # 30-21 hp = normal attack
+			texture_key = "normal"
+		elif current_health > 200:	
+			texture_key = "crack1"
+		elif current_health > 160:  # 20-11 hp = crack1 attack
+			texture_key = "crack2"
+		elif current_health > 120:  # 20-11 hp = crack1 attack
+			texture_key = "crack3"
+		elif current_health > 80:  # 20-11 hp = crack1 attack
+			texture_key = "crack4"
+		elif current_health > 40:  # 20-11 hp = crack1 attack
+			texture_key = "crack5"
+		else:  # 10-1 hp = crack2 attack
+			texture_key = "crack6"
+	
+	if textures.has(texture_key):
+		sprite.texture = textures[texture_key]
+		print("Thunder block health: ", current_health, "/", max_health, " - Using texture: ", texture_key)
+
+func activate_armoured_mode():
+	"""Simple armoured mode activation"""
+	if armour_active or is_transitioning:
+		return
+	
+	print("🛡️ ACTIVATING ARMOURED MODE")
+	
+	# Choose rotation direction
+	var directions = [45.0, -45.0]
+	armour_rotation = original_rotation + directions[randi() % 2]
+	
+	print("   Rotating from ", sprite.rotation_degrees, " to ", armour_rotation)
+	
+	is_transitioning = true
+	var tween = create_tween()
+	tween.tween_property(sprite, "rotation_degrees", armour_rotation, 0.25)
+	
+	await tween.finished
+	
+	# Activate armour
+	armour_active = true
+	is_transitioning = false
+	armour_timer = 0.0
+	collision_layer = 8  # Wall layer for bouncing projectiles
+	
+	update_sprite()
+	print("🛡️ ARMOURED MODE ACTIVE - Collision layer: ", collision_layer)
 
 func die():
 	if is_dead:
@@ -78,6 +223,8 @@ func die():
 	boss_died.emit(score_value)
 	
 	play_death_effect()
+	
+	
 	
 func show_damage_effect():
 	if not sprite:
