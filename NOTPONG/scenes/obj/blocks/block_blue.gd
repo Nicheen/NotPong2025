@@ -208,13 +208,21 @@ func die():
 
 # Silent death method (no score awarded)
 func die_silently():
+	"""Die without awarding score - used for laser kills"""
 	if is_dead:
 		return
 	
 	is_dead = true
 	print("Blue Block destroyed by laser (no score awarded)")
 	
-	# Don't emit the death signal that awards score
+	# Stop regeneration
+	if is_regenerating:
+		stop_regeneration()
+	
+	# VIKTIG FIX: Skicka ändå signal så att enemies_killed räknaren uppdateras
+	# Vi skickar 0 poäng istället för score_value
+	block_died.emit(0)
+	
 	play_death_effect()
 
 func show_damage_effect():

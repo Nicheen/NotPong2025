@@ -7,6 +7,10 @@ func start_level(level: int):
 	current_level = level
 	print("Starting level: ", level)
 	
+	# FIX: Uppdatera UI när nivå startar
+	if main_scene and main_scene.has_method("update_ui"):
+		main_scene.update_ui()
+	
 	# Rensa tidigare enemies/blocks
 	clear_level()
 	
@@ -17,7 +21,9 @@ func start_level(level: int):
 		spawn_normal_level(level)
 
 func is_boss_level(level: int) -> bool:
-	return level % 5 == 0  # Var tionde level (10, 20, 30, etc.)
+	var is_boss = level % 5 == 0  # Var femte level (5, 10, 15, etc.)
+	print("Level ", level, " is boss level: ", is_boss)
+	return is_boss
 
 func clear_level():
 	"""Clear level using the main scene's improved clear function"""
@@ -121,8 +127,9 @@ func spawn_boss(level: int):
 	main_scene.bosses.append(boss)
 	main_scene.total_enemies += 1
 	
-	# Reserve boss position
-	main_scene.spawn_manager.reserve_positions([boss_position])
+	# FIX: Skapa en korrekt typed Array[Vector2] för boss position
+	var boss_positions: Array[Vector2] = [boss_position]
+	main_scene.spawn_manager.reserve_positions(boss_positions)
 	
 	print("Boss spawned for level ", level, " with health multiplier: ", boss_health_multiplier)
 	
@@ -136,11 +143,15 @@ func _on_boss_died(score_points: int):
 func level_completed():
 	if is_boss_level(current_level):
 		print("BOSS LEVEL ", current_level, " COMPLETED!")
-		# Längre paus efter boss
 		await get_tree().create_timer(3.0).timeout
 	else:
 		print("Level ", current_level, " completed!")
 		await get_tree().create_timer(2.0).timeout
 	
 	current_level += 1
+	
+	# FIX: Uppdatera UI omedelbart efter level ökning
+	if main_scene and main_scene.has_method("update_ui"):
+		main_scene.update_ui()
+	
 	start_level(current_level)

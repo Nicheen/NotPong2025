@@ -115,8 +115,10 @@ func die_silently():
 	is_dead = true
 	print("Enemy destroyed by laser (no score awarded)")
 	
-	# Don't emit the death signal that awards score
-	# Just play the death effect
+	# VIKTIG FIX: Skicka ändå signal så att enemies_killed räknaren uppdateras
+	# Vi skickar 0 poäng istället för score_value, men behåller position för effekter
+	enemy_died.emit(0, global_position)
+	
 	play_death_effect()
 
 func show_damage_effect():

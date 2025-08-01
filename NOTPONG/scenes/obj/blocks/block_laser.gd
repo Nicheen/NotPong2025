@@ -236,12 +236,15 @@ func die_silently():
 		return
 	
 	is_dead = true
-	print("laser block destroyed by laser (no score awarded)")
+	print("Laser block destroyed by laser (no score awarded)")
 	
 	laser.is_casting = false
 	
-	# Don't emit the death signal that awards score
-	# Just play the death effect
+	# VIKTIG FIX: Skicka ändå signal så att enemies_killed räknaren uppdateras
+	# Vi skickar 0 poäng istället för score_value
+	block_died.emit(0)
+	
+	# Play the death effect
 	play_death_effect()
 
 func change_to_cracked_sprite():

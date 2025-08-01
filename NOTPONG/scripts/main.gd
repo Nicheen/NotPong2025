@@ -84,11 +84,13 @@ func setup_play_area():
 func setup_level_manager():
 	level_manager = Node.new()
 	level_manager.name = "LevelManager"
-	add_child(level_manager)
 	level_manager.set_script(load("res://scripts/level_manager.gd"))
+	add_child(level_manager)
 	
 	# Give level manager access to main scene
 	level_manager.main_scene = self
+	
+	print("Level manager setup complete")
 
 func setup_screen_distortion():
 	"""Create a screen-space distortion overlay that affects everything"""
@@ -314,7 +316,7 @@ func spawn_enemy_at_position(position: Vector2):
 	var enemy = enemy_scene.instantiate()
 	enemy.global_position = position
 	
-	# Connect enemy signals - now the enemy will emit its position automatically
+	# Connect enemy signals
 	enemy.enemy_died.connect(_on_enemy_died_with_distortion)
 	enemy.enemy_hit.connect(_on_enemy_hit)
 	
@@ -322,10 +324,12 @@ func spawn_enemy_at_position(position: Vector2):
 	enemies.append(enemy)
 	total_enemies += 1
 	
-	# Reserve this position in spawn manager
-	spawn_manager.reserve_positions([position])
+	# FIX: Använd typed array
+	var positions: Array[Vector2] = [position]
+	spawn_manager.reserve_positions(positions)
 	
 	print("Spawned enemy at: ", position)
+	
 func generate_spawn_positions():
 	# Rensa eventuella befintliga positioner
 	all_spawn_positions.clear()
@@ -382,8 +386,9 @@ func spawn_blue_block_at_position(position: Vector2):
 	blue_blocks.append(block)
 	total_enemies += 1
 	
-	# Reserve this position in spawn manager
-	spawn_manager.reserve_positions([position])
+	# FIX: Använd typed array
+	var positions: Array[Vector2] = [position]
+	spawn_manager.reserve_positions(positions)
 	
 	print("Spawned blue block at: ", position)
 	
@@ -419,8 +424,9 @@ func spawn_enemy_block_dropper_at_position(position: Vector2):
 	block_droppers.append(block)
 	total_enemies += 1
 	
-	# Reserve this position in spawn manager
-	spawn_manager.reserve_positions([position])
+	# FIX: Använd typed array
+	var positions: Array[Vector2] = [position]
+	spawn_manager.reserve_positions(positions)
 	
 	print("Spawned block dropper at: ", position)
 	
@@ -447,8 +453,9 @@ func spawn_enemy_kvadrat_at_position(position: Vector2):
 	blocks.append(block)
 	total_enemies += 1
 	
-	# Reserve this position in spawn manager
-	spawn_manager.reserve_positions([position])
+	# FIX: Använd typed array
+	var positions: Array[Vector2] = [position]
+	spawn_manager.reserve_positions(positions)
 	
 	print("Spawned block at: ", position)
 	
@@ -481,11 +488,10 @@ func spawn_enemy_lazer():
 
 func spawn_enemy_lazer_at_position(position: Vector2):
 	var lazer_scene = load(ENEMY_BLOCK_LASER_SCENE)
-	
 	if not lazer_scene:
-		print("ERROR: Could not load laser scene")
+		print("ERROR: Could not load laser block scene at: ", ENEMY_BLOCK_LASER_SCENE)
 		return
-		
+	
 	var lazer_block = lazer_scene.instantiate()
 	lazer_block.global_position = position
 	
@@ -497,8 +503,9 @@ func spawn_enemy_lazer_at_position(position: Vector2):
 	lazer_blocks.append(lazer_block)
 	total_enemies += 1
 	
-	# Reserve this position in spawn manager
-	spawn_manager.reserve_positions([position])
+	# FIX: Använd typed array
+	var positions: Array[Vector2] = [position]
+	spawn_manager.reserve_positions(positions)
 	
 	print("Spawned laser block at: ", position)
 	
@@ -967,13 +974,14 @@ func _on_block_died(score_points: int):
 	# Find and free the position of the destroyed block
 	cleanup_destroyed_entity_position()
 	
-	# Check win condition - ADD THIS PART
+	# Check win condition
 	if enemies_killed >= total_enemies:
 		if level_manager and level_manager.has_method("level_completed"):
-			current_level += 1
+			# VIKTIG FIX: Ta bort denna rad som orsakar dubbel ökning
+			# current_level += 1  <-- RADERA DENNA RAD!
 			level_manager.level_completed()
 		else:
-			player_wins() 
+			player_wins()
 
 func cleanup_destroyed_entity_position():
 	"""Clean up positions of destroyed entities"""
@@ -1007,7 +1015,9 @@ func update_death_menu_score():
 		score_label_in_death_menu.text = "Final Score: " + str(current_score)
 			
 func update_ui():
-	hud.update_level(current_level)
+	# FIX: Använd level_manager.current_level istället för lokal current_level
+	if level_manager:
+		hud.update_level(level_manager.current_level)
 	hud.update_score(current_score)
 	
 	# Check for high score updates in real-time and update HUD
