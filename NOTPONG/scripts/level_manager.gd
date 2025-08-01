@@ -56,7 +56,7 @@ func spawn_normal_level(level: int):
 	var base_enemies = 3
 	var base_block_dropper = 1
 	var base_lazer = 1
-	var base_thunder = 1
+	var base_thunder = 0
 	var base_blue_blocks = 2
 	
 	# Increase difficulty each level
@@ -69,10 +69,10 @@ func spawn_normal_level(level: int):
 	
 	# Apply maximum limits
 	blocks_count = min(blocks_count, 20)
-	enemies_count = min(enemies_count, 5)
+	enemies_count = min(enemies_count, 10)
 	block_dropper_count = min(block_dropper_count, 5)
 	lazer_count = min(lazer_count, 5)
-	thunder_count = min(thunder_count, 3)
+	thunder_count = min(thunder_count, 1)
 	blue_blocks_count = min(blue_blocks_count, 8)
 	
 	# SPAWN IN STRATEGIC ORDER (blocks first, then special blocks, enemies last)
