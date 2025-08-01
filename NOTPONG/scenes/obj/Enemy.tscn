@@ -1,17 +1,8 @@
-[gd_scene load_steps=7 format=3 uid="uid://mhneu5sufe2j"]
+[gd_scene load_steps=6 format=3 uid="uid://mhneu5sufe2j"]
 
 [ext_resource type="Script" uid="uid://cfxv5qdy0ce0w" path="res://scripts/obj/enemy/enemy.gd" id="1_enemy_script"]
-[ext_resource type="AudioStream" uid="uid://m2nawbuan6pu" path="res://sounds/noels/blop1.wav" id="3_455qr"]
-
-[sub_resource type="Gradient" id="Gradient_gsmpp"]
-offsets = PackedFloat32Array(0.948905, 1)
-colors = PackedColorArray(0, 0, 0, 1, 1, 1, 1, 0)
-
-[sub_resource type="GradientTexture2D" id="GradientTexture2D_455qr"]
-gradient = SubResource("Gradient_gsmpp")
-fill = 1
-fill_from = Vector2(0.502488, 0.487562)
-fill_to = Vector2(0.691542, 0.666667)
+[ext_resource type="Texture2D" uid="uid://787kqsrjkmux" path="res://images/Bomb1.png" id="2_455qr"]
+[ext_resource type="AudioStream" uid="uid://ceekixuhqqlts" path="res://sounds/noels/blop1.wav" id="3_455qr"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_455qr"]
 radius = 25.0
@@ -26,7 +17,7 @@ score_value = 10
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 scale = Vector2(1.5, 1.5)
-texture = SubResource("GradientTexture2D_455qr")
+texture = ExtResource("2_455qr")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(0, -1)
