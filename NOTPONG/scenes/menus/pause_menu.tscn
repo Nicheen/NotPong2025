@@ -5,7 +5,7 @@
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_kukqi"]
 texture = ExtResource("2_myx47")
-modulate_color = Color(1, 1, 1, 0.513726)
+modulate_color = Color(1, 1, 1, 0.588235)
 
 [node name="PauseMenu" type="Control"]
 z_index = 1

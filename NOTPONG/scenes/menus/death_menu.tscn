@@ -5,7 +5,7 @@
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_death"]
 texture = ExtResource("2_death_bg")
-modulate_color = Color(1, 1, 1, 0.8)
+modulate_color = Color(1, 1, 1, 0.588235)
 
 [node name="DeathMenu" type="Control"]
 z_index = 1

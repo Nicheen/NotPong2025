@@ -69,44 +69,6 @@ color_ramp = SubResource("GradientTexture1D_0wfyh")
 hue_variation_min = -0.1
 hue_variation_max = 0.1
 
-[sub_resource type="Gradient" id="Gradient_o6xl0"]
-offsets = PackedFloat32Array(0.576642)
-colors = PackedColorArray(0.176471, 0.0862745, 0.0823529, 0.392157)
-
-[sub_resource type="GradientTexture2D" id="GradientTexture2D_tipki"]
-gradient = SubResource("Gradient_o6xl0")
-width = 16
-height = 16
-
-[sub_resource type="CurveXYZTexture" id="CurveXYZTexture_85g3d"]
-
-[sub_resource type="Curve" id="Curve_tefeu"]
-_limits = [-87.6404, 10.0, 0.0, 1.0]
-_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(0.504202, -87.6404), 0.0, 0.0, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
-point_count = 3
-
-[sub_resource type="CurveTexture" id="CurveTexture_o6xl0"]
-curve = SubResource("Curve_tefeu")
-
-[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_choun"]
-particle_flag_disable_z = true
-emission_shape_scale = Vector3(500, 700, 1)
-emission_shape = 3
-emission_box_extents = Vector3(1, 1, 1)
-directional_velocity_min = -100.0
-directional_velocity_max = 100.0
-directional_velocity_curve = SubResource("CurveXYZTexture_85g3d")
-gravity = Vector3(0, 0, 0)
-linear_accel_min = -10.0
-linear_accel_max = 10.0
-linear_accel_curve = SubResource("CurveTexture_o6xl0")
-scale_min = 0.1
-scale_max = 0.15
-scale_over_velocity_max = 1.5
-hue_variation_min = -0.39
-hue_variation_max = 0.25
-turbulence_enabled = true
-
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_jyhfs"]
 size = Vector2(752, 20)
 
@@ -140,6 +102,44 @@ glow_intensity = 0.1
 glow_blend_mode = 1
 glow_hdr_threshold = 0.9
 glow_hdr_scale = 0.0
+
+[sub_resource type="Gradient" id="Gradient_o6xl0"]
+offsets = PackedFloat32Array(0.576642)
+colors = PackedColorArray(0.176471, 0.0862745, 0.0823529, 0.392157)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_tipki"]
+gradient = SubResource("Gradient_o6xl0")
+width = 16
+height = 16
+
+[sub_resource type="CurveXYZTexture" id="CurveXYZTexture_85g3d"]
+
+[sub_resource type="Curve" id="Curve_tefeu"]
+_limits = [-87.6404, 10.0, 0.0, 1.0]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(0.504202, -87.6404), 0.0, 0.0, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="CurveTexture" id="CurveTexture_o6xl0"]
+curve = SubResource("Curve_tefeu")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_tefeu"]
+particle_flag_disable_z = true
+emission_shape_scale = Vector3(500, 700, 1)
+emission_shape = 3
+emission_box_extents = Vector3(1, 1, 1)
+directional_velocity_min = -100.0
+directional_velocity_max = 100.0
+directional_velocity_curve = SubResource("CurveXYZTexture_85g3d")
+gravity = Vector3(0, 0, 0)
+linear_accel_min = -10.0
+linear_accel_max = 10.0
+linear_accel_curve = SubResource("CurveTexture_o6xl0")
+scale_min = 0.1
+scale_max = 0.15
+scale_over_velocity_max = 1.5
+hue_variation_min = -0.1
+hue_variation_max = 0.1
+turbulence_enabled = true
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_elqb8")
@@ -237,25 +237,9 @@ trail_lifetime = 0.06
 trail_sections = 6
 process_material = SubResource("ParticleProcessMaterial_o5qli")
 
-[node name="GPUParticles2D2" type="GPUParticles2D" parent="Deathzone/StaticBody2DTop"]
-z_index = 2
-position = Vector2(576, 662)
-amount = 100
-texture = SubResource("GradientTexture2D_tipki")
-lifetime = 10.0
-process_material = SubResource("ParticleProcessMaterial_choun")
-
 [node name="StaticBody2DBot" type="StaticBody2D" parent="Deathzone"]
 collision_layer = 130
 collision_mask = 0
-
-[node name="GPUParticles2D3" type="GPUParticles2D" parent="Deathzone/StaticBody2DBot"]
-z_index = 2
-position = Vector2(576, -29)
-amount = 100
-texture = SubResource("GradientTexture2D_tipki")
-lifetime = 10.0
-process_material = SubResource("ParticleProcessMaterial_choun")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Deathzone/StaticBody2DBot"]
 position = Vector2(576, 648)
@@ -288,4 +272,4 @@ position = Vector2(576, 325)
 amount = 200
 texture = SubResource("GradientTexture2D_tipki")
 lifetime = 10.0
-process_material = SubResource("ParticleProcessMaterial_choun")
+process_material = SubResource("ParticleProcessMaterial_tefeu")
