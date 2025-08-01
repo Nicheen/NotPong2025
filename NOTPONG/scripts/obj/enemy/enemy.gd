@@ -128,6 +128,7 @@ func take_damage(damage: int):
 	
 	if current_health <= 0:
 		die()
+		
 func change_to_cracked_sprite():
 	"""Change the sprite to the cracked version"""
 	if sprite and cracked_texture:
@@ -190,8 +191,8 @@ func _on_projectile_hit():
 
 func check_blast_damage():
 	var blast_radius = 150.0
-	var blast_damage = 25
-	var knockback_force = 1200.0
+	var blast_damage = 20
+	var knockback_force = 2500.0
 	
 	var player = find_player()
 	if not player:

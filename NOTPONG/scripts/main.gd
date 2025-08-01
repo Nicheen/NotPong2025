@@ -250,7 +250,7 @@ func update_distortion_shader():
 func create_enemy_death_distortion(enemy_position: Vector2):
 	"""Create a distortion effect specifically for enemy death"""
 	var force = randf_range(12.0, 20.0)  # More controlled force
-	var radius = randf_range(100.0, 100.0)  # Bigger explosion radius
+	var radius = randf_range(150.0, 150.0)  # Bigger explosion radius
 	var duration = randf_range(2.5, 3.5)  # Longer lasting effect
 	
 	create_distortion_effect(enemy_position, force, radius, duration)

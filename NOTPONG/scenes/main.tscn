@@ -1,4 +1,4 @@
-[gd_scene load_steps=28 format=3 uid="uid://b5flfw85xnn3s"]
+[gd_scene load_steps=30 format=3 uid="uid://b5flfw85xnn3s"]
 
 [ext_resource type="Script" uid="uid://c2dkvm0rwmi1d" path="res://scripts/main.gd" id="1_elqb8"]
 [ext_resource type="Texture2D" uid="uid://003gl8sksmsl" path="res://images/RutnatBakgrund.png" id="2_tbgi4"]
@@ -70,29 +70,42 @@ hue_variation_min = -0.1
 hue_variation_max = 0.1
 
 [sub_resource type="Gradient" id="Gradient_o6xl0"]
-offsets = PackedFloat32Array(0.0510949, 1)
-colors = PackedColorArray(1, 1, 0.635294, 0.156863, 0.992157, 0.964706, 0.996078, 0.137255)
+offsets = PackedFloat32Array(0.576642)
+colors = PackedColorArray(0.176471, 0.0862745, 0.0823529, 0.392157)
 
 [sub_resource type="GradientTexture2D" id="GradientTexture2D_tipki"]
 gradient = SubResource("Gradient_o6xl0")
+width = 16
 height = 16
 
 [sub_resource type="CurveXYZTexture" id="CurveXYZTexture_85g3d"]
 
+[sub_resource type="Curve" id="Curve_tefeu"]
+_limits = [-87.6404, 10.0, 0.0, 1.0]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(0.504202, -87.6404), 0.0, 0.0, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="CurveTexture" id="CurveTexture_o6xl0"]
+curve = SubResource("Curve_tefeu")
+
 [sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_choun"]
 particle_flag_disable_z = true
-emission_shape_scale = Vector3(700, 20, 1)
+emission_shape_scale = Vector3(500, 700, 1)
 emission_shape = 3
 emission_box_extents = Vector3(1, 1, 1)
-directional_velocity_min = -30.0
-directional_velocity_max = 30.0
+directional_velocity_min = -100.0
+directional_velocity_max = 100.0
 directional_velocity_curve = SubResource("CurveXYZTexture_85g3d")
 gravity = Vector3(0, 0, 0)
+linear_accel_min = -10.0
+linear_accel_max = 10.0
+linear_accel_curve = SubResource("CurveTexture_o6xl0")
 scale_min = 0.1
 scale_max = 0.15
 scale_over_velocity_max = 1.5
 hue_variation_min = -0.39
 hue_variation_max = 0.25
+turbulence_enabled = true
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_jyhfs"]
 size = Vector2(752, 20)
@@ -268,3 +281,11 @@ environment = SubResource("Environment_jyhfs")
 
 [node name="Camera2D" type="Camera2D" parent="."]
 position = Vector2(576, 324)
+
+[node name="GPUParticles2D4" type="GPUParticles2D" parent="."]
+z_index = 1
+position = Vector2(576, 325)
+amount = 200
+texture = SubResource("GradientTexture2D_tipki")
+lifetime = 10.0
+process_material = SubResource("ParticleProcessMaterial_choun")
