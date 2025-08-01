@@ -4,11 +4,11 @@
 [ext_resource type="Texture2D" uid="uid://ryq0732d653j" path="res://images/BlockThunder.png" id="2_cocgj"]
 [ext_resource type="PackedScene" uid="uid://b4npt30yvwa8q" path="res://effects/thunder.tscn" id="3_cocgj"]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_cocgj"]
-size = Vector2(100, 49)
-
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_5u526"]
 size = Vector2(52, 51)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_cocgj"]
+size = Vector2(100, 49)
 
 [node name="EnemyBlockThunder" type="StaticBody2D"]
 scale = Vector2(0.5, 0.5)
@@ -22,10 +22,6 @@ position = Vector2(9.53674e-07, 0)
 scale = Vector2(1.5625, 1.5625)
 texture = ExtResource("2_cocgj")
 
-[node name="CollisionShape2D2" type="CollisionShape2D" parent="."]
-position = Vector2(0, 25.5)
-shape = SubResource("RectangleShape2D_cocgj")
-
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 unique_name_in_owner = true
 position = Vector2(0, -24.5)
@@ -34,3 +30,11 @@ shape = SubResource("RectangleShape2D_5u526")
 [node name="VFX_Thunder" parent="." instance=ExtResource("3_cocgj")]
 unique_name_in_owner = true
 position = Vector2(0, 50)
+
+[node name="Area2D" type="Area2D" parent="."]
+collision_layer = 32768
+collision_mask = 2
+
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="Area2D"]
+position = Vector2(0, 25.5)
+shape = SubResource("RectangleShape2D_cocgj")

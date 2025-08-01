@@ -30,11 +30,12 @@ var textures = {
 var current_health: int
 var is_dead: bool = false
 var thunder_timer: float = 0.0
-var thunder_damage_timer: float = 0.0  # Timer for damage intervals
+var thunder_damage_timer: float = 0.0
 var thunder_active: bool = false
+var thunder_has_started: bool = false
 var original_color: Color
 
-# Signals - match the main scene's expected signal name
+# Signals
 signal block_destroyed(score: int)
 
 func _ready():
@@ -45,16 +46,23 @@ func _ready():
 	# Store original sprite color
 	if sprite:
 		original_color = sprite.modulate
-		# Ensure thunder block is properly sized (2x2 = 100x100 pixels)
-		# The sprite scale should be adjusted to make it 2x2 grid spaces
-		sprite.scale = Vector2(3.125, 3.125)  # Adjust based on your base sprite size
+		sprite.scale = Vector2(3.125, 3.125)
 	
 	# Start thunder timer
 	thunder_timer = 0.0
 	
-	# Hide thunder effect initially
+	# Set up thunder effect and connect its signals
 	if thunder_effect:
+		thunder_effect.setup_vertical_thunder()
 		thunder_effect.visible = false
+		
+		# NEW: Connect to thunder controller signals
+		if thunder_effect.has_signal("thunder_activated"):
+			thunder_effect.thunder_activated.connect(_on_thunder_activated)
+		if thunder_effect.has_signal("thunder_deactivated"):
+			thunder_effect.thunder_deactivated.connect(_on_thunder_deactivated)
+		
+		print("Thunder effect configured and signals connected")
 	
 	print("Thunder block created with ", max_health, " health at position: ", global_position)
 
@@ -65,9 +73,9 @@ func _physics_process(delta):
 	# Handle thunder timing
 	thunder_timer += delta
 	
-	# Activate thunder after delay
-	if not thunder_active and thunder_timer >= thunder_delay:
-		activate_thunder()
+	# Start thunder system after initial delay
+	if not thunder_has_started and thunder_timer >= thunder_delay:
+		start_thunder_system()
 	
 	# Handle thunder damage while active
 	if thunder_active:
@@ -75,38 +83,28 @@ func _physics_process(delta):
 		if thunder_damage_timer >= thunder_damage_interval:
 			apply_thunder_damage()
 			thunder_damage_timer = 0.0
-	
-	# Deactivate thunder after duration
-	if thunder_active and thunder_timer >= thunder_delay + thunder_duration:
-		deactivate_thunder()
 
-func activate_thunder():
+func start_thunder_system():
+	"""Start the continuous thunder cycling system"""
+	thunder_has_started = true
+	
+	if thunder_effect and thunder_effect.has_method("start_thunder"):
+		thunder_effect.start_thunder()
+		print("Thunder cycling system started on thunder block")
+
+# NEW: Signal handlers for thunder state changes
+func _on_thunder_activated():
+	"""Called when the thunder controller activates lightning"""
 	thunder_active = true
 	update_sprite()
-	
-	if thunder_effect:
-		thunder_effect.visible = true
-		# If thunder effect has activation method, call it
-		if thunder_effect.has_method("activate_thunder"):
-			thunder_effect.activate_thunder()
-	
-	print("Thunder activated on thunder block at: ", global_position)
+	print("Thunder block received activation signal - updating sprite")
 
-func deactivate_thunder():
+func _on_thunder_deactivated():
+	"""Called when the thunder controller deactivates lightning"""
 	thunder_active = false
 	update_sprite()
-	
-	if thunder_effect:
-		thunder_effect.visible = false
-		# If thunder effect has deactivation method, call it
-		if thunder_effect.has_method("deactivate_thunder"):
-			thunder_effect.deactivate_thunder()
-	
-	# Reset timer for next cycle
-	thunder_timer = 0.0
-	thunder_damage_timer = 0.0
-	
-	print("Thunder deactivated on thunder block")
+	thunder_damage_timer = 0.0  # Reset damage timer
+	print("Thunder block received deactivation signal - updating sprite")
 
 func apply_thunder_damage():
 	"""Apply continuous damage to whatever the thunder is hitting"""
@@ -121,9 +119,6 @@ func apply_thunder_damage():
 				var damage_amount = thunder_damage_per_second * thunder_damage_interval
 				target.take_damage(damage_amount)
 				print("Thunder dealing ", damage_amount, " damage to ", target.name)
-	
-	# Alternative: Check for bodies in thunder area using Area2D
-	# This would require your thunder effect to have an Area2D component
 
 func take_damage(damage: int):
 	if is_dead:
@@ -134,7 +129,7 @@ func take_damage(damage: int):
 	current_health -= damage
 	current_health = max(0, current_health)
 	
-	update_sprite()  # Update sprite immediately after health change
+	update_sprite()
 	show_damage_effect()
 	
 	if current_health <= 0:
@@ -145,7 +140,6 @@ func update_sprite():
 		return
 	
 	# Determine texture based on health and thunder state
-	var health_ratio = float(current_health) / float(max_health)
 	var texture_key = "normal"
 	
 	# Health states: 30hp = normal, 20hp = crack1, 10hp = crack2, 0hp = dead
@@ -168,7 +162,7 @@ func update_sprite():
 	
 	if textures.has(texture_key):
 		sprite.texture = textures[texture_key]
-		print("Thunder block health: ", current_health, "/", max_health, " - Using texture: ", texture_key)
+		print("Thunder block health: ", current_health, "/", max_health, " - Using texture: ", texture_key, " (thunder_active: ", thunder_active, ")")
 
 func show_damage_effect():
 	if not sprite:
@@ -186,9 +180,9 @@ func destroy_block():
 	is_dead = true
 	print("Thunder block destroyed! Awarding ", score_value, " points")
 	
-	# Deactivate thunder before dying
-	if thunder_active:
-		deactivate_thunder()
+	# Stop thunder system before dying
+	if thunder_effect and thunder_effect.has_method("end_thunder"):
+		thunder_effect.end_thunder()
 	
 	# Emit destruction signal with score
 	block_destroyed.emit(score_value)

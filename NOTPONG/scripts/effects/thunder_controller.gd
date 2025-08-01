@@ -31,6 +31,10 @@ var should_cycle: bool = false
 var is_lightning_active: bool = false
 var current_inactive_duration: float = 0.0
 
+# NEW: Signals to communicate with the thunder block
+signal thunder_activated  # When lightning becomes active
+signal thunder_deactivated  # When lightning becomes inactive
+
 func _ready():
 	# Connect animation signals
 	if animation_player.has_animation("start_animation"):
@@ -161,6 +165,9 @@ func start_lightning_cycle():
 	if point_light:
 		point_light.energy = 2.0
 	
+	# NEW: Emit signal to tell the thunder block that lightning is active
+	thunder_activated.emit()
+	
 	print("Lightning cycle started - will be active for ", lightning_active_duration, " seconds")
 
 func end_lightning_cycle():
@@ -180,12 +187,19 @@ func end_lightning_cycle():
 	if point_light:
 		point_light.energy = 0.0
 	
+	# NEW: Emit signal to tell the thunder block that lightning is inactive
+	thunder_deactivated.emit()
+	
 	print("Lightning cycle ended - will be inactive for ", current_inactive_duration, " seconds")
 
 func end_thunder():
 	"""Completely stop the thunder system"""
 	should_cycle = false
 	is_lightning_active = false
+	
+	# NEW: Make sure we emit deactivated signal when stopping
+	if is_lightning_active:
+		thunder_deactivated.emit()
 	
 	if animation_player and animation_player.has_animation("end_animation"):
 		animation_player.play("end_animation")
@@ -212,7 +226,6 @@ func _on_animation_finished(animation_name: String):
 			print("Initial animation completed - starting first lightning cycle")
 		else:
 			print("Lightning animation completed")
-	
 
 func _on_body_entered(body):
 	if body.has_method("take_damage") and "player" in body.name.to_lower():

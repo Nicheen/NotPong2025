@@ -69,14 +69,14 @@ curve = SubResource("Curve_ypvw2")
 [sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_o5pat"]
 particle_flag_disable_z = true
 emission_shape = 3
-emission_box_extents = Vector3(987.5, 20, 1)
+emission_box_extents = Vector3(680, 20, 1)
 direction = Vector3(-1, 0, 0)
 spread = 0.0
 gravity = Vector3(0, 0, 0)
 tangential_accel_min = -100.0
 tangential_accel_max = 100.0
-scale_min = 0.3
-scale_max = 0.3
+scale_min = 0.15
+scale_max = 0.15
 scale_curve = SubResource("CurveTexture_aq7nb")
 color_ramp = SubResource("GradientTexture1D_iog5g")
 
@@ -100,8 +100,8 @@ spread = 50.0
 initial_velocity_min = 300.0
 initial_velocity_max = 300.0
 gravity = Vector3(0, 0, 0)
-scale_min = 0.5
-scale_max = 0.5
+scale_min = 0.25
+scale_max = 0.25
 scale_curve = SubResource("CurveTexture_v2imv")
 color_ramp = SubResource("GradientTexture1D_s6yp2")
 
@@ -139,7 +139,7 @@ script = ExtResource("1_ybewo")
 [node name="Line2D" type="Line2D" parent="."]
 unique_name_in_owner = true
 visible = false
-points = PackedVector2Array(40, 0, 0, 0)
+points = PackedVector2Array(40, 0, 1400, 0)
 texture = SubResource("ImageTexture_btyrk")
 texture_mode = 2
 begin_cap_mode = 2
