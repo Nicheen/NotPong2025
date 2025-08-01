@@ -1,20 +1,19 @@
-# Ignore the main project file
+# Ignore the main project file (optional)
 /project.godot
 
-# Ignore all Godot editor metadata
+# Ignore all Godot metadata folders
+**/.godot/
+**/.godot/**
+
+# Ignore all .cfg files (editor layout, recent files, etc.)
+*.cfg
+
+# Ignore import files
 .import/
 *.import
-*./NOT_PONG/.godot
 
-# Ignore shader material files (if you don't want to track them)
-/addons/flowerwall_postprocess/shaders/*.material
+# Ignore uid cache
+*.bin
 
-# Optional: Ignore everything in addons (if addons are external)
-#/addons/
-
-# Optional: Ignore user/editor-specific files
-*.cfg
-*.tres
-NOTPONG/.godot/
-
-
+# Ignore shader material files
+addons/flowerwall_postprocess/shaders/*.material
