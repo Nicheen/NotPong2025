@@ -28,15 +28,48 @@ func handle_collision(body):
 		handle_enemy_hit(body)
 	elif body.collision_layer == 4:  # Wall layer
 		handle_wall_collision(body)
-	elif body.collision_layer == 2:  # Another projectile
-		handle_projectile_collision(body)
+	elif body.collision_layer == 2:  # Lava zone or another projectile
+		# Check if it's actually a projectile or a lava zone StaticBody2D
+		if body is RigidBody2D:
+			handle_projectile_collision(body)
+		else:
+			# This is a lava zone StaticBody2D
+			handle_lava_collision(body)
 	else:
 		handle_generic_collision(body)
-
-func handle_player_hit(player_body):
-	print("Hit player - destroying projectile immediately")
-	projectile.hit_player.emit()
+		
+func handle_lava_collision(lava_body):
+	print("Hit lava zone - damaging player and destroying projectile")
+	
+	# Find and damage the player
+	var scene_root = projectile.get_tree().current_scene
+	var player = scene_root.find_child("Player", true, false)
+	
+	if player and player.has_method("take_damage"):
+		player.take_damage(20)  # Lava damage amount
+		print("Player damaged by lava projectile!")
+	
+	# Destroy the projectile
 	projectile.queue_free()
+	
+func handle_player_hit(player_body):
+	print("Hit player - reflecting projectile")
+	
+	# Calculate reflection direction away from player
+	var player_pos = player_body.global_position
+	var projectile_pos = projectile.global_position
+	var reflection_direction = (projectile_pos - player_pos).normalized()
+	
+	# Apply reflection with some randomness
+	var random_angle = randf_range(-0.1, 0.1)
+	reflection_direction = reflection_direction.rotated(random_angle)
+	
+	# Set new velocity (maintain speed but change direction)
+	var current_speed = projectile.linear_velocity.length()
+	projectile.linear_velocity = reflection_direction * current_speed
+	
+	# Mark as player projectile after reflection
+	projectile.is_player_projectile = true
 
 func handle_enemy_hit(enemy_body):
 	print("Hit enemy - destroying projectile immediately")

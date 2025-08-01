@@ -29,6 +29,7 @@ func check_boundaries():
 		
 	var pos = projectile.global_position
 	var vel = projectile.linear_velocity
+	var lava_margin = 5.0
 	var bounced = false
 	var new_velocity = vel
 	var new_position = pos
@@ -52,17 +53,13 @@ func check_boundaries():
 	
 	# Check top boundary
 	if pos.y <= world_bounds.position.y + margin:
-		new_velocity.y = abs(new_velocity.y)  # Force positive (downward)
-		new_position.y = world_bounds.position.y + margin + 5
-		bounced = true
-		print("Hit top boundary at y=", pos.y)
+		damage_player_in_lava()
+		return
 	
 	# Check bottom boundary
 	elif pos.y >= (world_bounds.position.y + world_bounds.size.y) - margin:
-		new_velocity.y = -abs(new_velocity.y)  # Force negative (upward)
-		new_position.y = (world_bounds.position.y + world_bounds.size.y) - margin - 5
-		bounced = true
-		print("Hit bottom boundary at y=", pos.y)
+		damage_player_in_lava()
+		return
 	
 	if bounced:
 		# Add small random variation to prevent infinite bouncing patterns
@@ -74,6 +71,33 @@ func check_boundaries():
 		
 		print("Boundary bounce - Old velocity: ", vel, " New velocity: ", new_velocity)
 		projectile.handle_bounce(new_velocity, new_position)
+
+func damage_player_in_lava():
+	# Find and damage the player using the same method as other scripts
+	var scene_root = projectile.get_tree().current_scene
+	var player = scene_root.find_child("Player", true, false)
+	
+	if player:
+		print("Found player: ", player.name)
+		if player.has_method("take_damage"):
+			player.take_damage(20)  # Lava damage amount
+			print("Player damaged by lava projectile!")
+		else:
+			print("Player found but no take_damage method")
+	else:
+		print("Player not found in scene")
+		
+		# Fallback: look for CharacterBody2D with player collision layer
+		for child in scene_root.get_children():
+			if child is CharacterBody2D and child.collision_layer == 1:
+				print("Found player via collision layer: ", child.name)
+				if child.has_method("take_damage"):
+					child.take_damage(20)
+					print("Player damaged by lava projectile (fallback)!")
+				break
+	
+	# Destroy the projectile
+	projectile.queue_free()
 
 func maintain_minimum_velocity():
 	if not projectile:

@@ -1,4 +1,4 @@
-[gd_scene load_steps=4 format=3 uid="uid://bratwmq3f1ph3"]
+[gd_scene load_steps=4 format=3 uid="uid://ml1bkk4wrea"]
 
 [ext_resource type="Script" uid="uid://cdvdmyb0wm0kp" path="res://scenes/obj/blocks/block.gd" id="1_dfpgf"]
 [ext_resource type="Texture2D" uid="uid://bichq28ag45y8" path="res://images/BlockRed.png" id="2_wq02h"]

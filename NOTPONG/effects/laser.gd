@@ -69,10 +69,16 @@ func store_original_particle_color():
 		
 func _physics_process(delta: float) -> void:
 	target_position = target_position.move_toward(Vector2.RIGHT * max_length, cast_speed * delta)
-
-	var laser_end_position := target_position
+	
+	# Clamp laser to lava border - coordinates are relative to laser block spawn point
+	# Y is horizontal (left/right), X is vertical (up/down)
+	var max_distance_to_lava = 639 - global_position.y
+	var laser_end_position := Vector2(min(target_position.x, max_distance_to_lava), min(target_position.y, max_length))
+	
+	# Check if we hit lava (reached max distance)
+	var hit_lava = target_position.x >= max_distance_to_lava
+	
 	force_raycast_update()
-
 	if is_colliding():
 		laser_end_position = to_local(get_collision_point())
 		collision_particles.global_rotation = get_collision_normal().angle()
@@ -81,23 +87,46 @@ func _physics_process(delta: float) -> void:
 		hit_particles.global_rotation = get_collision_normal().angle()
 		hit_particles.position = laser_end_position + Vector2(10, 0)
 		
+		# Change particle velocity direction for object hits (not lava)
+		var collision_material = collision_particles.process_material as ParticleProcessMaterial
+		if collision_material:
+			collision_material.direction = Vector3(1, 0, 0)  # Changed from (0, -1, 0) to (1, 0, 0)
+		
+		var hit_material = hit_particles.process_material as ParticleProcessMaterial
+		if hit_material:
+			hit_material.direction = Vector3(1, 0, 0)  # Changed from (0, -1, 0) to (1, 0, 0)
+		
 		var hit_body = get_collider()
 		current_hit_color = get_object_color(hit_body)
 		
 		var material = hit_particles.process_material as ParticleProcessMaterial
 		if material and material.color_ramp:
 			update_gradient_colors(material.color_ramp, current_hit_color)
+	elif hit_lava:
+		# Hitting lava - show particles at lava border with default direction
+		collision_particles.global_rotation = 0
+		collision_particles.position = laser_end_position
 		
+		hit_particles.global_rotation = 0
+		hit_particles.position = laser_end_position + Vector2(10, 0)
 		
+		# Reset particle velocity direction for lava hits (keep original direction)
+		var collision_material = collision_particles.process_material as ParticleProcessMaterial
+		if collision_material:
+			collision_material.direction = Vector3(0, -1, 0)  # Original direction for lava
+		
+		var hit_material = hit_particles.process_material as ParticleProcessMaterial
+		if hit_material:
+			hit_material.direction = Vector3(0, -1, 0)  # Original direction for lava
+	
 	line_2d.points[1] = laser_end_position
-
 	var laser_start_position := line_2d.points[0]
 	beam_particles.position = laser_start_position + (laser_end_position - laser_start_position) * 0.5
 	beam_particles.process_material.emission_box_extents.x = laser_end_position.distance_to(laser_start_position) * 0.5
-
-	collision_particles.emitting = is_colliding()
-	hit_particles.emitting = is_colliding()
 	
+	# Show particles if colliding with objects OR hitting lava
+	collision_particles.emitting = is_colliding() or hit_lava
+	hit_particles.emitting = is_colliding() or hit_lava
 func update_gradient_colors(gradient_texture: GradientTexture1D, hit_color: Color):
 	if not gradient_texture or not gradient_texture.gradient:
 		return

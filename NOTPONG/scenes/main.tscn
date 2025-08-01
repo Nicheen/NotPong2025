@@ -162,21 +162,21 @@ unique_name_in_owner = true
 
 [node name="Line2DTop" type="Line2D" parent="Deathzone"]
 z_index = 2
-position = Vector2(-316.813, 0)
-scale = Vector2(1.56218, 1)
+position = Vector2(-316.813, -25.75)
+scale = Vector2(1.56218, 3.65)
 points = PackedVector2Array(200, 5, 952, 5)
 default_color = Color(1, 0.164706, 0.180392, 1)
 antialiased = true
 
 [node name="Line2D2Bot" type="Line2D" parent="Deathzone"]
 z_index = 2
-position = Vector2(-311.756, 4)
-scale = Vector2(1.57642, 1)
+position = Vector2(-311.756, -1612.95)
+scale = Vector2(1.57642, 3.55)
 points = PackedVector2Array(190, 639, 942, 639)
 default_color = Color(1, 0.164706, 0.180392, 1)
 
 [node name="StaticBody2DTop" type="StaticBody2D" parent="Deathzone"]
-collision_layer = 2
+collision_layer = 130
 collision_mask = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Deathzone/StaticBody2DTop"]
@@ -184,7 +184,7 @@ position = Vector2(576, 0)
 shape = SubResource("RectangleShape2D_sugp2")
 
 [node name="StaticBody2DBot" type="StaticBody2D" parent="Deathzone"]
-collision_layer = 2
+collision_layer = 130
 collision_mask = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Deathzone/StaticBody2DBot"]

@@ -69,7 +69,7 @@ curve = SubResource("Curve_ypvw2")
 [sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_o5pat"]
 particle_flag_disable_z = true
 emission_shape = 3
-emission_box_extents = Vector3(987.5, 20, 1)
+emission_box_extents = Vector3(299.5, 20, 1)
 direction = Vector3(-1, 0, 0)
 spread = 0.0
 gravity = Vector3(0, 0, 0)
@@ -95,13 +95,15 @@ point_count = 3
 curve = SubResource("Curve_rp4yw")
 
 [sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_fdrwo"]
+particle_flag_align_y = true
 particle_flag_disable_z = true
+direction = Vector3(0, -1, 0)
 spread = 50.0
-initial_velocity_min = 300.0
-initial_velocity_max = 300.0
+initial_velocity_min = 50.0
+initial_velocity_max = 150.0
 gravity = Vector3(0, 0, 0)
-scale_min = 0.25
-scale_max = 0.25
+scale_min = 0.1
+scale_max = 0.15
 scale_curve = SubResource("CurveTexture_v2imv")
 color_ramp = SubResource("GradientTexture1D_s6yp2")
 
@@ -119,6 +121,7 @@ colors = PackedColorArray(0.572669, 1.1792e-06, 3.36915e-07, 1, 0, 0.0117647, 0,
 gradient = SubResource("Gradient_aq7nb")
 
 [sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_ybewo"]
+particle_flag_align_y = true
 particle_flag_disable_z = true
 angle_min = 30.0
 angle_max = 90.0
@@ -139,7 +142,11 @@ script = ExtResource("1_ybewo")
 [node name="Line2D" type="Line2D" parent="."]
 unique_name_in_owner = true
 visible = false
+<<<<<<< Updated upstream
 points = PackedVector2Array(40, 0, 0, 0)
+=======
+points = PackedVector2Array(40, 0, 639, 0)
+>>>>>>> Stashed changes
 texture = SubResource("ImageTexture_btyrk")
 texture_mode = 2
 begin_cap_mode = 2
@@ -158,7 +165,7 @@ process_material = SubResource("ParticleProcessMaterial_vps6g")
 [node name="BeamParticles2D" type="GPUParticles2D" parent="."]
 unique_name_in_owner = true
 z_index = -1
-position = Vector2(720, 0)
+position = Vector2(339.5, 0)
 emitting = false
 amount = 50
 texture = SubResource("GradientTexture2D_btyrk")
@@ -171,7 +178,7 @@ process_material = SubResource("ParticleProcessMaterial_o5pat")
 unique_name_in_owner = true
 show_behind_parent = true
 z_index = -1
-emitting = false
+position = Vector2(639, 0)
 amount = 16
 texture = SubResource("GradientTexture2D_btyrk")
 lifetime = 0.3
@@ -181,7 +188,7 @@ process_material = SubResource("ParticleProcessMaterial_fdrwo")
 [node name="HitParticles2D" type="GPUParticles2D" parent="."]
 unique_name_in_owner = true
 z_index = 1
-emitting = false
+position = Vector2(649, 0)
 amount = 18
 texture = SubResource("GradientTexture2D_aq7nb")
 process_material = SubResource("ParticleProcessMaterial_ybewo")

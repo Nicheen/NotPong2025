@@ -12,7 +12,7 @@ extends Node2D
 @export var damage_amount: int = 20
 @export var damage_interval: float = 0.5
 @export var thunder_width: float = 150.0
-@export var lightning_active_duration: float = 2.0  # How long lightning stays active
+@export var lightning_active_duration: float = 1.0  # How long lightning stays active
 @export var lightning_inactive_duration_min: float = 2.0  # Min time between lightning cycles
 @export var lightning_inactive_duration_max: float = 5.0  # Max time between lightning cycles
 
@@ -167,7 +167,7 @@ func start_lightning_cycle():
 	
 	# NEW: Emit signal to tell the thunder block that lightning is active
 	thunder_activated.emit()
-	
+	create_screen_shake()
 	print("Lightning cycle started - will be active for ", lightning_active_duration, " seconds")
 
 func end_lightning_cycle():
@@ -258,3 +258,32 @@ func activate_horizontal_thunder():
 func deactivate_thunder():
 	"""Deactivate the thunder effect"""
 	end_thunder()
+func create_screen_shake():
+	"""Enhanced screen shake"""
+	var camera = find_camera_in_scene()
+	if not camera:
+		print("camera was not found, no camera shake applied!")
+		return
+	
+	if camera.has_method("add_trauma"):
+		camera.add_trauma(0.8)
+	else:
+		# Manual screen shake - create independent tween
+		var original_pos = camera.global_position
+		var shake_tween = get_tree().create_tween()
+		
+		# More intense shake with decay
+		for i in range(12):
+			var intensity = 8.0 * (1.0 - float(i) / 12.0)  # Decay over time
+			var shake_offset = Vector2(
+				randf_range(-intensity, intensity),
+				randf_range(-intensity, intensity)
+			)
+			shake_tween.tween_property(camera, "global_position", 
+				original_pos + shake_offset, 0.04)
+		
+		shake_tween.tween_property(camera, "global_position", original_pos, 0.1)
+
+func find_camera_in_scene():
+	var scene_root = get_tree().current_scene
+	return scene_root.find_child("Camera2D", true, false)

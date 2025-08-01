@@ -3,11 +3,11 @@ extends CharacterBody2D
 # Enemy settings
 @export var max_health: int = 20
 @export var score_value: int = 20  # Points awarded when killed
-@export var enemy_type: String = "lazer"
+@export var enemy_type: String = "thunder"
 
 # Thunder settings
-@export var thunder_activation_delay: float = 2.0  # Time before thunder activates
-@export var thunder_duration: float = 3.0  # How long thunder stays active
+@export var thunder_activation_delay: float = randf_range(3.0, 4.0)  # Time before thunder activates
+@export var thunder_duration: float = 1.0  # How long thunder stays active
 @export var thunder_direction: String = "vertical"  # "vertical" or "horizontal"
 
 # Visual settings
