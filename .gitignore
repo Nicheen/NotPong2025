@@ -1,19 +1,17 @@
-# Ignore the main project file (optional)
-/project.godot
+# Ignore Godot project metadata (this folder is the problem)
+NOTPONG/.godot/
+NOTPONG/.godot/**
 
-# Ignore all Godot metadata folders
-**/.godot/
-**/.godot/**
-
-# Ignore all .cfg files (editor layout, recent files, etc.)
+# Ignore editor-specific files
 *.cfg
-
-# Ignore import files
-.import/
-*.import
-
-# Ignore uid cache
 *.bin
 
-# Ignore shader material files
-addons/flowerwall_postprocess/shaders/*.material
+# Ignore Godot import files
+*.import
+.import/
+
+# (Optional) Ignore the project.godot file
+NOTPONG/project.godot
+
+# (Optional) Ignore shader material files
+NOTPONG/addons/flowerwall_postprocess/shaders/*.material
