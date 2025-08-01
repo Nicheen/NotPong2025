@@ -1,7 +1,7 @@
 extends StaticBody2D
 
 # Enemy settings
-@export var max_health: int = 30
+@export var max_health: int = 20
 @export var score_value: int = 30  # Points awarded when killed
 @export var enemy_type: String = "laser"
 

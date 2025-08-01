@@ -226,3 +226,6 @@ process_material = SubResource("ParticleProcessMaterial_tbgi4")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_jyhfs")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(574, 326)
