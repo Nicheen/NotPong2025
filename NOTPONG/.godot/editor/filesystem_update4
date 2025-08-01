@@ -21,3 +21,4 @@ res://scenes/obj/blocks/block_blue.gd
 res://scenes/obj/blocks/block_dropper.gd
 res://scripts/obj/enemy/enemy.gd
 res://scripts/obj/bosses/boss_1.gd
+res://scenes/obj/Projectile.tscn
