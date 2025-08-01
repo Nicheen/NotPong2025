@@ -7,8 +7,6 @@
 size = Vector2(50, 50)
 
 [node name="BlockBlue" type="StaticBody2D"]
-collision_layer = 2
-collision_mask = 32
 script = ExtResource("1_pfsug")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]

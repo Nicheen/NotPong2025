@@ -1,6 +1,8 @@
-[gd_scene load_steps=11 format=3 uid="uid://eppnqq6ap33r"]
+[gd_scene load_steps=13 format=3 uid="uid://eppnqq6ap33r"]
 
 [ext_resource type="Script" uid="uid://57mwgwgrtt80" path="res://scripts/obj/projectile/projectile.gd" id="1_projectile_main"]
+[ext_resource type="Script" uid="uid://c67rqomxck2ae" path="res://scripts/obj/projectile/projectile_collision_handler.gd" id="2_collision_handler"]
+[ext_resource type="Script" uid="uid://dgqp1seq5b42j" path="res://scripts/obj/projectile/projectile_boundary_handler.gd" id="3_boundary_handler"]
 [ext_resource type="Script" uid="uid://oex81gje51m7" path="res://scripts/obj/projectile/projectile_effect_manager.gd" id="4_effect_manager"]
 [ext_resource type="Texture2D" uid="uid://go0jsjs2iejv" path="res://images/white_circle.svg" id="5_texture"]
 
@@ -38,8 +40,8 @@ color_ramp = SubResource("GradientTexture1D_x1qnq")
 turbulence_enabled = true
 
 [node name="Projectile" type="RigidBody2D"]
-collision_layer = 32
-collision_mask = 47
+collision_layer = 2
+collision_mask = 31
 physics_material_override = SubResource("PhysicsMaterial_bounce")
 contact_monitor = true
 max_contacts_reported = 10
@@ -55,8 +57,10 @@ shape = SubResource("CircleShape2D_projectile")
 [node name="Components" type="Node" parent="."]
 
 [node name="CollisionHandler" type="Node" parent="Components"]
+script = ExtResource("2_collision_handler")
 
 [node name="BoundaryHandler" type="Node" parent="Components"]
+script = ExtResource("3_boundary_handler")
 
 [node name="EffectManager" type="Node" parent="Components"]
 script = ExtResource("4_effect_manager")
