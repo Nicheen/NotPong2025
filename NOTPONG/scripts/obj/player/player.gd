@@ -27,7 +27,7 @@ extends CharacterBody2D
 @export var knockback_resistance: float = 0.3  # How much knockback is reduced (0.0 = full knockback, 1.0 = no knockback)
 @export var knockback_recovery_time: float = 0.5  # How long knockback effects last
 
-@export var dash_distance: float = 80.0  # Distance to dash
+@export var dash_distance: float = 120.0  # Distance to dash
 @export var dash_cooldown: float = 1.5   # Cooldown time in seconds
 @export var dash_grace_period: float = 1.5
 
@@ -525,10 +525,15 @@ func perform_dash():
 	
 	# Clamp to play area bounds (så spelaren inte dashar utanför spelet)
 	var half_size = play_area_size * 0.5
-	var min_x = play_area_center.x - half_size.x + 25  # Leave some margin
+	var min_x = play_area_center.x - half_size.x + 25  
 	var max_x = play_area_center.x + half_size.x - 25
 	
-	target_pos.x = clamp(target_pos.x, min_x, max_x)
+	if target_pos.x <= 196:
+		target_pos.x = 196
+	elif target_pos.x >= 956:
+		target_pos.x = 956
+	else:
+		target_pos.x = clamp(target_pos.x, min_x, max_x)
 	
 	print("Dashing from ", current_pos, " to ", target_pos)
 	
@@ -569,8 +574,24 @@ func create_single_afterimage(start_pos: Vector2, dash_direction: Vector2, index
 	# index 0 = mest genomskinlig, spawnar där spelaren började (start_pos)
 	# index 1 = mellan-genomskinlig, spawnar 33% längs dash-vägen  
 	# index 2 = minst genomskinlig, spawnar 66% längs dash-vägen
+	var current_pos = global_position
+	var target_pos = current_pos + (dash_direction * dash_distance)
+	var half_size = play_area_size * 0.5
+	var diff = 0
+	var min_x = play_area_center.x - half_size.x + 25  
+	var max_x = play_area_center.x + half_size.x - 25
+	if target_pos.x <= 196:
+		target_pos.x = 196
+		diff = global_position.x - target_pos.x 
+	elif target_pos.x >= 956:
+		target_pos.x = 956
+		diff = global_position.x - target_pos.x 
+	else:
+		target_pos.x = clamp(target_pos.x, min_x, max_x)
+		diff = dash_distance
+		
 	var progress_along_dash = float(index) / float(total_count - 1)  # 0.0, 0.5, 1.0
-	var afterimage_pos = start_pos + (dash_direction * dash_distance * progress_along_dash)
+	var afterimage_pos = start_pos + (dash_direction * dash_distance * diff * progress_along_dash)
 	
 	afterimage.global_position = afterimage_pos
 	
