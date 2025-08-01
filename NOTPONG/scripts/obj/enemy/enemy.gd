@@ -17,6 +17,8 @@ var cracked_texture: Texture2D
 var current_health: int
 var is_dead: bool = false
 var original_color: Color
+var is_burning: bool = false
+var burn_timer: Timer
 
 # Signals
 signal enemy_died(score_points: int, death_position: Vector2)
@@ -26,6 +28,13 @@ func _ready():
 	current_health = max_health
 	collision_layer = 16
 	collision_mask = 2
+	
+	# Create burn timer
+	burn_timer = Timer.new()
+	burn_timer.wait_time = 1.5
+	burn_timer.one_shot = true
+	burn_timer.timeout.connect(_on_burn_timer_timeout)
+	add_child(burn_timer)
 	
 	if sprite:
 		original_color = sprite.modulate
@@ -40,7 +49,62 @@ func _ready():
 
 func _physics_process(delta):
 	pass
+	
+func start_burning():
+	"""Start the burning effect"""
+	if is_burning or is_dead:
+		return
+		
+	is_burning = true
+	print("Enemy started burning! Will explode in 1.5 seconds...")
+	
+	# Start the burn timer
+	burn_timer.start()
+	
+	# Start burning visual effect
+	start_burning_modulation()
 
+func start_burning_modulation():
+	"""Create pulsing red effect while burning"""
+	if not sprite or is_dead:
+		return
+	
+	var burn_tween = create_tween()
+	burn_tween.set_loops() # Loop indefinitely
+	
+	# Pulse between red and original color
+	burn_tween.tween_property(sprite, "modulate", Color.RED, 0.3)
+	burn_tween.tween_property(sprite, "modulate", original_color, 0.3)
+
+func _on_burn_timer_timeout():
+	"""Called when burn timer expires - deal explosive damage"""
+	if is_dead:
+		return
+		
+	print("BURN TIMER EXPIRED! Enemy takes 10 explosive damage!")
+	
+	# Stop the burning modulation
+	if sprite:
+		var final_tween = create_tween()
+		final_tween.tween_property(sprite, "modulate", Color.RED, 0.1)
+	
+	# Deal the explosive damage (this will likely kill the enemy)
+	current_health -= 10
+	current_health = max(0, current_health)
+	
+	if health_bar:
+		health_bar.value = current_health
+	
+	# Emit signal and die if health reaches 0
+	enemy_hit.emit(10)
+	
+	if current_health <= 0:
+		print("Enemy exploded from burning!")
+		die()
+	else:
+		# If somehow still alive, stop burning
+		is_burning = false
+		
 func take_damage(damage: int):
 	if is_dead:
 		return
@@ -49,12 +113,17 @@ func take_damage(damage: int):
 	
 	current_health -= damage
 	current_health = max(0, current_health)
+	
 	if   current_health < max_health:
 		change_to_cracked_sprite()
 	if health_bar:
 		health_bar.value = current_health
 	
 	show_damage_effect()
+	
+	if not is_burning and current_health > 0:
+		start_burning()
+	
 	enemy_hit.emit(damage)
 	
 	if current_health <= 0:

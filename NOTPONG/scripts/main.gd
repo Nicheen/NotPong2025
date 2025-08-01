@@ -274,8 +274,9 @@ func check_and_update_high_score():
 		# Update HUD to show new high score
 		if hud:
 			hud.high_score.text = "High Score: " + str(Global.save_data.high_score)
-
-# ... (keep all your existing spawn functions unchanged)
+		
+		if death_menu:
+			death_menu.show_new_highscore_label()
 
 func spawn_enemies():
 	# Samla alla använda positioner från kvadrater
@@ -914,8 +915,22 @@ func find_block_at_position(position: Vector2):
 				closest_distance = distance
 				print("    ^ NEW CLOSEST BLOCK!")
 		else:
-			print("  block_droppers[", i, "]: INVALID")
-	
+			print("  block_droppers[", i, "]: INVALID"
+			)
+	# Check block_droppers array
+	print("Checking enemies array (bombs):")
+	for i in range(enemies.size()):
+		var enemy = enemies[i]
+		if is_instance_valid(enemy):
+			var distance = position.distance_to(enemy.global_position)
+			print("  bomb[", i, "]: ", enemy.global_position, " distance: ", distance)
+			if distance <= tolerance and distance < closest_distance:
+				closest_block = enemy
+				closest_distance = distance
+				print("    ^ NEW CLOSEST BOMB!")
+		else:
+			print("  bombs[", i, "]: INVALID")
+			
 	if closest_block:
 		print("RESULT: Found closest block at distance ", closest_distance, " from ", position)
 		print("        Block position: ", closest_block.global_position)
