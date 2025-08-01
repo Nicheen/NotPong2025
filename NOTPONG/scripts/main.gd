@@ -575,7 +575,7 @@ func spawn_thunder_block_at_position(position: Vector2):
 		return
 	
 	var block = block_scene.instantiate()
-	block.global_position = position
+	block.global_position = position + Vector2(-25, -25)
 	
 	# Connect signals - use the correct signal name from the thunder block
 	block.block_destroyed.connect(_on_thunder_block_died)

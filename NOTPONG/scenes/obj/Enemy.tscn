@@ -21,21 +21,22 @@ blend_mode = 1
 
 [node name="Enemy" type="StaticBody2D"]
 collision_layer = 16
-collision_mask = 0
 script = ExtResource("1_enemy_script")
+score_value = 10
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 scale = Vector2(1.5, 1.5)
 texture = SubResource("GradientTexture2D_455qr")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -1)
 shape = SubResource("CircleShape2D_455qr")
 
 [node name="HealthBar" type="ProgressBar" parent="."]
 material = SubResource("CanvasItemMaterial_gsmpp")
-offset_left = -10.0
+offset_left = -9.0
 offset_top = -3.0
-offset_right = 10.0
+offset_right = 11.0
 offset_bottom = 2.0
 value = 100.0
 show_percentage = false

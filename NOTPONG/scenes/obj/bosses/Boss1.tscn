@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3 uid="uid://bq8u4jylrt5yo"]
 
 [ext_resource type="Script" uid="uid://dn5odpo46ndwg" path="res://scripts/obj/bosses/boss_1.gd" id="1_4no6o"]
-[ext_resource type="Texture2D" uid="uid://bo34tqi4j5br2" path="res://images/bosses/Boss1.png" id="2_4no6o"]
+[ext_resource type="Texture2D" uid="uid://4mmqlecmo8i4" path="res://images/bosses/Boss1.png" id="2_4no6o"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_vo7dq"]
 size = Vector2(100, 100)

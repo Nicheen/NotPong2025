@@ -61,7 +61,7 @@ func take_laser_damage(damage: int):
 	
 	print("Enemy took ", damage, " laser damage (no score on death)")
 	
-	current_health -= damage
+	current_health -= damage * 2
 	current_health = max(0, current_health)
 	
 	if health_bar:
