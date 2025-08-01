@@ -11,7 +11,7 @@
 size = Vector2(196, 648)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_0wfyh"]
-size = Vector2(194, 648)
+size = Vector2(196, 648)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_sugp2"]
 size = Vector2(752, 20)
@@ -114,6 +114,7 @@ texture = ExtResource("2_tbgi4")
 [node name="Borders" type="Node2D" parent="."]
 
 [node name="Line2DLeft" type="Line2D" parent="Borders"]
+position = Vector2(1, 0)
 points = PackedVector2Array(190, 0, 190, 648)
 default_color = Color(0.619608, 1, 1, 1)
 
