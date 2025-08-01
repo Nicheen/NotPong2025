@@ -8,12 +8,16 @@ var current_bounces: int = 0
 
 # Reference to parent projectile
 var projectile: RigidBody2D
+@onready var sprite = get_parent().get_parent().get_node("Sprite2D")  # Make sure this path is correct!
+@onready var projectile2_texture = preload("res://images/PlayerProjectile2.png")
+@onready var projectile3_texture = preload("res://images/PlayerProjectile3.png")
+
 
 func _ready():
 	# Get reference to parent projectile when component is ready
 	# Components are children of the Components node, so we need get_parent().get_parent()
 	projectile = get_parent().get_parent() as RigidBody2D
-
+	
 func initialize():
 	# No longer needed - _ready() handles the reference
 	pass
@@ -54,20 +58,18 @@ func handle_lava_collision(lava_body):
 	
 func handle_player_hit(player_body):
 	print("Hit player - reflecting projectile")
+	current_bounces += 1
 	
 	# Calculate reflection direction away from player
 	var player_pos = player_body.global_position
 	var projectile_pos = projectile.global_position
 	var reflection_direction = (projectile_pos - player_pos).normalized()
 	
-	# Apply reflection with some randomness
-	var random_angle = randf_range(-0.1, 0.1)
-	reflection_direction = reflection_direction.rotated(random_angle)
-	
 	# Set new velocity (maintain speed but change direction)
 	var current_speed = projectile.linear_velocity.length()
 	projectile.linear_velocity = reflection_direction * current_speed
-	
+	update_sprite(projectile.linear_velocity, projectile.global_position)
+	projectile.bounced.emit(projectile.global_position)
 	# Mark as player projectile after reflection
 	projectile.is_player_projectile = true
 
@@ -127,18 +129,32 @@ func handle_generic_collision(body):
 	var new_velocity = -projectile.linear_velocity * bounce_damping
 	handle_bounce(new_velocity, projectile.global_position)
 
+func update_sprite(pos: Vector2, vel: Vector2):
+	if sprite == null:
+		print("ERROR: Sprite2D not found!")
+		return
+		
+	if current_bounces == 1:
+		sprite.texture = projectile2_texture
+	elif current_bounces == 2:
+		sprite.texture = projectile3_texture
+
+		
 func handle_bounce(new_velocity: Vector2, new_position: Vector2):
 	current_bounces += 1
 	
 	# Check bounce limit
 	if current_bounces >= max_bounces:
 		print("Projectile exceeded max bounces, destroying")
+		projectile.create_explosion_at(new_position, new_velocity, Vector2(0, 0))
 		projectile.queue_free()
 		return
-	
+		
 	# Apply bounce
 	projectile.linear_velocity = new_velocity * bounce_damping
 	projectile.global_position = new_position
+	
+	update_sprite(projectile.global_position, projectile.linear_velocity)
 	
 	# Emit signal
 	projectile.bounced.emit(projectile.global_position)
