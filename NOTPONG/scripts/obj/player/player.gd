@@ -27,6 +27,10 @@ extends CharacterBody2D
 @export var knockback_resistance: float = 0.3  # How much knockback is reduced (0.0 = full knockback, 1.0 = no knockback)
 @export var knockback_recovery_time: float = 0.5  # How long knockback effects last
 
+@export var dash_distance: float = 80.0  # Distance to dash
+@export var dash_cooldown: float = 1.5   # Cooldown time in seconds
+@export var dash_grace_period: float = 1.5
+
 # NEW: Knockback state variables (add after existing internal variables)
 var knockback_velocity: Vector2 = Vector2.ZERO
 var knockback_timer: float = 0.0
@@ -52,6 +56,12 @@ var current_health: int
 # Optional: Visual feedback
 @onready var sprite: Sprite2D = $Sprite2D
 var teleport_effect_duration: float = 0.1
+
+var dash_timer: float = 0.0
+var can_dash: bool = true
+var is_dashing: bool = false
+var dash_input_buffer: float = 0.0  # Buffer time for dash input
+var dash_grace_timer: float = 0.0   # Grace period timer
 var is_teleporting: bool = false
 
 # Signals
@@ -68,9 +78,12 @@ func _ready():
 func _physics_process(delta):
 	handle_teleport_cooldown(delta)
 	handle_shoot_cooldown(delta)
+	handle_dash_cooldown(delta)
+	handle_dash_grace_period(delta)
 	handle_movement(delta)
 	handle_teleport_input()
 	handle_shoot_input()
+	handle_dash_input()
 	handle_teleport_effect(delta)
 	handle_knockback(delta)
 	# NEW: Handle top wall time limit
@@ -430,7 +443,242 @@ func get_health() -> int:
 func get_max_health() -> int:
 	return max_health
 
-# NEW: Utility functions for checking top wall status
+func handle_dash_input():
+	"""Handle dash input - Shift key with grace period (ONLY while held)"""
+	if not can_dash:
+		return
+	
+	# KRITISK FIX: Kolla om Shift är nedtryckt JUST NU
+	var shift_held = Input.is_action_pressed("dash")
+	
+	# Om Shift inte är nedtryckt, avbryt grace period
+	if not shift_held and dash_grace_timer > 0.0:
+		print("🚫 Shift released during grace period - dash cancelled")
+		dash_grace_timer = 0.0
+		return
+	
+	# Check for dash input (Shift key)
+	if Input.is_action_just_pressed("dash"):
+		# Get current input direction
+		var input_dir = Input.get_axis("move_left", "move_right")
+		
+		if input_dir != 0:
+			# Has direction - perform dash immediately
+			perform_dash()
+		else:
+			# No direction - start grace period
+			print("⏰ Dash input detected but no direction - starting grace period (", dash_grace_period, " seconds)")
+			print("   (Keep holding Shift and press A/D to dash)")
+			dash_grace_timer = dash_grace_period
+
+func handle_dash_grace_period(delta):
+	"""Handle grace period for dash input"""
+	if dash_grace_timer <= 0.0:
+		return
+	
+	dash_grace_timer -= delta
+	
+	# KRITISK: Kolla om Shift fortfarande är nedtryckt
+	if not Input.is_action_pressed("dash"):
+		print("🚫 Shift released - grace period cancelled")
+		dash_grace_timer = 0.0
+		return
+	
+	# Check if player starts moving during grace period
+	var input_dir = Input.get_axis("move_left", "move_right")
+	if input_dir != 0:
+		print("✨ Direction input detected during grace period - performing dash!")
+		perform_dash()
+		dash_grace_timer = 0.0  # Clear grace period
+		return
+	
+	# Grace period expired
+	if dash_grace_timer <= 0.0:
+		print("⏰ Grace period expired - dash cancelled (no cooldown penalty)")
+		dash_grace_timer = 0.0
+
+func perform_dash():
+	"""Perform the dash movement"""
+	if not can_dash:
+		print("Dash on cooldown!")
+		return
+	
+	# Get current input direction
+	var input_dir = Input.get_axis("move_left", "move_right")
+	
+	# If no input, don't dash (this shouldn't happen due to grace period)
+	if input_dir == 0:
+		print("No direction input - dash cancelled")
+		return
+	
+	print("🏃 DASHING ", "RIGHT" if input_dir > 0 else "LEFT")
+	
+	# Clear any ongoing grace period
+	dash_grace_timer = 0.0
+	
+	# Calculate dash direction (only horizontal)
+	var dash_direction = Vector2(input_dir, 0).normalized()
+	
+	# Calculate target position
+	var current_pos = global_position
+	var target_pos = current_pos + (dash_direction * dash_distance)
+	
+	# Clamp to play area bounds (så spelaren inte dashar utanför spelet)
+	var half_size = play_area_size * 0.5
+	var min_x = play_area_center.x - half_size.x + 25  # Leave some margin
+	var max_x = play_area_center.x + half_size.x - 25
+	
+	target_pos.x = clamp(target_pos.x, min_x, max_x)
+	
+	print("Dashing from ", current_pos, " to ", target_pos)
+	
+	# Perform instant teleport (behåller nuvarande hastighet)
+	var current_velocity = velocity  # Spara nuvarande hastighet
+	global_position = target_pos
+	velocity = current_velocity  # Återställ hastighet efter dash
+	
+	# Start cooldown and effects
+	start_dash_cooldown()
+	create_dash_afterimages(current_pos, dash_direction)
+	create_dash_effect()
+	
+	print("Dash complete! Distance: ", current_pos.distance_to(target_pos), " pixels")
+
+func create_dash_afterimages(start_pos: Vector2, dash_direction: Vector2):
+	"""Create afterimage effect showing dash trail"""
+	if not sprite:
+		return
+	
+	print("🌟 Creating dash afterimages")
+	
+	# Create 3 afterimages spread out along the dash path
+	var afterimage_count = 3
+	
+	for i in range(afterimage_count):
+		create_single_afterimage(start_pos, dash_direction, i, afterimage_count)
+
+func create_single_afterimage(start_pos: Vector2, dash_direction: Vector2, index: int, total_count: int):
+	"""Create a single afterimage sprite positioned along dash path"""
+	# Create afterimage sprite
+	var afterimage = Sprite2D.new()
+	afterimage.texture = sprite.texture
+	afterimage.scale = sprite.scale
+	afterimage.rotation = sprite.rotation
+	
+	# Position afterimages along the dash path with better spacing
+	# index 0 = mest genomskinlig, spawnar där spelaren började (start_pos)
+	# index 1 = mellan-genomskinlig, spawnar 33% längs dash-vägen  
+	# index 2 = minst genomskinlig, spawnar 66% längs dash-vägen
+	var progress_along_dash = float(index) / float(total_count - 1)  # 0.0, 0.5, 1.0
+	var afterimage_pos = start_pos + (dash_direction * dash_distance * progress_along_dash)
+	
+	afterimage.global_position = afterimage_pos
+	
+	# Set transparency - mest genomskinlig längst bak, minst genomskinlig närmast spelaren
+	# index 0 (start) = mest genomskinlig (0.3)
+	# index 1 (mitt) = mellan (0.5) 
+	# index 2 (slut) = minst genomskinlig (0.7)
+	var alpha = 0.3 + (float(index) / float(total_count - 1) * 0.4)  # 0.3, 0.5, 0.7
+	afterimage.modulate = Color(1.0, 1.0, 1.0, alpha)
+	
+	# Add to scene
+	get_tree().current_scene.add_child(afterimage)
+	
+	print("   Afterimage ", index + 1, " created at ", afterimage_pos, " with alpha ", alpha)
+	
+	# Animate afterimage - fade out 5x snabbare (0.16 sekunder istället för 0.8)
+	var fade_duration = 0.16  # 5x snabbare än tidigare
+	var afterimage_tween = create_tween()
+	afterimage_tween.set_parallel(true)
+	
+	# Fade out mycket snabbare
+	afterimage_tween.tween_property(afterimage, "modulate:a", 0.0, fade_duration)
+	
+	# Slight forward movement (mindre rörelse, snabbare)
+	var drift_distance = 8  # Mindre drift än tidigare (8 istället för 15)
+	var drift_target = afterimage_pos + (dash_direction * drift_distance)
+	afterimage_tween.tween_property(afterimage, "global_position", drift_target, fade_duration * 0.7)
+	
+	# Scale down slightly (snabbare animation)
+	afterimage_tween.tween_property(afterimage, "scale", sprite.scale * 0.9, fade_duration)
+	
+	# Clean up afterimage snabbare
+	afterimage_tween.tween_callback(func(): 
+		if is_instance_valid(afterimage):
+			afterimage.queue_free()
+			print("   Afterimage ", index + 1, " cleaned up")
+	).set_delay(fade_duration)
+
+func start_dash_cooldown():
+	"""Start dash cooldown"""
+	can_dash = false
+	dash_timer = dash_cooldown
+	print("Dash cooldown started - ", dash_cooldown, " seconds")
+
+func handle_dash_cooldown(delta):
+	"""Handle dash cooldown timer"""
+	if not can_dash:
+		dash_timer -= delta
+		if dash_timer <= 0:
+			can_dash = true
+			print("✨ Dash ready!")
+
+func create_dash_effect():
+	"""Visual effect for dash on player"""
+	if not sprite:
+		return
+	
+	# Flash effect - snabb cyan blink på spelaren
+	var dash_tween = create_tween()
+	dash_tween.set_parallel(true)
+	
+	# Quick flash sequence
+	dash_tween.tween_property(sprite, "modulate", Color.CYAN, 0.05)
+	dash_tween.tween_property(sprite, "modulate", Color.WHITE, 0.05)
+	dash_tween.tween_property(sprite, "modulate", Color.CYAN, 0.05)
+	dash_tween.tween_property(sprite, "modulate", Color.WHITE, 0.05)
+	
+	# Kort scale effect för att visa "speed"
+	var original_scale = sprite.scale
+	dash_tween.tween_property(sprite, "scale", original_scale * 1.2, 0.1)
+	dash_tween.tween_property(sprite, "scale", original_scale, 0.1)
+
+# UTILITY FUNKTIONER för UI/debugging
+
+func get_dash_cooldown_remaining() -> float:
+	"""Get remaining dash cooldown time"""
+	if can_dash:
+		return 0.0
+	return dash_timer
+
+func get_dash_grace_remaining() -> float:
+	"""Get remaining grace period time"""
+	return dash_grace_timer
+
+func is_dash_ready() -> bool:
+	"""Check if dash is ready"""
+	return can_dash
+
+func is_in_grace_period() -> bool:
+	"""Check if currently in grace period"""
+	return dash_grace_timer > 0.0
+
+func is_shift_held() -> bool:
+	"""Check if Shift is currently held down"""
+	return Input.is_action_pressed("dash")
+
+func get_dash_info() -> Dictionary:
+	"""Get dash state info for debugging"""
+	return {
+		"can_dash": can_dash,
+		"cooldown_remaining": get_dash_cooldown_remaining(),
+		"grace_remaining": get_dash_grace_remaining(),
+		"in_grace_period": is_in_grace_period(),
+		"shift_held": is_shift_held(),
+		"dash_distance": dash_distance,
+		"is_dashing": is_dashing
+	}
+	
 func get_remaining_top_time() -> float:
 	"""Get remaining time on top wall"""
 	if not is_on_top_wall:

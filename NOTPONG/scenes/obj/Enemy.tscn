@@ -1,7 +1,7 @@
 [gd_scene load_steps=7 format=3 uid="uid://mhneu5sufe2j"]
 
 [ext_resource type="Script" uid="uid://cfxv5qdy0ce0w" path="res://scripts/obj/enemy/enemy.gd" id="1_enemy_script"]
-[ext_resource type="AudioStream" uid="uid://ceekixuhqqlts" path="res://sounds/noels/blop1.wav" id="3_455qr"]
+[ext_resource type="AudioStream" uid="uid://m2nawbuan6pu" path="res://sounds/noels/blop1.wav" id="3_455qr"]
 
 [sub_resource type="Gradient" id="Gradient_gsmpp"]
 offsets = PackedFloat32Array(0.948905, 1)

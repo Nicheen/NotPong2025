@@ -4,7 +4,7 @@
 # Ignore all Godot editor metadata
 .import/
 *.import
-*.godot
+*./NOT_PONG/.godot
 
 # Ignore shader material files (if you don't want to track them)
 /addons/flowerwall_postprocess/shaders/*.material
