@@ -37,17 +37,17 @@ func spawn_boss_level(level: int):
 	spawn_boss(level)
 	
 	# Add some supporting blocks using weighted positioning
-	var support_blocks = 3 + (level / 10)
-	var support_enemies = 2 + (level / 10)
+	#var support_blocks = 3 + (level / 10)
+	#var support_enemies = 2 + (level / 10)
 	
-	main_scene.spawn_blocks_weighted(support_blocks)
-	main_scene.spawn_enemies_weighted(support_enemies)
+	#main_scene.spawn_blocks_weighted(support_blocks)
+	#main_scene.spawn_enemies_weighted(support_enemies)
 	
 	# Maybe add a few special blocks for boss levels
-	if level >= 10:
-		main_scene.spawn_blue_blocks_weighted(2)
-	if level >= 20:
-		main_scene.spawn_laser_blocks_weighted(1)
+	#if level >= 10:
+		#main_scene.spawn_blue_blocks_weighted(2)
+	#if level >= 20:
+		#main_scene.spawn_laser_blocks_weighted(1)
 		
 func spawn_normal_level(level: int):
 	"""Spawn a normal level using weighted positioning"""
