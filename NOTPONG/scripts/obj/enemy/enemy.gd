@@ -1,7 +1,7 @@
 extends StaticBody2D
 
 # Enemy settings
-@export var max_health: int = 30
+@export var max_health: int = 20
 @export var score_value: int = 100
 @export var enemy_type: String = "basic"
 
@@ -11,6 +11,8 @@ extends StaticBody2D
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
 @onready var health_bar: ProgressBar = get_node_or_null("HealthBar")
 
+var normal_texture: Texture2D
+var cracked_texture: Texture2D
 # Internal variables
 var current_health: int
 var is_dead: bool = false
@@ -27,7 +29,10 @@ func _ready():
 	
 	if sprite:
 		original_color = sprite.modulate
-	
+		normal_texture = sprite.texture
+		
+		# Load the cracked texture
+		cracked_texture = load("res://images/Bomb2.png")
 	if health_bar:
 		health_bar.max_value = max_health
 		health_bar.value = current_health
@@ -45,7 +50,8 @@ func take_damage(damage: int):
 	
 	current_health -= damage
 	current_health = max(0, current_health)
-	
+	if   current_health < max_health:
+		change_to_cracked_sprite()
 	if health_bar:
 		health_bar.value = current_health
 	
@@ -90,6 +96,11 @@ func die_silently():
 	enemy_died.emit(0, global_position)
 	play_death_effect()
 
+func change_to_cracked_sprite():
+	"""Change the sprite to the cracked version"""
+	if sprite and cracked_texture:
+		sprite.texture = cracked_texture
+		
 func show_damage_effect():
 	if not sprite:
 		return

@@ -1,17 +1,17 @@
 [gd_scene load_steps=13 format=3 uid="uid://eppnqq6ap33r"]
 
 [ext_resource type="Script" uid="uid://57mwgwgrtt80" path="res://scripts/obj/projectile/projectile.gd" id="1_projectile_main"]
+[ext_resource type="Texture2D" uid="uid://ca46r0lbh45dk" path="res://images/PlayerProjectile1.png" id="2_aqdnr"]
 [ext_resource type="Script" uid="uid://c67rqomxck2ae" path="res://scripts/obj/projectile/projectile_collision_handler.gd" id="2_collision_handler"]
 [ext_resource type="Script" uid="uid://dgqp1seq5b42j" path="res://scripts/obj/projectile/projectile_boundary_handler.gd" id="3_boundary_handler"]
 [ext_resource type="Script" uid="uid://oex81gje51m7" path="res://scripts/obj/projectile/projectile_effect_manager.gd" id="4_effect_manager"]
-[ext_resource type="Texture2D" uid="uid://go0jsjs2iejv" path="res://images/white_circle.svg" id="5_texture"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_bounce"]
 friction = 0.1
 bounce = 0.8
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_projectile"]
-radius = 8.06226
+radius = 8.0
 
 [sub_resource type="Gradient" id="Gradient_aqdnr"]
 colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
@@ -48,8 +48,7 @@ max_contacts_reported = 10
 script = ExtResource("1_projectile_main")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
-scale = Vector2(0.25, 0.25)
-texture = ExtResource("5_texture")
+texture = ExtResource("2_aqdnr")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CircleShape2D_projectile")
