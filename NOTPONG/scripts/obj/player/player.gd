@@ -33,6 +33,8 @@ extends CharacterBody2D
 @export var dash_cooldown: float = 1.5   # Cooldown time in seconds
 @export var dash_grace_period: float = 1.5
 
+@onready var projectile_preview: Sprite2D
+
 # NEW: Knockback state variables (add after existing internal variables)
 var knockback_velocity: Vector2 = Vector2.ZERO
 var knockback_timer: float = 0.0
@@ -76,6 +78,8 @@ func _ready():
 	current_health = max_health
 	current_wall = WallSide.BOTTOM
 	is_on_top_wall = false
+	setup_projectile_preview()
+
 
 func _physics_process(delta):
 	handle_teleport_cooldown(delta)
@@ -90,9 +94,33 @@ func _physics_process(delta):
 	handle_knockback(delta)
 	# NEW: Handle top wall time limit
 	handle_top_wall_timer(delta)
-	
+	update_projectile_preview()
 	# Apply movement
 	move_and_slide()
+	
+func setup_projectile_preview():
+	# Skapa preview sprite
+	projectile_preview = Sprite2D.new()
+	projectile_preview.texture = load("res://images/white_circle.svg")  # Samma texture som projektilen
+	projectile_preview.scale = Vector2(0.15, 0.15)  # Lite mindre än projektilen (0.25)
+	projectile_preview.modulate = Color(1, 1, 1, 0.5)  # Halvtransparent vit
+	projectile_preview.z_index = -1  # Bakom andra objekt
+	add_child(projectile_preview)
+	
+func update_projectile_preview():
+	if not projectile_preview:
+		return
+	
+	# Samma logik som i shoot_projectile() funktionen
+	var mouse_pos = get_global_mouse_position()
+	var shoot_direction = (mouse_pos - global_position).normalized()
+	var spawn_position = global_position + (shoot_direction * 80)
+	
+	# Uppdatera preview position
+	projectile_preview.global_position = spawn_position
+	
+	# Visa/dölj baserat på om spelaren kan skjuta
+	projectile_preview.visible = can_shoot
 	
 func update_sprite():
 	if sprite == null:
