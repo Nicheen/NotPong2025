@@ -92,7 +92,7 @@ func damage_player_in_lava():
 			if child is CharacterBody2D and child.collision_layer == 1:
 				print("Found player via collision layer: ", child.name)
 				if child.has_method("take_damage"):
-					child.take_damage(20)
+					child.take_damage(10)
 					print("Player damaged by lava projectile (fallback)!")
 				break
 	
@@ -107,8 +107,8 @@ func maintain_minimum_velocity():
 	if current_velocity > 0 and current_velocity < min_velocity:
 		# Boost velocity to minimum while maintaining direction
 		var velocity_direction = projectile.linear_velocity.normalized()
-		projectile.linear_velocity = velocity_direction * min_velocity
-		print("Boosted velocity from ", current_velocity, " to ", min_velocity)
+		projectile.linear_velocity = velocity_direction * (min_velocity + 10)
+		print("Boosted velocity from ", current_velocity, " to ", min_velocity + 10)
 
 func get_distance_to_bounds() -> float:
 	if not projectile:
