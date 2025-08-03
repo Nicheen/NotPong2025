@@ -71,7 +71,7 @@ func _ready():
 func _physics_process(delta):
 	# Handle regeneration timing
 	if has_been_damaged and not is_dead and not is_regenerating:
-		regeneration_timer += delta
+		regeneration_timer = delta
 		if regeneration_timer >= regeneration_delay:
 			start_regeneration()
 	
@@ -207,6 +207,7 @@ func take_damage(damage: int):
 	print("Block Dropper took ", damage, " damage")
 	
 	current_health -= damage
+	shoot_timer -= 1
 	current_health = max(0, current_health)
 	
 	# Change sprite to cracked version after first damage
