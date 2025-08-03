@@ -17,6 +17,7 @@ const ENEMY_BLOCK_BLUE_SCENE = "res://scenes/obj/blocks/block_blue.tscn"
 const ENEMY_BLOCK_LASER_SCENE = "res://scenes/obj/blocks/block_laser.tscn"
 const ENEMY_BLOCK_THUNDER_SCENE = "res://scenes/obj/blocks/block_thunder.tscn"
 const ENEMY_BLOCK_DROPPER_SCENE = "res://scenes/obj/blocks/block_dropper.tscn"
+const ENEMY_BLOCK_IRON_SCENE = "res://scenes/obj/blocks/block_iron.tscn"
 const BOSS_SCENE = "res://scenes/obj/bosses/Boss1.tscn"
 const PAUSE_MENU_SCENE = "res://scenes/menus/pause_menu.tscn" 
 const DEATH_MENU_SCENE = "res://scenes/menus/death_menu.tscn"
@@ -37,6 +38,7 @@ var thunder_blocks: Array[StaticBody2D] = []
 var block_droppers: Array[StaticBody2D] = []
 var bosses: Array[StaticBody2D] = []
 var all_spawn_positions: Array[Vector2] = []
+var iron_blocks: Array = []
 
 # Game state
 var current_level: int = 1
@@ -266,6 +268,35 @@ func create_boss_death_distortion(boss_position: Vector2):
 	
 	create_distortion_effect(boss_position, force, radius, duration)
 
+func spawn_iron_block_at_position(position: Vector2):
+	var block_scene = load(ENEMY_BLOCK_IRON_SCENE)
+	if not block_scene:
+		print("ERROR: Could not load iron block scene at: ", ENEMY_BLOCK_IRON_SCENE)
+		return
+	
+	var block = block_scene.instantiate()
+	block.global_position = position
+	
+	# Connect signals
+	block.block_died.connect(_on_block_died)
+	block.block_hit.connect(_on_enemy_hit)
+	
+	add_child(block)
+	iron_blocks.append(block)
+	total_enemies += 1
+	
+	# Reserve position
+	var positions: Array[Vector2] = [position]
+	spawn_manager.reserve_positions(positions)
+	
+	print("Spawned iron block at: ", position)
+	
+func spawn_iron_blocks_weighted(count: int):
+	"""Spawn iron blocks using weighted positioning"""
+	var positions = spawn_manager.get_weighted_spawn_positions("iron_blocks", count)
+	
+	for pos in positions:
+		spawn_iron_block_at_position(pos)
 # High Score Functions
 func check_and_update_high_score():
 	"""Check if current score is a new high score and update if needed"""
@@ -934,7 +965,20 @@ func find_block_at_position(position: Vector2):
 				print("    ^ NEW CLOSEST BOMB!")
 		else:
 			print("  bombs[", i, "]: INVALID")
-			
+	print("Checking iron_blocks array:")
+	
+	for i in range(iron_blocks.size()):
+		var block = iron_blocks[i]
+		if is_instance_valid(block):
+			var distance = position.distance_to(block.global_position)
+			print("  iron_blocks[", i, "]: ", block.global_position, " distance: ", distance)
+			if distance <= tolerance and distance < closest_distance:
+				closest_block = block
+				closest_distance = distance
+				print("    ^ NEW CLOSEST BLOCK!")
+		else:
+			print("  iron_blocks[", i, "]: INVALID")
+					
 	if closest_block:
 		print("RESULT: Found closest block at distance ", closest_distance, " from ", position)
 		print("        Block position: ", closest_block.global_position)
@@ -1109,6 +1153,10 @@ func clear_level_entities():
 	for blue_block in blue_blocks:
 		if is_instance_valid(blue_block):
 			blue_block.queue_free()
+			
+	for iron_block in iron_blocks:
+		if is_instance_valid(iron_block):
+			iron_block.queue_free()
 	
 	for boss in bosses:
 		if is_instance_valid(boss):
@@ -1121,6 +1169,7 @@ func clear_level_entities():
 	thunder_blocks.clear()
 	block_droppers.clear()
 	blue_blocks.clear()
+	iron_blocks.clear()
 	bosses.clear()
 	
 	# Reset spawn manager positions

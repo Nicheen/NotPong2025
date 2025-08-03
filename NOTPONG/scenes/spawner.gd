@@ -23,7 +23,8 @@ var spawn_weights: Dictionary = {
 	"enemies": create_enemy_gradient(), 
 	"blue_blocks": create_blue_block_gradient(),
 	"laser_blocks": create_laser_gradient(),
-	"block_droppers": create_dropper_gradient()
+	"block_droppers": create_dropper_gradient(),
+	"iron_blocks": create_iron_block_gradient()
 }
 
 func _ready():
@@ -53,6 +54,28 @@ func create_default_gradient() -> Array[float]:
 			
 			var weight = (1.0 - center_distance * 0.7) * height_factor
 			weights.append(max(0.1, weight))  # Minimum weight of 0.1
+	
+	return weights
+
+func create_iron_block_gradient() -> Array[float]:
+	"""Create gradient for iron blocks - prefer center positions and avoid edges"""
+	var weights: Array[float] = []
+	
+	for y in range(GRID_HEIGHT):
+		for x in range(GRID_WIDTH):
+			# Strong preference for center positions
+			var center_distance = abs(x - GRID_WIDTH/2) / float(GRID_WIDTH/2)
+			var edge_penalty = 1.0
+			
+			# Avoid edges completely
+			if x == 0 or x == GRID_WIDTH-1 or y == 0 or y == GRID_HEIGHT-1:
+				edge_penalty = 0.1
+			
+			# Prefer middle rows (not too high, not too low)
+			var height_factor = 1.0 - abs(y - GRID_HEIGHT/2) / float(GRID_HEIGHT/2)
+			
+			var weight = (1.0 - center_distance * 0.5) * height_factor * edge_penalty
+			weights.append(max(0.05, weight))  # Very low minimum weight
 	
 	return weights
 

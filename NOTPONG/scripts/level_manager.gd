@@ -52,12 +52,13 @@ func spawn_boss_level(level: int):
 func spawn_normal_level(level: int):
 	"""Spawn a normal level using weighted positioning"""
 	# Calculate entity counts based on level
-	var base_blocks = 8
+	var base_blocks = 7
 	var base_enemies = 3
 	var base_block_dropper = 1
 	var base_lazer = 1
 	var base_thunder = 0
 	var base_blue_blocks = 2
+	var base_iron_blocks = 1
 	
 	# Increase difficulty each level
 	var blocks_count = base_blocks + (level - 1) * 3
@@ -66,6 +67,7 @@ func spawn_normal_level(level: int):
 	var lazer_count = base_lazer + (level - 1) / 3
 	var thunder_count = base_thunder + (level - 1) / 3
 	var blue_blocks_count = base_blue_blocks + (level - 1) / 2
+	var iron_blocks_count = base_iron_blocks + max(0, (level - 3) / 2)
 	
 	# Apply maximum limits
 	blocks_count = min(blocks_count, 20)
@@ -74,6 +76,7 @@ func spawn_normal_level(level: int):
 	lazer_count = min(lazer_count, 5)
 	thunder_count = min(thunder_count, 1)
 	blue_blocks_count = min(blue_blocks_count, 8)
+	iron_blocks_count = min(iron_blocks_count, 6)
 	
 	# SPAWN IN STRATEGIC ORDER (blocks first, then special blocks, enemies last)
 	
@@ -84,6 +87,7 @@ func spawn_normal_level(level: int):
 	main_scene.spawn_laser_blocks_weighted(lazer_count)
 	main_scene.spawn_thunder_blocks_weighted(thunder_count)
 	main_scene.spawn_blue_blocks_weighted(blue_blocks_count)
+	main_scene.spawn_iron_blocks_weighted(iron_blocks_count)
 	main_scene.spawn_block_droppers_weighted(block_dropper_count)
 	
 	# 3. Spawn enemies last (they avoid block positions)
@@ -92,6 +96,7 @@ func spawn_normal_level(level: int):
 	print("Level ", level, " spawned with weighted positioning:")
 	print("  - ", blocks_count, " regular blocks")
 	print("  - ", blue_blocks_count, " blue blocks") 
+	print("  - ", iron_blocks_count, " iron blocks")
 	print("  - ", lazer_count, " laser blocks")
 	print("  - ", thunder_count, " thunder blocks")
 	print("  - ", block_dropper_count, " block droppers")
