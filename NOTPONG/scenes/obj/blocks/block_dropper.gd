@@ -182,7 +182,7 @@ func drop_projectile():
 	
 	# Initialize projectile to move straight down (enemy projectile)
 	var drop_direction = Vector2(0, 1)  # Straight down
-	projectile.initialize(drop_direction, projectile_speed, Vector2.ZERO, Vector2.ZERO, false)
+	projectile.initialize(drop_direction, projectile_speed, Vector2.ZERO, Vector2.ZERO, true)
 	
 	# CRITICAL FIX: Remove auto-destroy timer and disable bounce limits
 	if projectile.has_method("disable_auto_destroy"):
