@@ -8,10 +8,13 @@ extends StaticBody2D
 @export var projectile_speed: float = 200.0
 @export var shoot_interval: float = 4.0  # Time between drops
 @export var warning_time: float = 1.5    # Warning time before drop
-
+@export var min_drop_interval: float = 3.0  # Minsta tid mellan drops
+@export var max_drop_interval: float = 6.0  # Längsta tid mellan drops
 # Visual settings
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
+
+var current_drop_interval: float = 0.0
 
 # Sprite textures
 var normal_texture: Texture2D
@@ -51,7 +54,8 @@ func _ready():
 	# Set collision layer for enemy (layer 5)
 	collision_layer = 16  # Layer 5 (2^4 = 16)
 	collision_mask = 2    # Can be hit by projectiles (layer 2)
-	
+	randomize_drop_interval()
+
 	# Store original sprite color and texture
 	if sprite:
 		original_color = sprite.modulate
@@ -85,7 +89,25 @@ func _physics_process(delta):
 	# Check if we should drop projectile
 	if shoot_timer >= shoot_interval:
 		drop_projectile()
-
+	
+	shoot_timer += delta
+	
+	# Check if we should start warning (använd current_drop_interval istället för shoot_interval)
+	if not is_warning_active and shoot_timer >= (current_drop_interval - warning_time):
+		start_warning()
+	
+	# Handle warning blinks
+	if is_warning_active and not is_regenerating:
+		handle_warning_blinks(delta)
+	
+	# Check if we should drop projectile (använd current_drop_interval)
+	if shoot_timer >= current_drop_interval:
+		drop_projectile()
+func randomize_drop_interval():
+	"""Sätt en ny random drop interval för denna dropper"""
+	current_drop_interval = randf_range(min_drop_interval, max_drop_interval)
+	print("Block Dropper will drop in ", current_drop_interval, " seconds")
+	
 func start_warning():
 	"""Start the warning indicator before dropping projectile"""
 	is_warning_active = true
@@ -140,7 +162,8 @@ func drop_projectile():
 	
 	# Stop warning effect
 	stop_warning()
-	
+	randomize_drop_interval()
+
 	# Reset shoot timer
 	shoot_timer = 0.0
 	

@@ -48,7 +48,7 @@ var pattern_loop_count: int = 0
 var is_moving: bool = true
 
 # Movement boundaries (from spawn position)
-var max_horizontal_range: float = 150.0  # 150 pixels left/right
+var max_horizontal_range: float = 200.0  # 150 pixels left/right
 var max_vertical_range: float = 100.0    # 100 pixels up/down
 # Signals
 signal boss_died(score_points: int)
