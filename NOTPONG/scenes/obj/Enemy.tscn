@@ -1,8 +1,8 @@
 [gd_scene load_steps=6 format=3 uid="uid://mhneu5sufe2j"]
 
 [ext_resource type="Script" uid="uid://cfxv5qdy0ce0w" path="res://scripts/obj/enemy/enemy.gd" id="1_enemy_script"]
-[ext_resource type="Texture2D" uid="uid://787kqsrjkmux" path="res://images/Bomb1.png" id="2_455qr"]
-[ext_resource type="AudioStream" uid="uid://ceekixuhqqlts" path="res://sounds/noels/blop1.wav" id="3_455qr"]
+[ext_resource type="Texture2D" uid="uid://bp53q14x7cbx" path="res://images/Bomb1.png" id="2_455qr"]
+[ext_resource type="AudioStream" uid="uid://m2nawbuan6pu" path="res://sounds/noels/blop1.wav" id="3_455qr"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_455qr"]
 radius = 25.0

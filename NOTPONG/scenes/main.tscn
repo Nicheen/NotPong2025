@@ -143,6 +143,8 @@ turbulence_enabled = true
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_elqb8")
+play_area_size = null
+play_area_center = null
 
 [node name="Background" type="Sprite2D" parent="."]
 z_index = -10

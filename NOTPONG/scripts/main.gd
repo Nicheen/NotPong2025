@@ -825,7 +825,8 @@ func damage_adjacent_blocks(enemy_position: Vector2, damage: int = 10):
 			print("✗ No block found at adjacent position: ", check_position)
 	
 	print("Total blocks damaged by explosion: ", blocks_damaged)
-	
+
+		
 func find_closest_grid_position(position: Vector2, x_positions: Array, y_positions: Array) -> Vector2:
 	"""Find the closest valid grid position to the given position"""
 	var closest_x = x_positions[0]

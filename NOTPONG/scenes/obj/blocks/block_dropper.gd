@@ -2,8 +2,12 @@ extends StaticBody2D
 
 # Enemy settings
 @export var max_health: int = 20
-@export var score_value: int = 20  # Points awarded when killed
+@export var score_value: int = 20
 @export var enemy_type: String = "basic"
+@export var projectile_scene: PackedScene = load("res://scenes/obj/Projectile.tscn")
+@export var projectile_speed: float = 200.0
+@export var shoot_interval: float = 4.0  # Time between drops
+@export var warning_time: float = 1.5    # Warning time before drop
 
 # Visual settings
 @onready var sprite: Sprite2D = $Sprite2D
@@ -13,9 +17,17 @@ extends StaticBody2D
 var normal_texture: Texture2D
 var cracked_texture: Texture2D
 
+# Shooting system
+var shoot_timer: float = 0.0
+var warning_timer: float = 0.0
+var is_warning_active: bool = false
+var warning_blink_speed: float = 0.5  # Start blink speed
+var last_blink_time: float = 0.0
+var sprite_visible: bool = true
+
 # Regeneration settings
-@export var regeneration_delay: float = 3.0  # Time before regeneration starts
-@export var regeneration_pulse_time: float = 1.0  # Time spent pulsing before healing
+@export var regeneration_delay: float = 3.0
+@export var regeneration_pulse_time: float = 1.0
 
 # Internal variables
 var current_health: int
@@ -36,7 +48,7 @@ func _ready():
 	# Set up enemy
 	current_health = max_health
 	
-	# Set collision layer for enemy (let's use layer 5)
+	# Set collision layer for enemy (layer 5)
 	collision_layer = 16  # Layer 5 (2^4 = 16)
 	collision_mask = 2    # Can be hit by projectiles (layer 2)
 	
@@ -58,6 +70,112 @@ func _physics_process(delta):
 		regeneration_timer += delta
 		if regeneration_timer >= regeneration_delay:
 			start_regeneration()
+	
+	# Handle shooting timing
+	shoot_timer += delta
+	
+	# Check if we should start warning
+	if not is_warning_active and shoot_timer >= (shoot_interval - warning_time):
+		start_warning()
+	
+	# Handle warning blinks
+	if is_warning_active and not is_regenerating:
+		handle_warning_blinks(delta)
+	
+	# Check if we should drop projectile
+	if shoot_timer >= shoot_interval:
+		drop_projectile()
+
+func start_warning():
+	"""Start the warning indicator before dropping projectile"""
+	is_warning_active = true
+	warning_timer = 0.0
+	warning_blink_speed = 0.5  # Start slow
+	print("Warning started - projectile dropping in ", warning_time, " seconds!")
+
+func handle_warning_blinks(delta):
+	"""Handle the accelerating blink effect"""
+	warning_timer += delta
+	
+	# Calculate how far through the warning we are (0.0 to 1.0)
+	var warning_progress = warning_timer / warning_time
+	
+	# Accelerate blink speed as we get closer to drop time
+	# Start at 0.5 seconds, end at 0.1 seconds
+	var current_blink_speed = lerp(0.5, 0.1, warning_progress)
+	
+	# Handle blinking
+	last_blink_time += delta
+	if last_blink_time >= current_blink_speed:
+		toggle_sprite_visibility()
+		last_blink_time = 0.0
+
+func toggle_sprite_visibility():
+	"""Toggle sprite color for warning effect - red pulsing like regeneration"""
+	if not sprite or is_regenerating:
+		return
+	
+	sprite_visible = !sprite_visible
+	
+	if sprite_visible:
+		sprite.modulate = Color.RED  # Red warning
+	else:
+		sprite.modulate = original_color  # Normal color
+
+func stop_warning():
+	"""Stop the warning effect and restore normal appearance"""
+	is_warning_active = false
+	warning_timer = 0.0
+	sprite_visible = true
+	
+	if sprite and not is_regenerating:
+		sprite.modulate = original_color
+
+func drop_projectile():
+	"""Drop a projectile straight down"""
+	if is_dead:
+		return
+	
+	print("Dropping projectile!")
+	
+	# Stop warning effect
+	stop_warning()
+	
+	# Reset shoot timer
+	shoot_timer = 0.0
+	
+	# Create projectile
+	var projectile = projectile_scene.instantiate()
+	
+	# Position it just below the block dropper
+	var spawn_position = global_position + Vector2(0, 40)
+	projectile.global_position = spawn_position
+	
+	# Add to scene first
+	get_tree().current_scene.add_child(projectile)
+	
+	# Wait one frame then initialize
+	await get_tree().process_frame
+	
+	# Initialize projectile to move straight down (enemy projectile)
+	var drop_direction = Vector2(0, 1)  # Straight down
+	projectile.initialize(drop_direction, projectile_speed, Vector2.ZERO, Vector2.ZERO, false)
+	
+	# CRITICAL FIX: Remove auto-destroy timer and disable bounce limits
+	if projectile.has_method("disable_auto_destroy"):
+		projectile.disable_auto_destroy()
+	else:
+		# Manual fix - find and remove the timer
+		for child in projectile.get_children():
+			if child is Timer:
+				child.queue_free()
+				print("Removed auto-destroy timer from enemy projectile")
+	
+	# Also disable bounce limit and boundary destruction
+	if projectile.collision_handler:
+		projectile.collision_handler.max_bounces = 3
+	
+	print("Projectile dropped successfully with no time limit")
 
 func take_damage(damage: int):
 	if is_dead:
@@ -72,7 +190,7 @@ func take_damage(damage: int):
 	if not has_been_damaged and current_health < max_health:
 		change_to_cracked_sprite()
 		has_been_damaged = true
-		regeneration_timer = 0.0  # Start regeneration timer
+		regeneration_timer = 0.0
 	
 	# Stop any ongoing regeneration
 	if is_regenerating:
@@ -91,7 +209,6 @@ func take_damage(damage: int):
 	if current_health <= 0:
 		die()
 
-# NEW: Silent damage method for laser kills (no score awarded)
 func take_laser_damage(damage: int):
 	"""Take damage from laser without awarding score when destroyed"""
 	if is_dead:
@@ -106,7 +223,7 @@ func take_laser_damage(damage: int):
 	if not has_been_damaged and current_health < max_health:
 		change_to_cracked_sprite()
 		has_been_damaged = true
-		regeneration_timer = 0.0  # Start regeneration timer
+		regeneration_timer = 0.0
 	
 	# Stop any ongoing regeneration
 	if is_regenerating:
@@ -117,9 +234,6 @@ func take_laser_damage(damage: int):
 	
 	# Visual damage feedback
 	show_damage_effect()
-	
-	# DON'T emit hit signal - no score for laser damage
-	# block_dropper_hit.emit(damage)  # Commented out to prevent score
 	
 	# Check if dead - but call the silent death method
 	if current_health <= 0:
@@ -136,16 +250,17 @@ func change_to_cracked_sprite():
 func die():
 	if is_dead:
 		return
-	
 	is_dead = true
 	print("Block Dropper died! Awarding ", score_value, " points")
+	
+	# Stop any warning effects
+	stop_warning()
 	
 	# Emit death signal with score
 	block_dropper_died.emit(score_value)
 	
 	play_death_effect()
 
-# NEW: Silent death method (no score awarded)
 func die_silently():
 	"""Die without awarding score - used for laser kills"""
 	if is_dead:
@@ -154,8 +269,10 @@ func die_silently():
 	is_dead = true
 	print("Block Dropper destroyed by laser (no score awarded)")
 	
-	# VIKTIG FIX: Skicka ändå signal så att enemies_killed räknaren uppdateras
-	# Vi skickar 0 poäng istället för score_value
+	# Stop any warning effects
+	stop_warning()
+	
+	# Send signal with 0 points so enemies_killed counter still updates
 	block_dropper_died.emit(0)
 	
 	play_death_effect()
@@ -168,10 +285,20 @@ func show_damage_effect():
 	if is_regenerating:
 		return
 	
+	# Temporarily stop warning effect for damage flash
+	var was_warning = is_warning_active
+	if was_warning:
+		stop_warning()
+	
 	# Flash red when hit
 	var tween = create_tween()
 	tween.tween_property(sprite, "modulate", Color.RED, 0.1)
 	tween.tween_property(sprite, "modulate", original_color, 0.1)
+	
+	# Resume warning if it was active
+	if was_warning:
+		await tween.finished
+		start_warning()
 
 func play_death_effect():
 	if not sprite:
@@ -187,7 +314,7 @@ func play_death_effect():
 	
 	# Super fast effect - only 0.1 seconds
 	var tween = create_tween()
-	tween.set_parallel(true)  # Allow parallel animations
+	tween.set_parallel(true)
 	
 	# Shrink the scale
 	tween.tween_property(sprite, "scale", Vector2.ZERO, 0.1)
@@ -215,7 +342,7 @@ func is_alive() -> bool:
 
 # Method called when projectile hits this enemy
 func _on_projectile_hit():
-	take_damage(10)  # Default damage from projectiles
+	take_damage(10)
 
 # Regeneration system functions
 func start_regeneration():
@@ -225,6 +352,11 @@ func start_regeneration():
 	
 	is_regenerating = true
 	print("Starting regeneration - pulsing green for ", regeneration_pulse_time, " seconds")
+	
+	# Stop warning effect during regeneration
+	var was_warning = is_warning_active
+	if was_warning:
+		stop_warning()
 	
 	# Start green pulsing effect
 	regeneration_tween = create_tween()

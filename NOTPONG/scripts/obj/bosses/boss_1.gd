@@ -40,6 +40,16 @@ var activate_armour_duration: float = randf_range(2.0, 6.0)
 var activate_armour_timer: float = 0.0
 
 
+var spawn_position: Vector2  # Where boss spawned
+var movement_timer: float = 0.0
+var movement_speed: float = 0.4  # 5x långsammare (var 2.0, nu 0.4)
+var current_pattern: String = "horizontal_eight"  # "horizontal_eight" or "vertical_eight"
+var pattern_loop_count: int = 0
+var is_moving: bool = true
+
+# Movement boundaries (from spawn position)
+var max_horizontal_range: float = 150.0  # 150 pixels left/right
+var max_vertical_range: float = 100.0    # 100 pixels up/down
 # Signals
 signal boss_died(score_points: int)
 signal boss_hit(damage: int)
@@ -51,7 +61,14 @@ func _ready():
 	# Set collision layer for enemy (let's use layer 5)
 	collision_layer = 16  # Layer 5 (2^4 = 16)
 	collision_mask = 2    # Can be hit by projectiles (layer 2)
+	spawn_position = global_position
 	
+	# Choose random starting pattern
+	var patterns = ["horizontal_eight", "vertical_eight"]
+	current_pattern = patterns[randi() % 2]
+	
+	# Choose random starting direction within pattern
+	movement_timer = randf() * TAU  # Random point in the pattern cycle
 	# Store original sprite color
 	if sprite:
 		original_color = sprite.modulate
@@ -81,14 +98,19 @@ func deactivate_armoured_mode():
 	await tween.finished
 	
 	is_transitioning = false
+	pause_movement()
 	armour_active = false
 	update_sprite()
+	resume_movement()
+
 	print("🛡️ ARMOURED MODE DEACTIVATED")
 	
 	
 	
 func _physics_process(delta):
 	# Handle armoured mode timing
+	if not is_dead and is_moving and not is_transitioning:
+		update_movement_pattern(delta)
 	if armour_active and not is_transitioning:
 		armour_timer += delta
 		if armour_timer >= armour_duration:
@@ -126,6 +148,7 @@ func take_damage(damage: int):
 		health_bar.value = current_health
 	if current_health <= 0:
 		die()
+		is_moving = false
 
 	# Update sprite
 	update_sprite()
@@ -134,6 +157,68 @@ func take_damage(damage: int):
 	show_damage_effect()
 	if current_health % 50 == 0:
 		activate_armoured_mode()
+	
+func update_movement_pattern(delta):
+	"""Update boss movement in figure-8 patterns"""
+	movement_timer += delta * movement_speed
+	
+	# Check if we completed a full loop (2π radians)
+	if movement_timer >= TAU:
+		movement_timer = 0.0  # Reset to 0 för smooth transition
+		pattern_loop_count += 1
+		switch_movement_pattern()
+	
+	# Calculate position based on current pattern
+	var new_position = calculate_pattern_position()
+	
+	# Smooth movement - använd move_toward för jämn övergång
+	var movement_step = 200.0 * delta  # Pixels per second movement speed
+	global_position = global_position.move_toward(new_position, movement_step)
+
+func calculate_pattern_position() -> Vector2:
+	"""Calculate position based on current movement pattern"""
+	var x_offset: float
+	var y_offset: float
+	
+	match current_pattern:
+		"horizontal_eight":
+			# Liggande åtta (∞) - horizontal figure-8
+			x_offset = sin(movement_timer) * max_horizontal_range
+			y_offset = sin(movement_timer * 2) * max_vertical_range * 0.5  # Halverad höjd
+			
+		"vertical_eight":
+			# Stående åtta (8) - vertical figure-8  
+			x_offset = sin(movement_timer * 2) * max_horizontal_range * 0.5  # Halverad bredd
+			y_offset = sin(movement_timer) * max_vertical_range
+			
+		_:
+			x_offset = 0
+			y_offset = 0
+	
+	return spawn_position + Vector2(x_offset, y_offset)
+
+func switch_movement_pattern():
+	"""Switch between horizontal and vertical figure-8 patterns"""
+	# Switch pattern
+	if current_pattern == "horizontal_eight":
+		current_pattern = "vertical_eight"
+	else:
+		current_pattern = "horizontal_eight"
+	
+	# Add small random offset for variation (inte för stor för smooth transition)
+	movement_timer = randf() * 0.5  # Bara liten variation
+	
+	print("🔄 Boss switching to ", current_pattern, " pattern (Loop ", pattern_loop_count, ")")
+
+func pause_movement():
+	"""Pause movement (useful during armoured transitions)"""
+	is_moving = false
+	print("⏸️ Boss movement paused")
+
+func resume_movement():
+	"""Resume movement"""
+	is_moving = true
+	print("▶️ Boss movement resumed")
 	
 func show_armour_block_effect():
 	"""Blue flash when armour blocks"""
@@ -186,6 +271,7 @@ func update_sprite():
 
 func activate_armoured_mode():
 	"""Simple armoured mode activation"""
+
 	if armour_active or is_transitioning:
 		return
 	
@@ -198,6 +284,7 @@ func activate_armoured_mode():
 	print("   Rotating from ", sprite.rotation_degrees, " to ", armour_rotation)
 	
 	is_transitioning = true
+	pause_movement()
 	var tween = create_tween()
 	tween.tween_property(sprite, "rotation_degrees", armour_rotation, 0.25)
 	
@@ -210,6 +297,7 @@ func activate_armoured_mode():
 	collision_layer = 8  # Wall layer for bouncing projectiles
 	
 	update_sprite()
+	resume_movement()
 	print("🛡️ ARMOURED MODE ACTIVE - Collision layer: ", collision_layer)
 
 func die():
@@ -270,6 +358,17 @@ func play_death_effect():
 	await tween.finished
 	queue_free()
 	
+func get_movement_info() -> Dictionary:
+	"""Get movement state info for debugging"""
+	return {
+		"current_pattern": current_pattern,
+		"movement_timer": movement_timer,
+		"pattern_loop_count": pattern_loop_count,
+		"is_moving": is_moving,
+		"spawn_position": spawn_position,
+		"current_position": global_position,
+		"target_position": calculate_pattern_position()
+	}
 func get_health() -> int:
 	return current_health
 
