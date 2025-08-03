@@ -80,7 +80,7 @@ func damage_player_in_lava():
 	if player:
 		print("Found player: ", player.name)
 		if player.has_method("take_damage"):
-			player.take_damage(20)  # Lava damage amount
+			player.take_damage(10)  # Lava damage amount
 			print("Player damaged by lava projectile!")
 		else:
 			print("Player found but no take_damage method")
