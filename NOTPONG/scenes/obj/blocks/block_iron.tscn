@@ -1,0 +1,14 @@
+[gd_scene load_steps=2 format=3 uid="uid://de6b0xutyny3v"]
+
+[ext_resource type="Texture2D" uid="uid://5jf0l56kpr6o" path="res://images/BlockIron.png" id="1_x3trr"]
+
+[node name="BlockIron" type="StaticBody2D"]
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(1.563, 1.563)
+texture = ExtResource("1_x3trr")
+
+[node name="CollisionShape2D" type="CollisionPolygon2D" parent="."]
+position = Vector2(-25, 25)
+scale = Vector2(5, 5)
+polygon = PackedVector2Array(0, 0, 10, 0, 10, -10)
