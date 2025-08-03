@@ -3,7 +3,7 @@ extends StaticBody2D
 # Enemy settings
 @export var max_health: int = 20
 @export var score_value: int = 20
-@export var enemy_type: String = "basic"
+@export var enemy_type: String = "dropper"
 @export var projectile_scene: PackedScene = load("res://scenes/obj/Projectile.tscn")
 @export var projectile_speed: float = 200.0
 @export var shoot_interval: float = 4.0  # Time between drops
@@ -79,30 +79,16 @@ func _physics_process(delta):
 	shoot_timer += delta
 	
 	# Check if we should start warning
-	if not is_warning_active and shoot_timer >= (shoot_interval - warning_time):
+	if not is_warning_active and shoot_timer >= current_drop_interval:
 		start_warning()
-	
-	# Handle warning blinks
-	if is_warning_active and not is_regenerating:
-		handle_warning_blinks(delta)
-	
-	# Check if we should drop projectile
-	if shoot_timer >= shoot_interval:
-		drop_projectile()
-	
-	shoot_timer += delta
-	
-	# Check if we should start warning (använd current_drop_interval istället för shoot_interval)
-	if not is_warning_active and shoot_timer >= (current_drop_interval - warning_time):
-		start_warning()
-	
-	# Handle warning blinks
+		
 	if is_warning_active and not is_regenerating:
 		handle_warning_blinks(delta)
 	
 	# Check if we should drop projectile (använd current_drop_interval)
-	if shoot_timer >= current_drop_interval:
+	if not is_warning_active and shoot_timer >= current_drop_interval:
 		drop_projectile()
+		
 func randomize_drop_interval():
 	"""Sätt en ny random drop interval för denna dropper"""
 	current_drop_interval = randf_range(min_drop_interval, max_drop_interval)
@@ -131,6 +117,9 @@ func handle_warning_blinks(delta):
 	if last_blink_time >= current_blink_speed:
 		toggle_sprite_visibility()
 		last_blink_time = 0.0
+	
+	if warning_timer >= warning_time:
+		is_warning_active = false
 
 func toggle_sprite_visibility():
 	"""Toggle sprite color for warning effect - red pulsing like regeneration"""
@@ -182,21 +171,7 @@ func drop_projectile():
 	
 	# Initialize projectile to move straight down (enemy projectile)
 	var drop_direction = Vector2(0, 1)  # Straight down
-	projectile.initialize(drop_direction, projectile_speed, Vector2.ZERO, Vector2.ZERO, true)
-	
-	# CRITICAL FIX: Remove auto-destroy timer and disable bounce limits
-	if projectile.has_method("disable_auto_destroy"):
-		projectile.disable_auto_destroy()
-	else:
-		# Manual fix - find and remove the timer
-		for child in projectile.get_children():
-			if child is Timer:
-				child.queue_free()
-				print("Removed auto-destroy timer from enemy projectile")
-	
-	# Also disable bounce limit and boundary destruction
-	if projectile.collision_handler:
-		projectile.collision_handler.max_bounces = 3
+	projectile.initialize(drop_direction, projectile_speed)
 	
 	print("Projectile dropped successfully with no time limit")
 
