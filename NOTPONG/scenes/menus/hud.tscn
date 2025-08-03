@@ -55,3 +55,20 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.823529, 0.447059, 0, 1)
 text = "HighScore: 0"
 uppercase = true
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 23.0
+grow_horizontal = 2
+alignment = 1
+
+[node name="MarginContainer" type="MarginContainer" parent="Panel/HBoxContainer2"]
+layout_mode = 2
+theme_override_constants/margin_top = 4
+
+[node name="Timer" type="Label" parent="Panel/HBoxContainer2/MarginContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "00:00:00"
