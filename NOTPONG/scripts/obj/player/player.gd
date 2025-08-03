@@ -22,8 +22,8 @@ extends CharacterBody2D
 @export var shoot_cooldown: float = 0.1
 
 # Health settings
-@export var max_health: int = 40
-@export var damage_per_hit: int = 10
+@export var max_health: int = 30
+
 
 # NEW: Knockback settings
 @export var knockback_resistance: float = 0.3  # How much knockback is reduced (0.0 = full knockback, 1.0 = no knockback)
@@ -127,9 +127,9 @@ func update_sprite():
 		print("ERROR: Sprite2D not found!")
 		return
 		
-	if current_health == 20:
+	if current_health <= 20 and current_health > 10:
 		sprite.texture = player_damaged_texture_1
-	elif current_health == 10:
+	elif current_health <= 10:
 		sprite.texture = player_damaged_texture_2
 
 func apply_knockback(direction: Vector2, force: float):

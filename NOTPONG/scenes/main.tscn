@@ -14,7 +14,7 @@ size = Vector2(196, 648)
 size = Vector2(196, 648)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_sugp2"]
-size = Vector2(752, 20)
+size = Vector2(752, 36)
 
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_0bbpv"]
 blend_mode = 1
@@ -70,7 +70,7 @@ hue_variation_min = -0.1
 hue_variation_max = 0.1
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_jyhfs"]
-size = Vector2(752, 20)
+size = Vector2(752, 35)
 
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_jyhfs"]
 blend_mode = 1
@@ -217,11 +217,11 @@ points = PackedVector2Array(190, 639, 942, 639)
 default_color = Color(1, 0.164706, 0.180392, 1)
 
 [node name="StaticBody2DTop" type="StaticBody2D" parent="Deathzone"]
-collision_layer = 130
+collision_layer = 2
 collision_mask = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Deathzone/StaticBody2DTop"]
-position = Vector2(576, 0)
+position = Vector2(576, -8)
 shape = SubResource("RectangleShape2D_sugp2")
 
 [node name="GPUParticles2D" type="GPUParticles2D" parent="Deathzone/StaticBody2DTop"]
@@ -240,11 +240,11 @@ trail_sections = 6
 process_material = SubResource("ParticleProcessMaterial_o5qli")
 
 [node name="StaticBody2DBot" type="StaticBody2D" parent="Deathzone"]
-collision_layer = 130
+collision_layer = 2
 collision_mask = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Deathzone/StaticBody2DBot"]
-position = Vector2(576, 648)
+position = Vector2(576, 655.5)
 shape = SubResource("RectangleShape2D_jyhfs")
 
 [node name="GPUParticles2D2" type="GPUParticles2D" parent="Deathzone/StaticBody2DBot"]

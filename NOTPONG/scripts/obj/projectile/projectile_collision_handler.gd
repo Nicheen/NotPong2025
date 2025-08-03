@@ -5,6 +5,7 @@ extends Node
 var bounce_damping: float = 0.8
 var max_bounces: int = 3
 var current_bounces: int = 0
+var has_collided: bool = false
 
 # Reference to parent projectile
 var projectile: RigidBody2D
@@ -23,7 +24,15 @@ func initialize():
 	pass
 
 func handle_collision(body):
+	# Förhindra dubbel kollision för samma projektil
+	if has_collided:
+		print("Projektil har redan kollliderat, ignorerar...")
+		return
+	
 	print("Projectile collided with: ", body.name, " on layer: ", body.collision_layer)
+	
+	# Markera att kollision har skett
+	has_collided = true
 	
 	# Check collision type and handle accordingly
 	if is_player_target(body):
@@ -32,28 +41,44 @@ func handle_collision(body):
 		handle_enemy_hit(body)
 	elif body.collision_layer == 4:  # Wall layer
 		handle_wall_collision(body)
-	elif body.collision_layer == 2:  # Lava zone or another projectile
-		# Check if it's actually a projectile or a lava zone StaticBody2D
-		if body is RigidBody2D:
+	elif body.collision_layer == 2:  # Layer 2 check
+		# Kolla om det är lava (deathzone) eller projektil
+		if is_lava_zone(body):
+			handle_lava_collision(body)
+		elif body is RigidBody2D:  # Annan projektil
 			handle_projectile_collision(body)
 		else:
-			# This is a lava zone StaticBody2D
-			handle_lava_collision(body)
+			# Okänt StaticBody2D på layer 2
+			handle_generic_collision(body)
 	else:
 		handle_generic_collision(body)
 		
+func is_lava_zone(body) -> bool:
+	"""Kolla om body är en lava zone"""
+	if not body is StaticBody2D:
+		return false
+	
+	# Kolla om den är i Deathzone genom att kolla parent
+	var current_node = body
+	while current_node.get_parent():
+		current_node = current_node.get_parent()
+		if current_node.name == "Deathzone":
+			return true
+	
+	return false	
+
 func handle_lava_collision(lava_body):
 	print("Hit lava zone - damaging player and destroying projectile")
 	
-	# Find and damage the player
+	# Hitta och skada spelaren med 10 HP
 	var scene_root = projectile.get_tree().current_scene
 	var player = scene_root.find_child("Player", true, false)
 	
 	if player and player.has_method("take_damage"):
-		player.take_damage(20)  # Lava damage amount
-		print("Player damaged by lava projectile!")
+		player.take_damage(10)  # 10 HP skada
+		print("Player damaged 10 HP by lava projectile!")
 	
-	# Destroy the projectile
+	# Förstör projektilen direkt
 	projectile.queue_free()
 	
 func handle_player_hit(player_body):
@@ -110,6 +135,10 @@ func handle_projectile_collision(other_projectile):
 
 func handle_wall_collision(wall_body):
 	print("Handling wall bounce with: ", wall_body.name)
+	
+	# Wall bounce ska INTE markera projektilen som "kollliderad"
+	# eftersom den ska kunna fortsätta studsa
+	has_collided = false  # Reset för wall bounces
 	
 	var collision_normal = calculate_wall_collision_normal(wall_body)
 	var reflected_velocity = projectile.linear_velocity.reflect(collision_normal)
