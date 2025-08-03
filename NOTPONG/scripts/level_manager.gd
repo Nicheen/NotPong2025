@@ -111,7 +111,7 @@ func spawn_boss(level: int):
 	var boss = boss_scene.instantiate()
 	
 	# Place boss in center of play area
-	boss.global_position = Vector2(576, 200)
+	boss.global_position = Vector2(576, 280)
 	
 	# Scale boss health for higher levels
 	var boss_health_multiplier = level / 10
