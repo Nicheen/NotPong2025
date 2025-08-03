@@ -43,6 +43,7 @@ var current_level: int = 1
 var current_score: int = 0
 var enemies_killed: int = 0
 var total_enemies: int = 0
+var game_timer: float = 0.0
 var game_won: bool = false
 
 # Screen distortion effect system
@@ -74,6 +75,8 @@ func _ready():
 
 func _process(delta):
 	"""Update distortion effects each frame"""
+	game_timer += delta
+	hud.update_timer(game_timer)
 	update_distortions(delta)
 	update_distortion_shader()
 
