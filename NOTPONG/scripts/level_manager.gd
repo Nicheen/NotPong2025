@@ -21,7 +21,8 @@ func start_level(level: int):
 		spawn_normal_level(level)
 
 func is_boss_level(level: int) -> bool:
-	var is_boss = level % 5 == 0  # Var femte level (5, 10, 15, etc.)
+	# Only level 5 and 10 are boss levels
+	var is_boss = (level == 10 or level == 5)
 	print("Level ", level, " is boss level: ", is_boss)
 	return is_boss
 
@@ -35,19 +36,6 @@ func spawn_boss_level(level: int):
 	
 	# Spawn boss first
 	spawn_boss(level)
-	
-	# Add some supporting blocks using weighted positioning
-	#var support_blocks = 3 + (level / 10)
-	#var support_enemies = 2 + (level / 10)
-	
-	#main_scene.spawn_blocks_weighted(support_blocks)
-	#main_scene.spawn_enemies_weighted(support_enemies)
-	
-	# Maybe add a few special blocks for boss levels
-	#if level >= 10:
-		#main_scene.spawn_blue_blocks_weighted(2)
-	#if level >= 20:
-		#main_scene.spawn_laser_blocks_weighted(1)
 		
 func spawn_normal_level(level: int):
 	"""Spawn a normal level using weighted positioning"""
@@ -56,7 +44,6 @@ func spawn_normal_level(level: int):
 	var base_enemies = 3
 	var base_block_dropper = 1
 	var base_lazer = 1
-	var base_thunder = 1
 	var base_blue_blocks = 2
 	var base_iron_blocks = 1
 	var base_cloud_blocks = 1
@@ -66,7 +53,6 @@ func spawn_normal_level(level: int):
 	var enemies_count = base_enemies + (level - 1) * 1
 	var block_dropper_count = base_block_dropper + (level - 1) / 3
 	var lazer_count = base_lazer + (level - 1) / 3
-	var thunder_count = base_thunder + (level - 1) / 3
 	var blue_blocks_count = base_blue_blocks + (level - 1) / 2
 	var iron_blocks_count = base_iron_blocks + max(0, (level - 3) / 2)
 	var cloud_blocks_count = base_cloud_blocks + max(0, (level - 3) / 2)
@@ -76,7 +62,6 @@ func spawn_normal_level(level: int):
 	enemies_count = min(enemies_count, 10)
 	block_dropper_count = min(block_dropper_count, 5)
 	lazer_count = min(lazer_count, 5)
-	thunder_count = min(thunder_count, 1)
 	blue_blocks_count = min(blue_blocks_count, 8)
 	iron_blocks_count = min(iron_blocks_count, 6)
 	cloud_blocks_count = min(cloud_blocks_count, 6)
@@ -88,7 +73,6 @@ func spawn_normal_level(level: int):
 	
 	# 2. Spawn special blocks in strategic positions
 	main_scene.spawn_laser_blocks_weighted(lazer_count)
-	#main_scene.spawn_thunder_blocks_weighted(thunder_count)
 	main_scene.spawn_blue_blocks_weighted(blue_blocks_count)
 	main_scene.spawn_iron_blocks_weighted(iron_blocks_count)
 	main_scene.spawn_block_droppers_weighted(block_dropper_count)
@@ -103,45 +87,76 @@ func spawn_normal_level(level: int):
 	print("  - ", iron_blocks_count, " iron blocks")
 	print("  - ", lazer_count, " laser blocks")
 	print("  - ", cloud_blocks_count, " cloud blocks")
-	print("  - ", thunder_count, " thunder blocks")
 	print("  - ", block_dropper_count, " block droppers")
 	print("  - ", enemies_count, " enemies")
-	
-	# Optional: Debug spawn weights for this level
-	#if level <= 2:  # Only show for first few levels
-	#	main_scene.debug_spawn_weights()
 		
 func spawn_boss(level: int):
-	"""Spawn boss at center position"""
-	var boss_scene = load(main_scene.BOSS_SCENE)
+	"""Spawn the correct boss based on level"""
+	var boss_scene_path: String
+	var boss_name: String
+	
+	# Choose which boss to spawn
+	if level == 10:
+		boss_scene_path = main_scene.BOSS_SCENE  # Boss1
+		boss_name = "Boss1"
+		spawn_single_boss(boss_scene_path, boss_name, level, Vector2(576, 280))
+	elif level == 5:
+		boss_scene_path = main_scene.BOSS_THUNDER_SCENE  # Boss_Thunder  
+		boss_name = "Boss_Thunder"
+		# Spawn 3 thunder bosses: center, left, right
+		var center_pos = Vector2(576, 280)
+		var left_pos = Vector2(576 - 150, 280)
+		var right_pos = Vector2(576 + 150, 280)
+		
+		spawn_single_boss(boss_scene_path, boss_name + "_Center", level, center_pos)
+		spawn_single_boss(boss_scene_path, boss_name + "_Left", level, left_pos)
+		spawn_single_boss(boss_scene_path, boss_name + "_Right", level, right_pos)
+	else:
+		print("ERROR: No boss defined for level ", level)
+		return
+
+func spawn_single_boss(boss_scene_path: String, boss_name: String, level: int, position: Vector2):
+	"""Spawn a single boss at the specified position"""
+	# Load and spawn the boss
+	var boss_scene = load(boss_scene_path)
 	if not boss_scene:
-		print("ERROR: Could not load boss scene")
+		print("ERROR: Could not load boss scene: ", boss_scene_path)
 		return
 	
 	var boss = boss_scene.instantiate()
 	
-	# Place boss in center of play area
-	boss.global_position = Vector2(576, 280)
+	# Place boss at specified position
+	boss.global_position = position
 	
-	# Scale boss health for higher levels
-	var boss_health_multiplier = level / 10
+	# Scale boss health for higher levels (optional)
+	var boss_health_multiplier = 1.0 + (level - 5) * 0.2
 	if boss.has_method("set_health_multiplier"):
 		boss.set_health_multiplier(boss_health_multiplier)
 	
 	# Connect boss signals WITH distortion effects
 	var boss_position = boss.global_position
-	boss.boss_died.connect(func(score_points): main_scene._on_boss_died_with_distortion(score_points, boss_position))
-	boss.boss_hit.connect(main_scene._on_enemy_hit)
+	
+	# Connect the appropriate signals based on boss type
+	if boss.has_signal("boss_died"):
+		boss.boss_died.connect(func(score_points): main_scene._on_boss_died_with_distortion(score_points, boss_position))
+	elif boss.has_signal("block_destroyed"):
+		# For Boss_Thunder which uses block_destroyed signal
+		boss.block_destroyed.connect(func(score_points): main_scene._on_boss_died_with_distortion(score_points, boss_position))
+	
+	if boss.has_signal("boss_hit"):
+		boss.boss_hit.connect(main_scene._on_enemy_hit)
+	elif boss.has_signal("block_hit"):
+		boss.block_hit.connect(main_scene._on_enemy_hit)
 	
 	main_scene.add_child(boss)
 	main_scene.bosses.append(boss)
 	main_scene.total_enemies += 1
 	
-	# FIX: Skapa en korrekt typed Array[Vector2] för boss position
+	# Reserve boss position
 	var boss_positions: Array[Vector2] = [boss_position]
 	main_scene.spawn_manager.reserve_positions(boss_positions)
 	
-	print("Boss spawned for level ", level, " with health multiplier: ", boss_health_multiplier)
+	print(boss_name, " spawned for level ", level, " at position ", position, " with health multiplier: ", boss_health_multiplier)
 	
 func _on_boss_died(score_points: int):
 	# Boss ger mycket mer poäng

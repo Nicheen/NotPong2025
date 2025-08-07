@@ -763,29 +763,6 @@ func can_place_2x2_block(center_position: Vector2) -> bool:
 	
 	return true
 
-func spawn_thunder_blocks_weighted(count: int):
-	"""Spawn thunder blocks using weighted positioning (avoiding edges due to 2x2 size)"""
-	var placed_count = 0
-	var attempts = 0
-	var max_attempts = count * 15
-	
-	while placed_count < count and attempts < max_attempts:
-		attempts += 1
-		
-		# Get weighted positions but filter for 2x2 compatibility
-		var potential_positions = spawn_manager.get_weighted_spawn_positions("thunder_blocks", count * 3)
-		
-		for pos in potential_positions:
-			if can_place_2x2_block(pos):
-				spawn_thunder_block_at_position(pos)
-				placed_count += 1
-				break
-		
-		if placed_count >= count:
-			break
-	
-	print("Placed ", placed_count, " weighted thunder blocks out of ", count, " requested")
-
 func _on_thunder_block_died(score_points: int):
 	"""Handle thunder block death"""
 	current_score += score_points

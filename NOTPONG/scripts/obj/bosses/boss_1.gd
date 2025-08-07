@@ -87,7 +87,7 @@ func deactivate_armoured_mode():
 	
 	armour_active = false
 	is_transitioning = true
-	collision_layer = 16  # Back to enemy layer
+	collision_layer = 2  # Back to enemy layer
 	
 	var tween = create_tween()
 	tween.tween_property(sprite, "rotation_degrees", original_rotation, 0.25)
@@ -291,7 +291,7 @@ func activate_armoured_mode():
 	armour_active = true
 	is_transitioning = false
 	armour_timer = 0.0
-	collision_layer = 8  # Wall layer for bouncing projectiles
+	collision_layer = 4  # Wall layer for bouncing projectiles
 	
 	update_sprite()
 	resume_movement()
