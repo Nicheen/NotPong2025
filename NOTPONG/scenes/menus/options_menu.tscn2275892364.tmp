@@ -1,0 +1,84 @@
+[gd_scene load_steps=4 format=3 uid="uid://bvmedrqrrlbo2"]
+
+[ext_resource type="Script" uid="uid://crpa48rn8w8ix" path="res://scenes/menus/options_menu.gd" id="1_60mby"]
+[ext_resource type="Texture2D" uid="uid://c40o612s66c43" path="res://images/svart.png" id="1_bp0ux"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_60mby"]
+texture = ExtResource("1_bp0ux")
+modulate_color = Color(1, 1, 1, 0.588235)
+
+[node name="OptionsMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_60mby")
+
+[node name="Panel" type="Panel" parent="."]
+offset_left = 13.0
+offset_right = 1165.0
+offset_bottom = 648.0
+theme_override_styles/panel = SubResource("StyleBoxTexture_60mby")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel"]
+layout_mode = 0
+offset_left = 298.0
+offset_top = 216.0
+offset_right = 854.0
+offset_bottom = 551.0
+
+[node name="TitleLabel" type="Label" parent="Panel/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "OPTIONS"
+horizontal_alignment = 1
+
+[node name="MasterVolumeContainer" type="HBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="MasterVolumeLabel" type="Label" parent="Panel/VBoxContainer/MasterVolumeContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Master Volume: 100%"
+
+[node name="MasterVolumeSlider" type="HSlider" parent="Panel/VBoxContainer/MasterVolumeContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+
+[node name="MusicVolumeContainer" type="HBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="MusicVolumeLabel" type="Label" parent="Panel/VBoxContainer/MusicVolumeContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Music Volume: 100%"
+
+[node name="MusicVolumeSlider" type="HSlider" parent="Panel/VBoxContainer/MusicVolumeContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+
+[node name="SFXVolumeContainer" type="HBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="SFXVolumeLabel" type="Label" parent="Panel/VBoxContainer/SFXVolumeContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "SFX Volume: 100%"
+
+[node name="SFXVolumeSlider" type="HSlider" parent="Panel/VBoxContainer/SFXVolumeContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+
+[node name="BackButton" type="Button" parent="Panel/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "BACK"
+
+[connection signal="value_changed" from="Panel/VBoxContainer/MasterVolumeContainer/MasterVolumeSlider" to="." method="_on_master_volume_slider_value_changed"]
+[connection signal="value_changed" from="Panel/VBoxContainer/MusicVolumeContainer/MusicVolumeSlider" to="." method="_on_music_volume_slider_value_changed"]
+[connection signal="value_changed" from="Panel/VBoxContainer/SFXVolumeContainer/SFXVolumeSlider" to="." method="_on_sfx_volume_slider_value_changed"]
+[connection signal="pressed" from="Panel/VBoxContainer/BackButton" to="." method="_on_back_button_pressed"]

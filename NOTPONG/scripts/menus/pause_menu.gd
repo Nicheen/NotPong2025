@@ -44,9 +44,7 @@ func _on_resume_pressed():
 	hide_pause_menu()
 
 func _on_options_pressed():
-	# Implement options menu later
-	print("Options pressed - implement later")
-	# You could show another menu here or change to options scene
+	get_tree().change_scene_to_file("res://scenes/menus/options_menu.tscn")
 
 func _on_main_menu_pressed():
 	# Unpause before changing scene
