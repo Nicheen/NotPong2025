@@ -136,7 +136,7 @@ color_ramp = SubResource("GradientTexture1D_o5pat")
 
 [node name="Laser" type="RayCast2D"]
 target_position = Vector2(1400, 0)
-collision_mask = 32769
+collision_mask = 31
 script = ExtResource("1_ybewo")
 
 [node name="Line2D" type="Line2D" parent="."]

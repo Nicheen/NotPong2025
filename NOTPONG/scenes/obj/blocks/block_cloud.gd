@@ -63,7 +63,7 @@ func _ready():
 	
 	# Set up lightning effect (same as block_thunder)
 	if lightning_effect:
-		lightning_effect.setup_vertical_thunder()
+		lightning_effect.setup_vertical_thunder(global_position)
 		lightning_effect.visible = false
 		
 		# Connect to lightning controller signals

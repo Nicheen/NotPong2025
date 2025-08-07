@@ -69,13 +69,13 @@ func _process(delta):
 			if cycle_timer >= current_inactive_duration:
 				start_lightning_cycle()
 
-func setup_vertical_thunder():
+func setup_vertical_thunder(pos: Vector2 = Vector2.ZERO):
 	"""Set up a vertical thunder bolt from top to bottom of screen"""
 	# Clear any existing positioning from the scene file
 	position = Vector2.ZERO
 	
 	# Calculate positions in world coordinates
-	var thunder_world_pos = global_position
+	var thunder_world_pos = pos
 	var start_world = Vector2(thunder_world_pos.x + 5, global_position.y + 50)
 	var end_world = Vector2(thunder_world_pos.x + 5, BOTTOM_BOUNDARY - 9)
 	
@@ -245,9 +245,9 @@ func damage_players_in_area():
 			print("Thunder dealt ", damage_amount, " damage to player")
 
 # Public methods for the laser block to use
-func activate_vertical_thunder():
+func activate_vertical_thunder(pos: Vector2 = global_position):
 	"""Activate thunder as a vertical bolt"""
-	setup_vertical_thunder()
+	setup_vertical_thunder(pos)
 	start_thunder()
 
 func activate_horizontal_thunder():

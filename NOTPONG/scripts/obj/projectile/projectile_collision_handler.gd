@@ -24,10 +24,6 @@ func initialize():
 	pass
 
 func handle_collision(other_body):
-	# Förhindra dubbel kollision för samma projektil
-	if has_collided:
-		print("Projektil har redan kollliderat, ignorerar...")
-		return
 	
 	print("[PROJECTILE] Projectile collided with: ", other_body.name, " on layer: ", other_body.collision_layer)
 	
@@ -48,7 +44,7 @@ func handle_collision(other_body):
 		
 
 func handle_player_hit(player_body):
-	print("[PROJECTILE] Hit 'player' and should bounce")
+	print("[PROJECTILE] Hit something and should bounce")
 	current_bounces += 1
 	
 	# Calculate reflection direction away from player

@@ -12,14 +12,16 @@ const pausemenu_scene:PackedScene = preload("res://scenes/menus/pause_menu.tscn"
 # Hardcoded scene paths
 const PLAYER_SCENE = "res://scenes/obj/Player.tscn"
 const ENEMY_SCENE = "res://scenes/obj/Enemy.tscn"
-const ENEMY_BLOCK_SCENE = "res://scenes/obj/blocks/block.tscn"
+const ENEMY_BLOCK_SCENE = "res://scenes/obj/blocks/block_red.tscn"
 const ENEMY_BLOCK_BLUE_SCENE = "res://scenes/obj/blocks/block_blue.tscn"
 const ENEMY_BLOCK_LASER_SCENE = "res://scenes/obj/blocks/block_laser.tscn"
-const ENEMY_BLOCK_THUNDER_SCENE = "res://scenes/obj/blocks/block_thunder.tscn"
 const ENEMY_BLOCK_DROPPER_SCENE = "res://scenes/obj/blocks/block_dropper.tscn"
 const ENEMY_BLOCK_IRON_SCENE = "res://scenes/obj/blocks/block_iron.tscn"
 const ENEMY_BLOCK_CLOUD_SCENE = "res://scenes/obj/blocks/block_cloud.tscn"
+
 const BOSS_SCENE = "res://scenes/obj/bosses/Boss1.tscn"
+const BOSS_THUNDER_SCENE = "res://scenes/obj/bosses/Boss_Thunder.tscn"
+
 const PAUSE_MENU_SCENE = "res://scenes/menus/pause_menu.tscn" 
 const DEATH_MENU_SCENE = "res://scenes/menus/death_menu.tscn"
 const WIN_MENU_SCENE = "res://scenes/menus/win_menu.tscn"
@@ -656,9 +658,9 @@ func _on_player_died():
 
 func spawn_thunder_block_at_position(position: Vector2):
 	"""Spawn a single thunder block at the specified position"""
-	var block_scene = load(ENEMY_BLOCK_THUNDER_SCENE)
+	var block_scene = load(BOSS_THUNDER_SCENE)
 	if not block_scene:
-		print("ERROR: Could not load thunder block scene at: ", ENEMY_BLOCK_THUNDER_SCENE)
+		print("ERROR: Could not load thunder block scene at: ", BOSS_THUNDER_SCENE)
 		return
 	
 	var block = block_scene.instantiate()
@@ -901,14 +903,21 @@ func damage_adjacent_blocks(enemy_position: Vector2, damage: int = 10):
 		var check_position = Vector2(x_positions[check_x_idx], y_positions[check_y_idx])
 		print("Checking adjacent position: ", check_position, " (grid [", check_x_idx, ", ", check_y_idx, "])")
 		
-		# Find any block at this position and damage it
 		var block_to_damage = find_block_at_position(check_position)
 		if block_to_damage and block_to_damage.has_method("take_damage"):
-			block_to_damage.take_damage(damage)
+			var method_info = block_to_damage.get_method_list().filter(func(m): return m.name == "take_damage")
+			if method_info.size() > 0 and method_info[0].args.size() == 2:
+				block_to_damage.take_damage(damage, true)
+			elif method_info.size() > 0 and method_info[0].args.size() == 1:
+				block_to_damage.take_damage(damage)
+			else:
+				print("✗ take_damage has unexpected number of arguments for block at: ", check_position)
+			
 			blocks_damaged += 1
 			print("✓ Enemy death damaged adjacent block at: ", check_position, " for ", damage, " damage")
 		else:
 			print("✗ No block found at adjacent position: ", check_position)
+
 	
 	print("Total blocks damaged by explosion: ", blocks_damaged)
 

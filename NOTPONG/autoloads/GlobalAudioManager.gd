@@ -35,6 +35,8 @@ func _ready():
 	
 	# Connect to scene changes to persist music
 	get_tree().tree_changed.connect(_on_scene_changed)
+	
+	play_music(preload("res://audio/music/music for game.mp3"))
 
 func _on_scene_changed():
 	# Store music position when scene changes

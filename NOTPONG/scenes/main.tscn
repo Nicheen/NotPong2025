@@ -8,7 +8,7 @@
 [ext_resource type="Script" uid="uid://jranj8pqoox8" path="res://scenes/bounds.gd" id="5_tbgi4"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_o5qli"]
-size = Vector2(196, 648)
+size = Vector2(198, 648)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_0wfyh"]
 size = Vector2(196, 648)
@@ -62,8 +62,8 @@ angle_max = 720.0
 angle_curve = SubResource("CurveTexture_85g3d")
 gravity = Vector3(0, 98.08, 0)
 damping_max = 20.0
-scale_min = 0.05
-scale_max = 0.1
+scale_min = 0.1
+scale_max = 0.2
 scale_curve = SubResource("CurveTexture_jyhfs")
 color_ramp = SubResource("GradientTexture1D_0wfyh")
 hue_variation_min = -0.1
@@ -85,8 +85,8 @@ angle_max = 720.0
 angle_curve = SubResource("CurveTexture_85g3d")
 gravity = Vector3(0, -98.08, 0)
 damping_max = 20.0
-scale_min = 0.05
-scale_max = 0.1
+scale_min = 0.1
+scale_max = 0.2
 scale_curve = SubResource("CurveTexture_jyhfs")
 color_ramp = SubResource("GradientTexture1D_0wfyh")
 hue_variation_min = -0.1
@@ -109,8 +109,8 @@ colors = PackedColorArray(0.176471, 0.0862745, 0.0823529, 0.392157)
 
 [sub_resource type="GradientTexture2D" id="GradientTexture2D_tipki"]
 gradient = SubResource("Gradient_o6xl0")
-width = 16
-height = 16
+width = 32
+height = 32
 
 [sub_resource type="CurveXYZTexture" id="CurveXYZTexture_85g3d"]
 
@@ -165,7 +165,7 @@ collision_layer = 4
 collision_mask = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Borders/StaticBody2DLeft"]
-position = Vector2(98, 324)
+position = Vector2(99, 324)
 shape = SubResource("RectangleShape2D_o5qli")
 
 [node name="StaticBody2DRight" type="StaticBody2D" parent="Borders"]
@@ -215,7 +215,7 @@ points = PackedVector2Array(190, 639, 942, 639)
 default_color = Color(1, 0.164706, 0.180392, 1)
 
 [node name="StaticBody2DTop" type="StaticBody2D" parent="Deathzone"]
-collision_layer = 2
+collision_layer = 16
 collision_mask = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Deathzone/StaticBody2DTop"]
@@ -223,6 +223,7 @@ position = Vector2(576, -8)
 shape = SubResource("RectangleShape2D_sugp2")
 
 [node name="GPUParticles2D" type="GPUParticles2D" parent="Deathzone/StaticBody2DTop"]
+z_index = 1
 material = SubResource("CanvasItemMaterial_0bbpv")
 position = Vector2(576, -3)
 amount = 60
@@ -238,7 +239,7 @@ trail_sections = 6
 process_material = SubResource("ParticleProcessMaterial_o5qli")
 
 [node name="StaticBody2DBot" type="StaticBody2D" parent="Deathzone"]
-collision_layer = 2
+collision_layer = 16
 collision_mask = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Deathzone/StaticBody2DBot"]

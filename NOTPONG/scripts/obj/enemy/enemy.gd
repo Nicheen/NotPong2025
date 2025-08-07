@@ -48,7 +48,7 @@ func _ready():
 func _physics_process(delta):
 	pass
 	
-func start_burning():
+func start_burning(exploded_by_bomb: bool = false):
 	"""Start the burning effect"""
 	if is_burning or is_dead:
 		return
@@ -57,6 +57,8 @@ func start_burning():
 	print("Enemy started burning! Will explode in 1.5 seconds...")
 	
 	# Start the burn timer
+	if exploded_by_bomb:
+		burn_timer.wait_time = 0.5
 	burn_timer.start()
 	
 	# Start burning visual effect
@@ -102,8 +104,8 @@ func _on_burn_timer_timeout():
 	else:
 		# If somehow still alive, stop burning
 		is_burning = false
-		
-func take_damage(damage: int):
+
+func take_damage(damage: int, exploded_by_bomb: bool = false):
 	if is_dead:
 		return
 	
@@ -112,7 +114,7 @@ func take_damage(damage: int):
 	current_health -= damage
 	current_health = max(0, current_health)
 	
-	if   current_health < max_health:
+	if current_health < max_health:
 		change_to_cracked_sprite()
 	if health_bar:
 		health_bar.value = current_health
@@ -120,7 +122,7 @@ func take_damage(damage: int):
 	show_damage_effect()
 	
 	if not is_burning and current_health > 0:
-		start_burning()
+		start_burning(exploded_by_bomb)
 	
 	enemy_hit.emit(damage)
 	
@@ -210,6 +212,7 @@ func check_blast_damage():
 		print("BLAST HIT! Damage: ", final_damage, " Knockback: ", final_knockback)
 		
 		if player.has_method("take_damage"):
+			print(player)
 			player.take_damage(final_damage)
 		
 		if player.has_method("apply_knockback"):

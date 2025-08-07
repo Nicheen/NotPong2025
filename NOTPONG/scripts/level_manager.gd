@@ -88,7 +88,7 @@ func spawn_normal_level(level: int):
 	
 	# 2. Spawn special blocks in strategic positions
 	main_scene.spawn_laser_blocks_weighted(lazer_count)
-	main_scene.spawn_thunder_blocks_weighted(thunder_count)
+	#main_scene.spawn_thunder_blocks_weighted(thunder_count)
 	main_scene.spawn_blue_blocks_weighted(blue_blocks_count)
 	main_scene.spawn_iron_blocks_weighted(iron_blocks_count)
 	main_scene.spawn_block_droppers_weighted(block_dropper_count)
@@ -153,10 +153,10 @@ func _on_boss_died(score_points: int):
 func level_completed():
 	if is_boss_level(current_level):
 		print("BOSS LEVEL ", current_level, " COMPLETED!")
-		await get_tree().create_timer(3.0).timeout
+		await get_tree().create_timer(2.0).timeout
 	else:
 		print("Level ", current_level, " completed!")
-		await get_tree().create_timer(2.0).timeout
+		await get_tree().create_timer(1.0).timeout
 	
 	current_level += 1
 	

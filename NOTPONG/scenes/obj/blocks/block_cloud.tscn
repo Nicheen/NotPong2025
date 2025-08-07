@@ -1,6 +1,6 @@
-[gd_scene load_steps=5 format=3 uid="uid://bveg3tj7rrxsc"]
+[gd_scene load_steps=5 format=3 uid="uid://cfbo6ptsu2a5s"]
 
-[ext_resource type="Texture2D" uid="uid://cqt57tynuc3e" path="res://images/Cloud.png" id="1_jhlnw"]
+[ext_resource type="Texture2D" uid="uid://b5mveg8i4sq5v" path="res://images/Cloud.png" id="1_jhlnw"]
 [ext_resource type="Script" uid="uid://owkkkn0x4kl0" path="res://scenes/obj/blocks/block_cloud.gd" id="1_tmlyq"]
 [ext_resource type="PackedScene" uid="uid://b4npt30yvwa8q" path="res://effects/thunder.tscn" id="3_jqqsi"]
 
@@ -22,5 +22,5 @@ shape = SubResource("RectangleShape2D_tmlyq")
 
 [node name="VFX_Thunder" parent="." instance=ExtResource("3_jqqsi")]
 unique_name_in_owner = true
-position = Vector2(0, 25)
+position = Vector2(0, -1)
 scale = Vector2(0.7, 0.4)
