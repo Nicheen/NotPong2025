@@ -59,6 +59,7 @@ func spawn_normal_level(level: int):
 	var base_thunder = 1
 	var base_blue_blocks = 2
 	var base_iron_blocks = 1
+	var base_cloud_blocks = 1
 	
 	# Increase difficulty each level
 	var blocks_count = base_blocks + (level - 1) * 3
@@ -68,6 +69,7 @@ func spawn_normal_level(level: int):
 	var thunder_count = base_thunder + (level - 1) / 3
 	var blue_blocks_count = base_blue_blocks + (level - 1) / 2
 	var iron_blocks_count = base_iron_blocks + max(0, (level - 3) / 2)
+	var cloud_blocks_count = base_cloud_blocks + max(0, (level - 3) / 2)
 	
 	# Apply maximum limits
 	blocks_count = min(blocks_count, 20)
@@ -77,6 +79,7 @@ func spawn_normal_level(level: int):
 	thunder_count = min(thunder_count, 1)
 	blue_blocks_count = min(blue_blocks_count, 8)
 	iron_blocks_count = min(iron_blocks_count, 6)
+	cloud_blocks_count = min(cloud_blocks_count, 6)
 	
 	# SPAWN IN STRATEGIC ORDER (blocks first, then special blocks, enemies last)
 	
@@ -89,6 +92,7 @@ func spawn_normal_level(level: int):
 	main_scene.spawn_blue_blocks_weighted(blue_blocks_count)
 	main_scene.spawn_iron_blocks_weighted(iron_blocks_count)
 	main_scene.spawn_block_droppers_weighted(block_dropper_count)
+	main_scene.spawn_cloud_blocks_weighted(cloud_blocks_count)
 	
 	# 3. Spawn enemies last (they avoid block positions)
 	main_scene.spawn_enemies_weighted(enemies_count)
@@ -98,6 +102,7 @@ func spawn_normal_level(level: int):
 	print("  - ", blue_blocks_count, " blue blocks") 
 	print("  - ", iron_blocks_count, " iron blocks")
 	print("  - ", lazer_count, " laser blocks")
+	print("  - ", cloud_blocks_count, " cloud blocks")
 	print("  - ", thunder_count, " thunder blocks")
 	print("  - ", block_dropper_count, " block droppers")
 	print("  - ", enemies_count, " enemies")

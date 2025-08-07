@@ -24,7 +24,8 @@ var spawn_weights: Dictionary = {
 	"blue_blocks": create_blue_block_gradient(),
 	"laser_blocks": create_laser_gradient(),
 	"block_droppers": create_dropper_gradient(),
-	"iron_blocks": create_iron_block_gradient()
+	"iron_blocks": create_iron_block_gradient(),
+	"cloud_blocks": create_cloud_block_gradient()
 }
 
 func _ready():
@@ -78,7 +79,28 @@ func create_iron_block_gradient() -> Array[float]:
 			weights.append(max(0.05, weight))  # Very low minimum weight
 	
 	return weights
-
+	
+func create_cloud_block_gradient() -> Array[float]:
+	"""Cloud blocks prefer strategic middle positions"""
+	var weights: Array[float] = []
+	
+	for y in range(GRID_HEIGHT):
+		for x in range(GRID_WIDTH):
+			# Prefer center-middle positions (like blue blocks but more centered)
+			var center_distance = abs(x - GRID_WIDTH/2) / float(GRID_WIDTH/2)
+			var center_factor = 1.0 - center_distance * 0.8  # Strong center preference
+			
+			# Prefer middle rows (rows 3-5) - higher than blue blocks
+			var middle_factor = 1.0
+			if y >= 2 and y <= 5:
+				middle_factor = 1.8  # High preference for middle area
+			elif y <= 1 or y >= 7:
+				middle_factor = 0.2  # Avoid edges
+			
+			weights.append(center_factor * middle_factor)
+	
+	return weights
+	
 func create_enemy_gradient() -> Array[float]:
 	"""Enemies prefer to spawn in upper areas, spread out"""
 	var weights: Array[float] = []

@@ -18,11 +18,13 @@ const ENEMY_BLOCK_LASER_SCENE = "res://scenes/obj/blocks/block_laser.tscn"
 const ENEMY_BLOCK_THUNDER_SCENE = "res://scenes/obj/blocks/block_thunder.tscn"
 const ENEMY_BLOCK_DROPPER_SCENE = "res://scenes/obj/blocks/block_dropper.tscn"
 const ENEMY_BLOCK_IRON_SCENE = "res://scenes/obj/blocks/block_iron.tscn"
+const ENEMY_BLOCK_CLOUD_SCENE = "res://scenes/obj/blocks/block_cloud.tscn"
 const BOSS_SCENE = "res://scenes/obj/bosses/Boss1.tscn"
 const PAUSE_MENU_SCENE = "res://scenes/menus/pause_menu.tscn" 
 const DEATH_MENU_SCENE = "res://scenes/menus/death_menu.tscn"
 const WIN_MENU_SCENE = "res://scenes/menus/win_menu.tscn"
 const THUNDER = "res://effects/thunder.tscn"
+
 
 # Game objects
 var level_manager: Node
@@ -39,6 +41,8 @@ var block_droppers: Array[StaticBody2D] = []
 var bosses: Array[StaticBody2D] = []
 var all_spawn_positions: Array[Vector2] = []
 var iron_blocks: Array = []
+var cloud_blocks: Array[StaticBody2D] = []
+
 
 # Game state
 var current_level: int = 1
@@ -297,6 +301,54 @@ func spawn_iron_blocks_weighted(count: int):
 	
 	for pos in positions:
 		spawn_iron_block_at_position(pos)
+
+func spawn_cloud_block_at_position(position: Vector2):
+	var block_scene = load(ENEMY_BLOCK_CLOUD_SCENE)
+	if not block_scene:
+		print("ERROR: Could not load cloud block scene at: ", ENEMY_BLOCK_CLOUD_SCENE)
+		return
+	
+	var block = block_scene.instantiate()
+	block.global_position = position
+	
+	# Connect signals
+	block.block_died.connect(_on_block_died)
+	block.block_hit.connect(_on_enemy_hit)
+	
+	add_child(block)
+	cloud_blocks.append(block)
+	total_enemies += 1
+	
+	# Reserve position
+	var positions: Array[Vector2] = [position]
+	spawn_manager.reserve_positions(positions)
+	
+	print("Spawned cloud block at: ", position)
+
+func spawn_cloud_blocks_weighted(count: int):
+	"""Spawn cloud blocks using weighted positioning"""
+	print("DEBUG: Trying to spawn ", count, " cloud blocks")
+	
+	# Kontrollera att spawn_manager finns
+	if not spawn_manager:
+		print("ERROR: No spawn manager found!")
+		return
+	
+	# Kontrollera att cloud_blocks gradient finns
+	if not spawn_manager.spawn_weights.has("cloud_blocks"):
+		print("ERROR: No cloud_blocks gradient found in spawn_weights!")
+		return
+	
+	var positions = spawn_manager.get_weighted_spawn_positions("cloud_blocks", count)
+	print("DEBUG: Got ", positions.size(), " positions for cloud blocks: ", positions)
+	
+	for pos in positions:
+		print("DEBUG: Attempting to spawn cloud block at: ", pos)
+		spawn_cloud_block_at_position(pos)
+	
+	print("DEBUG: Cloud blocks array size after spawning: ", cloud_blocks.size())
+	print("DEBUG: Total enemies after spawning: ", total_enemies)
+	
 # High Score Functions
 func check_and_update_high_score():
 	"""Check if current score is a new high score and update if needed"""
@@ -1157,7 +1209,11 @@ func clear_level_entities():
 	for iron_block in iron_blocks:
 		if is_instance_valid(iron_block):
 			iron_block.queue_free()
-	
+			
+	for cloud_block in cloud_blocks:
+		if is_instance_valid(cloud_block):
+			cloud_block.queue_free()
+			
 	for boss in bosses:
 		if is_instance_valid(boss):
 			boss.queue_free()
@@ -1170,6 +1226,7 @@ func clear_level_entities():
 	block_droppers.clear()
 	blue_blocks.clear()
 	iron_blocks.clear()
+	cloud_blocks.clear()
 	bosses.clear()
 	
 	# Reset spawn manager positions
@@ -1190,6 +1247,8 @@ func debug_spawn_weights():
 	spawn_manager.print_spawn_heatmap("blue_blocks")
 	print()
 	spawn_manager.print_spawn_heatmap("laser_blocks")
+	print()
+	spawn_manager.print_spawn_heatmap("cloud_blocks")
 	print()
 	spawn_manager.print_spawn_heatmap("thunder_blocks")
 	print()
