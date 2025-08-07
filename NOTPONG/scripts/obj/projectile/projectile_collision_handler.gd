@@ -23,66 +23,32 @@ func initialize():
 	# No longer needed - _ready() handles the reference
 	pass
 
-func handle_collision(body):
+func handle_collision(other_body):
 	# Förhindra dubbel kollision för samma projektil
 	if has_collided:
 		print("Projektil har redan kollliderat, ignorerar...")
 		return
 	
-	print("Projectile collided with: ", body.name, " on layer: ", body.collision_layer)
+	print("[PROJECTILE] Projectile collided with: ", other_body.name, " on layer: ", other_body.collision_layer)
 	
 	# Markera att kollision har skett
 	has_collided = true
 	
 	# Check collision type and handle accordingly
-	if is_player_target(body):
-		handle_player_hit(body)
-	elif is_enemy_target(body):
-		handle_enemy_hit(body)
-	elif body.collision_layer == 4:  # Wall layer
-		handle_wall_collision(body)
-	elif body.collision_layer == 2:  # Layer 2 check
-		# Kolla om det är lava (deathzone) eller projektil
-		if is_lava_zone(body):
-			handle_lava_collision(body)
-		elif body is RigidBody2D:  # Annan projektil
-			handle_projectile_collision(body)
-		else:
-			# Okänt StaticBody2D på layer 2
-			handle_generic_collision(body)
+	if other_body.collision_layer == 1: # Player layer
+		handle_player_hit(other_body)
+	elif other_body.collision_layer == 2: # Damage block layer
+		handle_damaged_hit(other_body)
+	elif other_body.collision_layer == 3: # Bounce Layer
+		handle_player_hit(other_body)
+	elif other_body.collision_layer == 4: # Damage and bounce layer
+		handle_damaged_bounce_hit(other_body)
 	else:
-		handle_generic_collision(body)
+		print("[PROJECTILE] This object is not DEFINED!")
 		
-func is_lava_zone(body) -> bool:
-	"""Kolla om body är en lava zone"""
-	if not body is StaticBody2D:
-		return false
-	
-	# Kolla om den är i Deathzone genom att kolla parent
-	var current_node = body
-	while current_node.get_parent():
-		current_node = current_node.get_parent()
-		if current_node.name == "Deathzone":
-			return true
-	
-	return false	
 
-func handle_lava_collision(lava_body):
-	print("Hit lava zone - damaging player and destroying projectile")
-	
-	# Hitta och skada spelaren med 10 HP
-	var scene_root = projectile.get_tree().current_scene
-	var player = scene_root.find_child("Player", true, false)
-	
-	if player and player.has_method("take_damage"):
-		player.take_damage(10)  # 10 HP skada
-		print("Player damaged 10 HP by lava projectile!")
-	
-	# Förstör projektilen direkt
-	projectile.queue_free()
-	
 func handle_player_hit(player_body):
-	print("Hit player - reflecting projectile")
+	print("[PROJECTILE] Hit 'player' and should bounce")
 	current_bounces += 1
 	
 	# Calculate reflection direction away from player
@@ -98,12 +64,18 @@ func handle_player_hit(player_body):
 	# Mark as player projectile after reflection
 	projectile.is_player_projectile = true
 
-func handle_enemy_hit(enemy_body):
-	print("Hit enemy - destroying projectile immediately")
-	if enemy_body.has_method("take_damage"):
-		enemy_body.take_damage(10)
+func handle_damaged_hit(other_body):
+	print("[PROJECTILE] Damaged object and free the projectile")
+	if other_body.has_method("take_damage"):
+		other_body.take_damage(10)
 	projectile.queue_free()
 
+func handle_damaged_bounce_hit(other_body):
+	print("[PROJECTILE] Damaged object and bounced projectile")
+	if other_body.has_method("take_damage"):
+		other_body.take_damage(10)
+	handle_player_hit(other_body)
+	
 func handle_projectile_collision(other_projectile):
 	print("=== PROJECTILE COLLISION DETECTED ===")
 	
@@ -167,7 +139,6 @@ func update_sprite(pos: Vector2, vel: Vector2):
 		sprite.texture = projectile2_texture
 	elif current_bounces == 2:
 		sprite.texture = projectile3_texture
-
 		
 func handle_bounce(new_velocity: Vector2, new_position: Vector2):
 	current_bounces += 1
@@ -235,17 +206,3 @@ func check_if_defensive_save(other_projectile) -> bool:
 	print("Is defensive save: ", is_save)
 	
 	return is_save
-
-func is_player_target(body) -> bool:
-	if body.collision_layer == 1:  # Player layer
-		return true
-	if body.has_method("take_damage") and "player" in body.name.to_lower():
-		return true
-	return false
-
-func is_enemy_target(body) -> bool:
-	if body.collision_layer == 16:  # Enemy layer
-		return true
-	if body.has_method("take_damage") and "enemy" in body.name.to_lower():
-		return true
-	return false

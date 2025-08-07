@@ -26,8 +26,6 @@ signal enemy_hit(damage: int)
 
 func _ready():
 	current_health = max_health
-	collision_layer = 16
-	collision_mask = 2
 	
 	# Create burn timer
 	burn_timer = Timer.new()

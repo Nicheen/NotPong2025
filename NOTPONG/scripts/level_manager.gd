@@ -56,7 +56,7 @@ func spawn_normal_level(level: int):
 	var base_enemies = 3
 	var base_block_dropper = 1
 	var base_lazer = 1
-	var base_thunder = 0
+	var base_thunder = 1
 	var base_blue_blocks = 2
 	var base_iron_blocks = 1
 	

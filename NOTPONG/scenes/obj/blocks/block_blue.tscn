@@ -7,6 +7,8 @@
 size = Vector2(50, 50)
 
 [node name="BlockBlue" type="StaticBody2D"]
+collision_layer = 2
+collision_mask = 0
 script = ExtResource("1_pfsug")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
@@ -16,4 +18,6 @@ texture = ExtResource("2_or6ig")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 unique_name_in_owner = true
+light_mask = 2
+visibility_layer = 0
 shape = SubResource("RectangleShape2D_h2hk5")

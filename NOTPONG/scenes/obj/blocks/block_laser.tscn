@@ -8,7 +8,7 @@
 size = Vector2(50, 50)
 
 [node name="EnemyBlockLazer" type="StaticBody2D"]
-collision_layer = 16
+collision_layer = 2
 collision_mask = 0
 script = ExtResource("1_nag25")
 
@@ -20,6 +20,8 @@ texture = ExtResource("2_nwiju")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 unique_name_in_owner = true
+light_mask = 2
+visibility_layer = 0
 shape = SubResource("RectangleShape2D_5u526")
 
 [node name="LaserBeam2D" parent="." instance=ExtResource("3_pcudf")]
