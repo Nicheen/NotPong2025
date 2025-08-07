@@ -12,9 +12,9 @@ extends StaticBody2D
 @export var laser_damage_interval: float = 0.1
 
 # Visual settings
-@onready var sprite: Sprite2D = $Sprite2D
+@onready var sprite: Sprite2D = %Sprite2D
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
-@onready var laser := $LaserBeam2D
+@onready var laser := %LaserBeam2D
 
 # Sprite textures
 var normal_texture: Texture2D
@@ -59,9 +59,6 @@ func _ready():
 		cracked_texture = load("res://images/BlocklaserCracked.png")
 		if not cracked_texture:
 			print("WARNING: Could not load cracked texture at res://images/BlocklaserCracked.png")
-	
-	if laser:
-		laser.collision_mask = 1 + 16
 	
 	laser_ready = true
 	
@@ -113,7 +110,7 @@ func apply_laser_damage():
 	var damage_amount = laser_damage_per_second * laser_damage_interval
 	
 	# Check what we're hitting
-	if hit_body.collision_layer == 16:  # It's a block
+	if hit_body.collision_layer != 1:  # It's a block
 		# Use the new silent damage method for blocks
 		if hit_body.has_method("take_laser_damage"):
 			hit_body.take_laser_damage(damage_amount)

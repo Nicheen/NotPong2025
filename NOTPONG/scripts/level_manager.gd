@@ -108,8 +108,8 @@ func spawn_normal_level(level: int):
 	print("  - ", enemies_count, " enemies")
 	
 	# Optional: Debug spawn weights for this level
-	if level <= 2:  # Only show for first few levels
-		main_scene.debug_spawn_weights()
+	#if level <= 2:  # Only show for first few levels
+	#	main_scene.debug_spawn_weights()
 		
 func spawn_boss(level: int):
 	"""Spawn boss at center position"""
