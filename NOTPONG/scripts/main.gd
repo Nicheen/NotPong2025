@@ -3,7 +3,7 @@ class_name GamePlay extends Node2D
 const gameover_scene:PackedScene = preload("res://scenes/menus/game_over.tscn")
 const pausemenu_scene:PackedScene = preload("res://scenes/menus/pause_menu.tscn")
 
-# Game settings
+# Game settingsd
 @export var play_area_size: Vector2 = Vector2(1152, 648)  # Match your window size
 @export var play_area_center: Vector2 = Vector2(576, 324)  # Half of window size
 @onready var hud: HUD = %HUD as HUD

@@ -41,10 +41,6 @@ func _ready():
 	# Set up iron block
 	current_health = max_health
 	
-	# Set collision layer for blocks
-	collision_layer = 16  # Layer 5 (2^4 = 16)
-	collision_mask = 2    # Can be hit by projectiles (layer 2)
-	
 	# Apply random rotation for variation
 	var random_rotation = rotation_variants[randi() % rotation_variants.size()]
 	rotation_degrees = random_rotation

@@ -40,8 +40,6 @@ signal block_destroyed(score: int)
 
 func _ready():
 	current_health = max_health
-	collision_layer = 16  # Enemy layer
-	collision_mask = 2    # Hit by projectiles
 	
 	# Store original sprite color
 	if sprite:

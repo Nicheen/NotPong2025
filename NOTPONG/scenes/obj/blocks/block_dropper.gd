@@ -51,9 +51,6 @@ func _ready():
 	# Set up enemy
 	current_health = max_health
 	
-	# Set collision layer for enemy (layer 5)
-	collision_layer = 16  # Layer 5 (2^4 = 16)
-	collision_mask = 2    # Can be hit by projectiles (layer 2)
 	randomize_drop_interval()
 
 	# Store original sprite color and texture

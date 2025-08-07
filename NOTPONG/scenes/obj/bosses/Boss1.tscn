@@ -7,7 +7,7 @@
 size = Vector2(100, 100)
 
 [node name="Boss1" type="StaticBody2D"]
-collision_layer = 16
+collision_layer = 2
 collision_mask = 0
 script = ExtResource("1_4no6o")
 
@@ -17,6 +17,8 @@ scale = Vector2(1.5625, 1.5625)
 texture = ExtResource("2_4no6o")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+light_mask = 2
+visibility_layer = 0
 shape = SubResource("RectangleShape2D_vo7dq")
 
 [node name="HealthBar" type="ProgressBar" parent="."]

@@ -12,7 +12,7 @@ size = Vector2(100, 49)
 
 [node name="EnemyBlockThunder" type="StaticBody2D"]
 scale = Vector2(0.5, 0.5)
-collision_layer = 16
+collision_layer = 2
 collision_mask = 0
 script = ExtResource("1_cocgj")
 
@@ -24,6 +24,7 @@ texture = ExtResource("2_cocgj")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 unique_name_in_owner = true
+light_mask = 2
 position = Vector2(0, -24.5)
 shape = SubResource("RectangleShape2D_5u526")
 
@@ -32,10 +33,11 @@ unique_name_in_owner = true
 position = Vector2(0, 50)
 scale = Vector2(0.7, 0.4)
 
-[node name="Area2D" type="Area2D" parent="."]
+[node name="Cloud" type="StaticBody2D" parent="."]
 collision_layer = 32772
-collision_mask = 2
+collision_mask = 0
 
-[node name="CollisionShape2D2" type="CollisionShape2D" parent="Area2D"]
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="Cloud"]
+light_mask = 4
 position = Vector2(0, 25.5)
 shape = SubResource("RectangleShape2D_cocgj")
