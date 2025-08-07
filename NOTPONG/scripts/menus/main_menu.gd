@@ -5,18 +5,19 @@ func _ready():
 	$VBoxContainer/btn_start.pressed.connect(_on_start_pressed)
 	$VBoxContainer/btn_fullscreen.pressed.connect(_on_fullscreen_pressed)
 	$VBoxContainer/btn_quit.pressed.connect(_on_quit_pressed)
-	# If you add options button later:
-	# $VBoxContainer/btn_options.pressed.connect(_on_options_pressed)
+	$VBoxContainer/btn_options.pressed.connect(_on_options_pressed)
 	
 	# Update fullscreen button text on start
 	update_fullscreen_button_text()
 
 func _on_start_pressed():
 	# Load your game scene - replace with your actual game scene path
+	GlobalAudioManager.play_button_click()
 	get_tree().change_scene_to_file("res://scenes/main.tscn")  # Inte bara "res://Game.tscn"ned!")
 
 func _on_fullscreen_pressed():
 	# Toggle between fullscreen and windowed mode
+	GlobalAudioManager.play_button_click()
 	if DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_FULLSCREEN:
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
 	else:
@@ -33,10 +34,11 @@ func update_fullscreen_button_text():
 		$VBoxContainer/btn_fullscreen.text = "Fullscreen"
 
 func _on_quit_pressed():
+	GlobalAudioManager.play_button_click()
 	get_tree().quit()
 
 # Optional: If you add an options button
 func _on_options_pressed():
 	# Load options scene or show options popup
-	print("Options pressed - implement later")
-	# get_tree().change_scene_to_file("res://Options.tscn")
+	GlobalAudioManager.play_button_click()
+	get_tree().change_scene_to_file("res://scenes/menus/options_menu.tscn")

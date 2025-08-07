@@ -104,7 +104,7 @@ func apply_laser_damage():
 	"""Apply continuous damage to whatever the laser is hitting"""
 	if not laser.is_colliding():
 		return
-		
+
 	var hit_body = laser.get_collider()
 	if not hit_body or not hit_body.has_method("take_damage"):
 		return

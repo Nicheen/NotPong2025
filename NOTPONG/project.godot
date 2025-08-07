@@ -13,12 +13,14 @@ config_version=5
 config/name="GameJamSummer2025"
 run/main_scene="uid://bxsxsg8svbiye"
 config/features=PackedStringArray("4.4", "Forward Plus")
+boot_splash/show_image=false
 config/icon="res://icon.svg"
 
 [autoload]
 
 flowerwall_crt="*res://addons/flowerwall_postprocess/scenes/flowerwall_pp.tscn"
 Global="*res://autoloads/global.gd"
+GlobalAudioManager="*res://autoloads/GlobalAudioManager.gd"
 
 [editor_plugins]
 
