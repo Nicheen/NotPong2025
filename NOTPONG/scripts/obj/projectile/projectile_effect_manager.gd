@@ -11,23 +11,28 @@ var sprite: Sprite2D
 var original_scale: Vector2
 var is_warping: bool = false
 
+# Cache the texture so we don't lose it when sprite is destroyed
+var cached_texture: Texture2D
+
 # Keep track of created effects for cleanup
 var active_effects: Array[Node] = []
 
 func _ready():
 	# Get reference to parent projectile when component is ready
-	# Components are children of the Components node, so we need get_parent().get_parent()
 	projectile = get_parent().get_parent() as RigidBody2D
 	sprite = projectile.get_node("Sprite2D")
 	if sprite:
 		original_scale = sprite.scale
-
-func initialize():
-	# No longer needed - _ready() handles the references
-	pass
+		# Cache the texture immediately so we don't lose it
+		cached_texture = sprite.texture
 
 func create_explosion_effect(collision_point: Vector2, vel1: Vector2, vel2: Vector2):
 	print("Creating explosion effect at: ", collision_point)
+	
+	# Make sure we have a cached texture before proceeding
+	if not cached_texture:
+		print("No cached texture available for explosion effects")
+		return
 	
 	# Get the scene tree to add effects to
 	var scene_tree = get_tree()
@@ -41,10 +46,10 @@ func create_explosion_effect(collision_point: Vector2, vel1: Vector2, vel2: Vect
 		return
 	
 	# Create effects that are completely independent of this projectile
-	# We'll create a separate effect manager node that persists
 	var effect_container = Node2D.new()
 	effect_container.name = "ExplosionEffect_" + str(Time.get_unix_time_from_system())
-	effect_container.global_position = collision_point
+	# FIXED: Don't set container position - let children position themselves
+	effect_container.global_position = Vector2.ZERO
 	main_scene.add_child(effect_container)
 	
 	# Create multiple effects with longer durations
@@ -70,11 +75,16 @@ func create_explosion_effect(collision_point: Vector2, vel1: Vector2, vel2: Vect
 	effect_container.add_child(cleanup_timer)
 	cleanup_timer.start()
 	
-	print("Independent explosion effects created and will persist for 3 seconds")
+	print("Independent explosion effects created at collision point: ", collision_point)
 
 func create_independent_flying_piece(start_pos: Vector2, base_velocity: Vector2, piece_index: int, piece_count: int, effect_container: Node2D):
+	# Use cached texture instead of accessing sprite.texture
+	if not cached_texture:
+		print("No cached texture available for flying piece")
+		return
+	
 	var piece = Sprite2D.new()
-	piece.texture = sprite.texture
+	piece.texture = cached_texture  # Use cached texture
 	piece.scale = Vector2(0.12, 0.12) * randf_range(0.8, 1.5)
 	piece.modulate = Color(
 		randf_range(0.8, 1.0),
@@ -83,10 +93,10 @@ func create_independent_flying_piece(start_pos: Vector2, base_velocity: Vector2,
 		1.0
 	)
 	
-	# Position with random offset
+	# FIXED: Set global position directly to collision point with small offset
 	piece.global_position = start_pos + Vector2(randf_range(-15, 15), randf_range(-15, 15))
 	
-	# Add to effect container (not main scene)
+	# Add to effect container
 	effect_container.add_child(piece)
 	
 	# Calculate explosion direction
@@ -99,7 +109,7 @@ func create_independent_flying_piece(start_pos: Vector2, base_velocity: Vector2,
 	var target_pos = start_pos + final_direction * flight_distance
 	var flight_time = randf_range(0.8, 1.5)
 	
-	# Arc movement
+	# Arc movement - create mid point for curved trajectory
 	var mid_point = start_pos + final_direction * flight_distance * 0.5
 	var arc_height = randf_range(30, 80)
 	mid_point.y -= arc_height
@@ -113,8 +123,11 @@ func create_independent_flying_piece(start_pos: Vector2, base_velocity: Vector2,
 		func(progress: float):
 			if is_instance_valid(piece):
 				var t = progress
-				var pos = start_pos.lerp(mid_point, t).lerp(mid_point.lerp(target_pos, t), t)
-				piece.global_position = pos,
+				# Quadratic bezier curve: start -> mid -> target
+				var pos1 = start_pos.lerp(mid_point, t)
+				var pos2 = mid_point.lerp(target_pos, t)
+				var final_pos = pos1.lerp(pos2, t)
+				piece.global_position = final_pos,
 		0.0, 1.0, flight_time
 	)
 	
@@ -130,10 +143,16 @@ func create_independent_flying_piece(start_pos: Vector2, base_velocity: Vector2,
 	)
 
 func create_independent_flash(position: Vector2, effect_container: Node2D):
+	# Use cached texture instead of accessing sprite.texture
+	if not cached_texture:
+		print("No cached texture available for flash")
+		return
+	
 	var flash = Sprite2D.new()
-	flash.texture = sprite.texture
+	flash.texture = cached_texture  # Use cached texture
 	flash.scale = Vector2(0.5, 0.5)
 	flash.modulate = Color.WHITE
+	# FIXED: Set global position directly to collision point
 	flash.global_position = position
 	
 	effect_container.add_child(flash)
@@ -157,6 +176,7 @@ func create_independent_flash(position: Vector2, effect_container: Node2D):
 
 func create_independent_ring(position: Vector2, effect_container: Node2D):
 	var ring = Node2D.new()
+	# FIXED: Set global position directly to collision point
 	ring.global_position = position
 	effect_container.add_child(ring)
 	
@@ -171,7 +191,7 @@ func create_independent_ring(position: Vector2, effect_container: Node2D):
 		ring.add_child(line)
 		lines.append(line)
 		
-		# Set up initial line points
+		# Set up initial line points (relative to ring position)
 		var angle = (TAU / line_count) * i
 		var start_radius = 3.0
 		var end_radius = 6.0
@@ -219,6 +239,7 @@ func create_independent_shockwave(position: Vector2, effect_container: Node2D):
 	var shockwave = ColorRect.new()
 	shockwave.color = Color(1, 1, 0, 0.8)
 	shockwave.size = Vector2(20, 20)
+	# FIXED: Position relative to the exact collision point, not container
 	shockwave.position = position - shockwave.size * 0.5
 	
 	effect_container.add_child(shockwave)
@@ -233,6 +254,7 @@ func create_independent_shockwave(position: Vector2, effect_container: Node2D):
 			if is_instance_valid(shockwave):
 				var new_size = Vector2(20, 20) * scale_factor
 				shockwave.size = new_size
+				# Keep centered on collision point
 				shockwave.position = position - new_size * 0.5,
 		1.0, 8.0, 0.3
 	)
@@ -244,21 +266,6 @@ func create_independent_shockwave(position: Vector2, effect_container: Node2D):
 		if is_instance_valid(shockwave):
 			shockwave.queue_free()
 	)
-
-func cleanup_effect(effect: Node):
-	if is_instance_valid(effect):
-		# Remove from tracking array
-		var index = active_effects.find(effect)
-		if index >= 0:
-			active_effects.remove_at(index)
-		
-		# Remove from scene
-		if effect.get_parent():
-			effect.get_parent().remove_child(effect)
-		effect.queue_free()
-		print("Cleaned up effect: ", effect.get_class())
-	else:
-		print("Effect already destroyed or invalid")
 
 func start_warp_effect():
 	if not sprite or is_warping:
