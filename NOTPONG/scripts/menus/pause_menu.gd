@@ -2,6 +2,8 @@ extends Control
 
 var is_paused: bool = false
 
+@onready var options_menu = %OptionsMenu
+
 func _ready():
 	# Connect buttons
 	$Panel/VBoxContainer/btn_resume.pressed.connect(_on_resume_pressed)
@@ -9,6 +11,8 @@ func _ready():
 	$Panel/VBoxContainer/btn_main_menu.pressed.connect(_on_main_menu_pressed)
 	$Panel/VBoxContainer/btn_quit.pressed.connect(_on_quit_pressed)
 	
+	options_menu.visible = false
+
 	# Hide pause menu initially
 	visible = false
 	
@@ -44,7 +48,8 @@ func _on_resume_pressed():
 	hide_pause_menu()
 
 func _on_options_pressed():
-	get_tree().change_scene_to_file("res://scenes/menus/options_menu.tscn")
+	options_menu.visible = true
+
 
 func _on_main_menu_pressed():
 	# Unpause before changing scene

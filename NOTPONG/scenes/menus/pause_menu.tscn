@@ -1,7 +1,8 @@
-[gd_scene load_steps=4 format=3 uid="uid://icjdf0pahdyx"]
+[gd_scene load_steps=5 format=3 uid="uid://icjdf0pahdyx"]
 
 [ext_resource type="Script" uid="uid://02emnfcogxl7" path="res://scripts/menus/pause_menu.gd" id="1_n87rw"]
 [ext_resource type="Texture2D" uid="uid://c40o612s66c43" path="res://images/svart.png" id="2_myx47"]
+[ext_resource type="PackedScene" uid="uid://bvmedrqrrlbo2" path="res://scenes/menus/options_menu.tscn" id="3_gsnt3"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_kukqi"]
 texture = ExtResource("2_myx47")
@@ -51,3 +52,7 @@ text = "EXIT TO MAIN MENU"
 [node name="btn_quit" type="Button" parent="Panel/VBoxContainer"]
 layout_mode = 2
 text = "QUIT"
+
+[node name="OptionsMenu" parent="." instance=ExtResource("3_gsnt3")]
+unique_name_in_owner = true
+visible = false

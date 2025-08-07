@@ -57,9 +57,8 @@ func _on_sfx_volume_slider_value_changed(value: float) -> void:
 	save_audio_settings()
 
 func _on_back_button_pressed():
-	# Return to the previous scene
 	GlobalAudioManager.play_button_click()
-	get_tree().change_scene_to_file(previous_scene)
+	self.visible = false
 
 func save_audio_settings():
 	var config = ConfigFile.new()

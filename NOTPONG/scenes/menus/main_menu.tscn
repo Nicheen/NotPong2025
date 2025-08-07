@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://bxsxsg8svbiye"]
+[gd_scene load_steps=4 format=3 uid="uid://bxsxsg8svbiye"]
 
 [ext_resource type="Script" uid="uid://hxs1sdtlbjeo" path="res://scripts/menus/main_menu.gd" id="1_ovrgc"]
 [ext_resource type="Texture2D" uid="uid://cgppme0qncc68" path="res://images/background.svg" id="2_ovrgc"]
+[ext_resource type="PackedScene" uid="uid://bvmedrqrrlbo2" path="res://scenes/menus/options_menu.tscn" id="3_2o76q"]
 
 [node name="MainMenu" type="Control"]
 z_index = 1
@@ -41,3 +42,7 @@ text = "FULLSCREEN"
 [node name="btn_quit" type="Button" parent="VBoxContainer"]
 layout_mode = 2
 text = "QUIT"
+
+[node name="OptionsMenu" parent="." instance=ExtResource("3_2o76q")]
+unique_name_in_owner = true
+visible = false

@@ -1,5 +1,7 @@
 extends Control
 
+@onready var options_menu = %OptionsMenu
+
 func _ready():
 	# Connect buttons using Godot 4.x syntax
 	$VBoxContainer/btn_start.pressed.connect(_on_start_pressed)
@@ -7,6 +9,8 @@ func _ready():
 	$VBoxContainer/btn_quit.pressed.connect(_on_quit_pressed)
 	$VBoxContainer/btn_options.pressed.connect(_on_options_pressed)
 	
+	options_menu.visible = false
+
 	# Update fullscreen button text on start
 	update_fullscreen_button_text()
 
@@ -41,4 +45,4 @@ func _on_quit_pressed():
 func _on_options_pressed():
 	# Load options scene or show options popup
 	GlobalAudioManager.play_button_click()
-	get_tree().change_scene_to_file("res://scenes/menus/options_menu.tscn")
+	options_menu.visible = true
