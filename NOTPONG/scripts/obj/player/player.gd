@@ -4,6 +4,7 @@ class_name Player extends CharacterBody2D
 @export var speed: float = 600.0
 @export var acceleration: float = 2000.0
 @export var friction: float = 4000.0
+@onready var health_bar: ProgressBar = %HealthBar
 
 # Teleport settings
 @export var teleport_cooldown: float = 0.2
@@ -291,7 +292,7 @@ func update_sprite_rotation():
 func take_damage(amount: int):
 	current_health -= amount
 	current_health = max(0, current_health)
-	
+	health_bar.value = current_health
 	# Visual damage feedback
 	if sprite:
 		var tween = create_tween()

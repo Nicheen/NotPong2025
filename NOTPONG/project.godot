@@ -26,6 +26,10 @@ GlobalAudioManager="*res://autoloads/GlobalAudioManager.gd"
 
 enabled=PackedStringArray("res://addons/flowerwall_postprocess/plugin.cfg")
 
+[gui]
+
+theme/custom_font="uid://cbll3pm4c4ngr"
+
 [input]
 
 move_right={
