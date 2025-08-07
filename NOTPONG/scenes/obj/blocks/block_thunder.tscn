@@ -1,7 +1,7 @@
 [gd_scene load_steps=6 format=3 uid="uid://bqmoskdr4j5ub"]
 
 [ext_resource type="Script" uid="uid://d4h23pb1vxo1s" path="res://scenes/obj/blocks/block_thunder.gd" id="1_cocgj"]
-[ext_resource type="Texture2D" uid="uid://ryq0732d653j" path="res://images/BlockThunder.png" id="2_cocgj"]
+[ext_resource type="Texture2D" uid="uid://5mgx8wwvlb5" path="res://images/Boss2.png" id="2_cocgj"]
 [ext_resource type="PackedScene" uid="uid://b4npt30yvwa8q" path="res://effects/thunder.tscn" id="3_cocgj"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_5u526"]

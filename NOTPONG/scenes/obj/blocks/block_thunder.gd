@@ -1,8 +1,8 @@
 extends StaticBody2D
 
 # Block settings
-@export var max_health: int = 30  # 3-hit kill (10 damage per hit)
-@export var score_value: int = 30  # Increased score for larger block
+@export var max_health: int = 100  # 3-hit kill (10 damage per hit)
+@export var score_value: int = 300  # Increased score for larger block
 @export var enemy_type: String = "thunder"
 
 # Thunder settings
@@ -18,12 +18,16 @@ extends StaticBody2D
 
 # Textures for different states - adjust paths as needed
 var textures = {
-	"normal": preload("res://images/BlockThunder.png"),
-	"attack": preload("res://images/BlockThunderAttack.png"),
-	"crack1": preload("res://images/BlockThunderCrack1.png"),
-	"crack2": preload("res://images/BlockThunderCrack2.png"),
-	"attack_crack1": preload("res://images/BlockThunderAttackCrack1.png"),
-	"attack_crack2": preload("res://images/BlockThunderAttackCrack2.png")
+	"normal": preload("res://images/Boss2.png"),
+	"crack1": preload("res://images/Boss2Cracked1.png"),
+	"crack2": preload("res://images/Boss2Cracked2.png"),
+	"crack3": preload("res://images/Boss2Cracked3.png"),
+	"crack4": preload("res://images/Boss2Cracked4.png"),
+	"attack": preload("res://images/Boss2Attack.png"),
+	"attack_crack1": preload("res://images/Boss2Attack1.png"),
+	"attack_crack2": preload("res://images/Boss2Attack2.png"),
+	"attack_crack3": preload("res://images/Boss2Attack3.png"),
+	"attack_crack4": preload("res://images/Boss2Attack4.png")
 }
 
 # State variables
@@ -140,23 +144,30 @@ func update_sprite():
 	# Determine texture based on health and thunder state
 	var texture_key = "normal"
 	
-	# Health states: 30hp = normal, 20hp = crack1, 10hp = crack2, 0hp = dead
 	if thunder_active:
 		# Thunder is active - use attack versions
-		if current_health > 20:  # 30-21 hp = normal attack
+		if current_health > 80:
 			texture_key = "attack"
-		elif current_health > 10:  # 20-11 hp = crack1 attack
+		elif current_health > 60:
 			texture_key = "attack_crack1"
-		else:  # 10-1 hp = crack2 attack
+		elif current_health > 40: 
 			texture_key = "attack_crack2"
+		elif current_health > 20:
+			texture_key = "attack_crack3"
+		else: 
+			texture_key = "attack_crack4"
 	else:
 		# Thunder is inactive - use normal versions
-		if current_health > 20:  # 30-21 hp = normal
+		if current_health > 80: 
 			texture_key = "normal"
-		elif current_health > 10:  # 20-11 hp = crack1
+		elif current_health > 60:
 			texture_key = "crack1"
-		else:  # 10-1 hp = crack2
+		elif current_health > 40:
 			texture_key = "crack2"
+		elif current_health > 20:
+			texture_key = "crack3"
+		else: 
+			texture_key = "crack4"
 	
 	if textures.has(texture_key):
 		sprite.texture = textures[texture_key]
