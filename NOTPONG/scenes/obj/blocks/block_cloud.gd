@@ -61,9 +61,11 @@ func _ready():
 		original_color = sprite.modulate
 		sprite.scale = Vector2(1.563, 1.563)  # Same size as block_blue
 	
-	# Set up lightning effect (same as block_thunder)
+	# Set up lightning effect - spawn 25px below cloud center instead of 50px
 	if lightning_effect:
-		lightning_effect.setup_vertical_thunder(global_position)
+		# Calculate position 25px below the cloud center
+		var lightning_start_pos = Vector2(global_position.x, global_position.y)
+		lightning_effect.setup_vertical_thunder(lightning_start_pos)
 		lightning_effect.visible = false
 		
 		# Connect to lightning controller signals
@@ -72,7 +74,7 @@ func _ready():
 		if lightning_effect.has_signal("thunder_deactivated"):
 			lightning_effect.thunder_deactivated.connect(_on_lightning_deactivated)
 		
-		print("Lightning effect configured for cloud block")
+		print("Lightning effect configured for cloud block - spawning 25px below center")
 	
 	# Start lightning timer
 	lightning_timer = 0.0
@@ -123,7 +125,7 @@ func _on_lightning_activated():
 	print("Cloud block received lightning activation signal")
 
 func _on_lightning_deactivated():
-	"""Called when the lightning controller deactivates"""
+	"""Called when the lightning controller deactivated"""
 	lightning_active = false
 	lightning_warning = false
 	update_sprite()
