@@ -220,30 +220,102 @@ func handle_dash_input():
 	
 	# Dash when shift pressed AND was previously released AND moving
 	if Input.is_action_pressed("dash") and shift_released and can_dash:
+		var dash_direction = Vector2.ZERO
+		var old_position = global_position
+		
 		if Input.is_action_pressed("move_left"):
+			dash_direction = Vector2(-1, 0)
 			# Dash left
 			global_position.x -= dash_distance
 			var half_size = play_area_size * 0.5
 			var left_bound = play_area_center.x - half_size.x + 25
 			if global_position.x < left_bound:
 				global_position.x = left_bound
-			can_dash = false
-			dash_timer = dash_cooldown
-			shift_released = false
-			print("Dashed left!")
 			
 		elif Input.is_action_pressed("move_right"):
+			dash_direction = Vector2(1, 0)
 			# Dash right  
 			global_position.x += dash_distance
 			var half_size = play_area_size * 0.5
 			var right_bound = play_area_center.x + half_size.x - 25
 			if global_position.x > right_bound:
 				global_position.x = right_bound
+		
+		# Om vi dashade, starta cooldown och visa effekter
+		if dash_direction != Vector2.ZERO:
 			can_dash = false
-			dash_timer = dash_cooldown  
+			dash_timer = dash_cooldown
 			shift_released = false
-			print("Dashed right!")
+			
+			# VISUELLA EFFEKTER!
+			create_dash_effect()
+			create_dash_afterimages(old_position, dash_direction)
+			
+			print("Dashed ", "left" if dash_direction.x < 0 else "right", "!")
 
+func create_dash_effect():
+	"""Visual effect for dash on player"""
+	if not sprite:
+		return
+	
+	# Flash effect - snabb cyan blink på spelaren
+	var dash_tween = create_tween()
+	dash_tween.set_parallel(true)
+	
+	# Quick flash sequence
+	dash_tween.tween_property(sprite, "modulate", Color.CYAN, 0.05)
+	dash_tween.tween_property(sprite, "modulate", Color.WHITE, 0.05)
+	dash_tween.tween_property(sprite, "modulate", Color.CYAN, 0.05)
+	dash_tween.tween_property(sprite, "modulate", Color.WHITE, 0.05)
+	
+	# Kort scale effect för att visa "speed"
+	var original_scale = sprite.scale
+	dash_tween.tween_property(sprite, "scale", original_scale * 1.2, 0.1)
+	dash_tween.tween_property(sprite, "scale", original_scale, 0.1)
+
+func create_dash_afterimages(start_pos: Vector2, dash_direction: Vector2):
+	"""Create afterimage effect showing dash trail"""
+	if not sprite:
+		return
+	
+	# Create 3 afterimages spread out along the dash path
+	var afterimage_count = 3
+	var actual_dash_distance = abs(global_position.x - start_pos.x)
+	
+	for i in range(afterimage_count):
+		# Create afterimage sprite
+		var afterimage = Sprite2D.new()
+		afterimage.texture = sprite.texture
+		afterimage.scale = sprite.scale
+		afterimage.rotation = sprite.rotation
+		
+		# Position along dash path
+		var progress = float(i) / float(afterimage_count - 1)
+		var afterimage_pos = start_pos + (dash_direction * actual_dash_distance * progress)
+		afterimage.global_position = afterimage_pos
+		
+		# Set transparency (0.3, 0.5, 0.7)
+		var alpha = 0.3 + (progress * 0.4)
+		afterimage.modulate = Color(1.0, 1.0, 1.0, alpha)
+		
+		# Add to scene
+		get_tree().current_scene.add_child(afterimage)
+		
+		# Animate afterimage - fade out
+		var afterimage_tween = create_tween()
+		afterimage_tween.set_parallel(true)
+		
+		# Fade out
+		afterimage_tween.tween_property(afterimage, "modulate:a", 0.0, 0.2)
+		
+		# Scale down slightly
+		afterimage_tween.tween_property(afterimage, "scale", sprite.scale * 0.8, 0.2)
+		
+		# Clean up
+		afterimage_tween.tween_callback(func(): 
+			if is_instance_valid(afterimage):
+				afterimage.queue_free()
+		).set_delay(0.2)
 func handle_dash_cooldown(delta):
 	if not can_dash:
 		dash_timer -= delta

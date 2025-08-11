@@ -45,7 +45,7 @@ func spawn_normal_level(level: int):
 	var base_block_dropper = 1
 	var base_lazer = 1
 	var base_blue_blocks = 2
-	var base_iron_blocks = 1
+	var base_iron_blocks = 1  
 	var base_cloud_blocks = 1
 	
 	# Increase difficulty each level
