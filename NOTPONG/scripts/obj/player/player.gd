@@ -10,6 +10,11 @@ class_name Player extends CharacterBody2D
 @export var teleport_cooldown: float = 0.2
 @export var play_area_size: Vector2 = Vector2(752, 648)  # Lägg till denna
 @export var play_area_center: Vector2 = Vector2(576, 324)  # Lägg till denna
+var top_wall_timer: float = 0.0
+var top_wall_time_limit: float = 2.0  # 2 sekunder
+var teleport_up_cooldown_timer: float = 0.0
+var teleport_up_cooldown_duration: float = 4.0  # 4 sekunder cooldown
+var can_teleport_up: bool = true
 
 # Dash settings
 @export var dash_distance: float = 75.0
@@ -59,6 +64,8 @@ func _physics_process(delta):
 	handle_dash_cooldown(delta)  # Lägg till dash cooldown
 	handle_movement(delta)
 	handle_teleport_input()
+	handle_top_wall_timer(delta)
+	handle_teleport_up_cooldown(delta)
 	handle_shoot_input()
 	handle_dash_input()  # Lägg till dash input
 	handle_teleport_effect(delta)
@@ -110,8 +117,14 @@ func handle_teleport_input():
 	
 	# Use Input Map actions for teleporting
 	if Input.is_action_just_pressed("teleport_up"):
-		teleport_direction = Vector2(0, -1)
+		# Kolla om vi kan teleportera upp
+		if can_teleport_up:
+			teleport_direction = Vector2(0, -1)
+		else:
+			print("Cannot teleport up - cooldown remaining: ", "%.1f" % teleport_up_cooldown_timer, " seconds")
+			
 	elif Input.is_action_just_pressed("teleport_down"):
+		# Kan alltid teleportera ner
 		teleport_direction = Vector2(0, 1)
 	
 	if teleport_direction != Vector2.ZERO:
@@ -160,35 +173,97 @@ func shoot_projectile():
 # FIXED: Använd lokala variabler istället för Global
 func teleport_to_edge(direction: Vector2):
 	var new_position = global_position
-	var half_size = play_area_size * 0.5  # Använd lokal variabel
+	var half_size = play_area_size * 0.5
 	var bounds = {
-		"top": play_area_center.y - half_size.y,      # Använd lokal variabel
-		"bottom": play_area_center.y + half_size.y    # Använd lokal variabel
+		"top": play_area_center.y - half_size.y,
+		"bottom": play_area_center.y + half_size.y
 	}
-	
-	# Spara nuvarande x-hastighet innan teleportering
+   
+   # Spara nuvarande x-hastighet innan teleportering
 	var current_x_velocity = velocity.x
-	
-	# Teleport to edge and update current wall (only up/down)
+   
+   # Teleport to edge and update current wall (only up/down)
 	if direction.y > 0:  # Teleport down
 		new_position.y = bounds.bottom - 50
 		current_wall = WallSide.BOTTOM
+		top_wall_timer = 0.0  # Reset timer när vi går ner
+   	
+   	# STARTA COOLDOWN NÄR VI GÅR NER!
+		start_teleport_up_cooldown()
+		print("Teleported DOWN to bottom wall - UP cooldown started")
+   	
 	elif direction.y < 0:  # Teleport up
 		new_position.y = bounds.top + 50
 		current_wall = WallSide.TOP
-	
-	# Apply teleportation
+		top_wall_timer = top_wall_time_limit  # Starta 2-sekunder timer
+		print("Teleported UP to top wall - timer started (", top_wall_time_limit, " seconds)")
+   
+   # Apply teleportation
 	global_position = new_position
-	
-	# Behåll x-hastigheten, nollställ bara y-hastigheten
+   
+   # Behåll x-hastigheten, nollställ bara y-hastigheten
 	velocity = Vector2(current_x_velocity, 0)
-	
+   
 	start_teleport_cooldown()
 	start_teleport_effect()
-	
-	# Update sprite rotation based on wall
+   
+   # Update sprite rotation based on wall
 	update_sprite_rotation()
+	
+func start_teleport_up_cooldown():
+	"""Start 4-second cooldown for teleporting up again"""
+	can_teleport_up = false
+	teleport_up_cooldown_timer = teleport_up_cooldown_duration
+	print("Teleport UP cooldown started - ", teleport_up_cooldown_duration, " seconds")
 
+func handle_teleport_up_cooldown(delta):
+	"""Handle cooldown timer for teleporting up"""
+	if can_teleport_up:
+		return
+		
+	teleport_up_cooldown_timer -= delta
+	
+	if teleport_up_cooldown_timer <= 0.0:
+		can_teleport_up = true
+		teleport_up_cooldown_timer = 0.0
+		print("✨ Teleport UP ready again!")
+
+# Utility-funktioner för debugging:
+func get_teleport_up_cooldown_remaining() -> float:
+	"""Get remaining teleport up cooldown time"""
+	if can_teleport_up:
+		return 0.0
+	return teleport_up_cooldown_timer
+
+func can_go_up() -> bool:
+	"""Check if player can teleport up"""
+	return can_teleport_up and can_teleport
+
+func handle_top_wall_timer(delta):
+	"""Handle 2-second timer on top wall"""
+	if current_wall != WallSide.TOP:
+		return
+		
+	top_wall_timer -= delta
+	
+	# Om tiden är ute, teleportera automatiskt tillbaka
+	if top_wall_timer <= 0.0 and can_teleport:
+		print("Top wall time expired - auto teleporting to bottom!")
+		
+		# Teleportera direkt till botten
+		var half_size = play_area_size * 0.5
+		var bottom_y = play_area_center.y + half_size.y - 50
+		
+		var current_x_velocity = velocity.x
+		global_position.y = bottom_y
+		current_wall = WallSide.BOTTOM
+		top_wall_timer = 0.0
+		velocity = Vector2(current_x_velocity, 0)
+		start_teleport_up_cooldown()
+		start_teleport_cooldown()
+		start_teleport_effect()
+		update_sprite_rotation()
+		
 func start_teleport_cooldown():
 	can_teleport = false
 	teleport_timer = teleport_cooldown
