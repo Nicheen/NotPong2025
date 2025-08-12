@@ -97,13 +97,13 @@ func check_and_destroy_blocks():
 		print("[THUNDER] Hit body: ", hit_body.name if hit_body else "null")
 		
 		# Make sure we haven't already destroyed this block
-		if hit_body and not hit_body in destroyed_blocks:
+		if hit_body:
 			print("[THUNDER] Destroying block: ", hit_body.name)
 			
 			# Destroy the block immediately
 			if hit_body.has_method("take_laser_damage"):
 				print("[THUNDER] Using take_laser_damage method")
-				hit_body.take_laser_damage(999)  # High damage = instant kill
+				hit_body.take_laser_damage(20)  # High damage = instant kill
 			elif hit_body.has_method("die_silently"):
 				print("[THUNDER] Using die_silently method")
 				hit_body.die_silently()
@@ -114,9 +114,6 @@ func check_and_destroy_blocks():
 				print("[THUNDER] No destruction method found on hit body")
 				
 			update_thunder_end_position(hit_body.global_position.y)
-			# Remember this block so we don't hit it again
-			destroyed_blocks.append(hit_body)
-			print("[THUNDER] Added block to destroyed list, total destroyed: ", destroyed_blocks.size())
 		else:
 			if not hit_body:
 				print("[THUNDER] Hit body is null")
@@ -138,6 +135,7 @@ func _process(delta):
 		cycle_timer += delta
 		
 		if is_lightning_active:
+			check_and_destroy_blocks()
 			# Lightning is active - check if it should turn off
 			if cycle_timer >= lightning_active_duration:
 				end_lightning_cycle()
@@ -233,8 +231,6 @@ func start_lightning_cycle():
 	"""Start a new lightning active period"""
 	is_lightning_active = true
 	cycle_timer = 0.0
-	
-	check_and_destroy_blocks()
 	
 	# Show the lightning visually
 	lightning.visible = true
