@@ -1,7 +1,7 @@
 [gd_scene load_steps=6 format=3 uid="uid://bqmoskdr4j5ub"]
 
 [ext_resource type="Script" uid="uid://d4h23pb1vxo1s" path="res://scenes/obj/bosses/Boss_Thunder.gd" id="1_d3mcc"]
-[ext_resource type="Texture2D" uid="uid://dqhc7q7oshh6w" path="res://images/bosses/Boss2.png" id="2_elsg4"]
+[ext_resource type="Texture2D" uid="uid://5mgx8wwvlb5" path="res://images/bosses/Boss2.png" id="2_elsg4"]
 [ext_resource type="PackedScene" uid="uid://b4npt30yvwa8q" path="res://effects/thunder.tscn" id="3_2430s"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_5u526"]

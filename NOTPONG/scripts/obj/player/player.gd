@@ -6,6 +6,10 @@ class_name Player extends CharacterBody2D
 @export var friction: float = 4000.0
 @onready var health_bar: ProgressBar = %HealthBar
 
+
+@onready var projectile_preview_main: Sprite2D
+@onready var projectile_preview_mid: Sprite2D
+@onready var projectile_preview_close: Sprite2D
 # Teleport settings
 @export var teleport_cooldown: float = 0.2
 @export var play_area_size: Vector2 = Vector2(752, 648)  # Lägg till denna
@@ -62,6 +66,7 @@ func _ready():
 	# Set initial position and health
 	global_position = Vector2(500, 200)
 	current_health = max_health
+	setup_projectile_preview()
 
 func _physics_process(delta):
 	handle_teleport_cooldown(delta)
@@ -75,6 +80,7 @@ func _physics_process(delta):
 	handle_dash_input()  # Lägg till dash input
 	handle_teleport_effect(delta)
 	handle_perfect_dodge_system(delta)
+	update_projectile_preview()
 	
 	# Apply movement
 	move_and_slide()
@@ -301,7 +307,55 @@ func show_perfect_dodge_effect():
 	tween.tween_property(sprite, "scale", original_scale, 0.4)
 
 # Uppdatera din befintliga shoot_projectile() funktion för att använda damage multiplier:
+func setup_projectile_preview():
+	# Huvudcirkel (längst bort från spelaren)
+	projectile_preview_main = Sprite2D.new()
+	projectile_preview_main.texture = load("res://images/white_circle.svg")
+	projectile_preview_main.scale = Vector2(0.15, 0.15)
+	projectile_preview_main.modulate = Color(1, 1, 1, 0.6)
+	projectile_preview_main.z_index = -1
+	add_child(projectile_preview_main)
+	
+	# Mellanliggande cirkel
+	projectile_preview_mid = Sprite2D.new()
+	projectile_preview_mid.texture = load("res://images/white_circle.svg")
+	projectile_preview_mid.scale = Vector2(0.12, 0.12)  # Mindre
+	projectile_preview_mid.modulate = Color(1, 1, 1, 0.4)  # Mer transparent
+	projectile_preview_mid.z_index = -1
+	add_child(projectile_preview_mid)
+	
+	# Närmaste cirkel (närmast spelaren)
+	projectile_preview_close = Sprite2D.new()
+	projectile_preview_close.texture = load("res://images/white_circle.svg")
+	projectile_preview_close.scale = Vector2(0.08, 0.08)  # Minst
+	projectile_preview_close.modulate = Color(1, 1, 1, 0.25)  # Mest transparent
+	projectile_preview_close.z_index = -1
+	add_child(projectile_preview_close)
 
+func update_projectile_preview():
+	if not projectile_preview_main or not projectile_preview_mid or not projectile_preview_close:
+		return
+	
+	# Beräkna riktning och positioner
+	var mouse_pos = get_global_mouse_position()
+	var shoot_direction = (mouse_pos - global_position).normalized()
+	
+	# Tre positioner med jämna mellanrum
+	var main_position = global_position + (shoot_direction * 80)    # Längst bort
+	var mid_position = global_position + (shoot_direction * 55)     # Mellanliggande
+	var close_position = global_position + (shoot_direction * 30)   # Närmast spelaren
+	
+	# Uppdatera positioner
+	projectile_preview_main.global_position = main_position
+	projectile_preview_mid.global_position = mid_position
+	projectile_preview_close.global_position = close_position
+	
+	# Visa/dölj alla baserat på om spelaren kan skjuta
+	var should_show = can_shoot
+	projectile_preview_main.visible = should_show
+	projectile_preview_mid.visible = should_show
+	projectile_preview_close.visible = should_show
+	
 func shoot_projectile():
 	if not projectile_scene or not can_shoot:
 		return
