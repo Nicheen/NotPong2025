@@ -1,10 +1,13 @@
-[gd_scene load_steps=4 format=3 uid="uid://bq8u4jylrt5yo"]
+[gd_scene load_steps=5 format=3 uid="uid://bq8u4jylrt5yo"]
 
 [ext_resource type="Script" uid="uid://dn5odpo46ndwg" path="res://scripts/obj/bosses/boss_1.gd" id="1_4no6o"]
 [ext_resource type="Texture2D" uid="uid://4mmqlecmo8i4" path="res://images/bosses/Boss1.png" id="2_4no6o"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_vo7dq"]
 size = Vector2(100, 100)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_4no6o"]
+polygon = PackedVector2Array(-50, -50, 49, -51, 50, 51, -50, 50)
 
 [node name="Boss1" type="StaticBody2D"]
 collision_layer = 2
@@ -29,3 +32,6 @@ offset_bottom = -77.0
 value = 100.0
 show_percentage = false
 metadata/_edit_use_anchors_ = true
+
+[node name="LightOccluder2D" type="LightOccluder2D" parent="."]
+occluder = SubResource("OccluderPolygon2D_4no6o")

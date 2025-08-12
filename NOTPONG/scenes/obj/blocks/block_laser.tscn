@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3 uid="uid://7xnhieqtejv1"]
+[gd_scene load_steps=6 format=3 uid="uid://7xnhieqtejv1"]
 
 [ext_resource type="Script" uid="uid://damb12qgbc5xj" path="res://scenes/obj/blocks/block_laser.gd" id="1_nag25"]
 [ext_resource type="Texture2D" uid="uid://cne04nv1b3frj" path="res://images/BlockLaser.png" id="2_nwiju"]
@@ -6,6 +6,9 @@
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_5u526"]
 size = Vector2(50, 50)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_nag25"]
+polygon = PackedVector2Array(-26, -26, 26, -26, 26, 26, -26, 26)
 
 [node name="EnemyBlockLazer" type="StaticBody2D"]
 collision_layer = 2
@@ -29,8 +32,11 @@ unique_name_in_owner = true
 z_index = -1
 rotation = 1.5708
 target_position = Vector2(2000, 0)
-collision_mask = 29
+collision_mask = 31
 max_length = 2000.0
 line_width = 26
 start_distance = 25.0
 color = Color(0.928596, 0.995836, 0.881717, 1)
+
+[node name="LightOccluder2D" type="LightOccluder2D" parent="."]
+occluder = SubResource("OccluderPolygon2D_nag25")

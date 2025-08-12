@@ -12,7 +12,7 @@ var world_bounds: Rect2 = Rect2(200, 0, 752, 648)  # Your actual play area bound
 # Components (now as Node references)
 @onready var collision_handler: ProjectileCollisionHandler = $Components/CollisionHandler
 @onready var boundary_handler: ProjectileBoundaryHandler = $Components/BoundaryHandler
-@onready var effect_manager: ProjectileEffectManager = $Components/EffectManager
+@onready var death_particles: GPUParticles2D = %DeathParticles
 
 # Visual effects
 @onready var sprite: Sprite2D = $Sprite2D
@@ -33,7 +33,8 @@ func _ready():
 	setup_physics()
 	setup_components()
 	setup_auto_destroy()
-	
+	setup_death_particles()
+		
 	print("Projectile created - Layer: ", collision_layer, " Mask: ", collision_mask)
 	print("World bounds set to: ", world_bounds)
 
@@ -63,6 +64,18 @@ func setup_auto_destroy():
 	timer.timeout.connect(_destroy_projectile)
 	add_child(timer)
 	timer.start()
+
+func setup_death_particles():
+	if death_particles and death_particles.process_material:
+		var material = death_particles.process_material as ParticleProcessMaterial
+		if material:
+			# Enable collision
+			material.collision_mode = ParticleProcessMaterial.COLLISION_RIGID
+			material.collision_friction = 0.0
+			material.collision_bounce = 0.3
+			material.collision_use_scale = true
+			
+			print("GPU particle collision enabled")
 
 func initialize(shoot_direction: Vector2, projectile_speed: float, area_center: Vector2 = Vector2.ZERO, area_size: Vector2 = Vector2.ZERO, from_player: bool = true):
 	direction = shoot_direction.normalized()
@@ -111,10 +124,6 @@ func _on_body_entered(body):
 	if collision_handler:
 		collision_handler.handle_collision(body)
 
-func create_explosion_at(position: Vector2, velocity1: Vector2, velocity2: Vector2):
-	if effect_manager:
-		effect_manager.create_explosion_effect(position, velocity1, velocity2)
-
 func get_distance_to_bounds() -> float:
 	if boundary_handler:
 		return boundary_handler.get_distance_to_bounds()
@@ -124,9 +133,25 @@ func handle_bounce(new_velocity: Vector2, new_position: Vector2):
 	if collision_handler:
 		collision_handler.handle_bounce(new_velocity, new_position)
 
+func create_explosion_at(pos: Vector2, vel: Vector2, normal: Vector2):
+	if death_particles:
+		death_particles.global_position = pos
+		death_particles.emitting = true
+		print("Death particles triggered at: ", pos)
+
 func _destroy_projectile():
+	# Trigger death particles before destruction
+	create_explosion_at(global_position, linear_velocity, Vector2.ZERO)
+	
+	# Wait a brief moment for particles to start, then destroy
+	var timer = Timer.new()
+	timer.wait_time = 30.0  # Brief delay
+	timer.one_shot = true
+	timer.timeout.connect(func(): queue_free())
+	add_child(timer)
+	timer.start()
+	
 	print("Destroying projectile at position: ", global_position)
-	queue_free()
 
 func force_destroy():
 	print("Force destroying projectile")

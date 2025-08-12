@@ -1,10 +1,13 @@
-[gd_scene load_steps=4 format=3 uid="uid://dmj0yiae8yhvw"]
+[gd_scene load_steps=5 format=3 uid="uid://dmj0yiae8yhvw"]
 
 [ext_resource type="Script" uid="uid://cdvdmyb0wm0kp" path="res://scenes/obj/blocks/block_red.gd" id="1_kruqk"]
 [ext_resource type="Texture2D" uid="uid://bichq28ag45y8" path="res://images/BlockRed.png" id="2_oth1q"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_eo5g6"]
 size = Vector2(50, 50)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_kruqk"]
+polygon = PackedVector2Array(-26, -26, 26, -26, 26, 26, -26, 26)
 
 [node name="EnemyBlock" type="StaticBody2D"]
 collision_layer = 2
@@ -20,3 +23,6 @@ texture = ExtResource("2_oth1q")
 light_mask = 2
 visibility_layer = 0
 shape = SubResource("RectangleShape2D_eo5g6")
+
+[node name="LightOccluder2D" type="LightOccluder2D" parent="."]
+occluder = SubResource("OccluderPolygon2D_kruqk")
