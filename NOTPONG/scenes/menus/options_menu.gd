@@ -113,3 +113,11 @@ func set_default_values():
 # You can create an autoload script called SceneManager and use:
 # func _on_back_button_pressed():
 #     SceneManager.go_to_previous_scene()
+
+
+func _on_reset_scoreboard_button_pressed() -> void:
+	# Reset the high score
+	Global.save_data.high_score = 0
+	Global.save_data.save()
+	
+	print("Scoreboard reset! High score is now 0")

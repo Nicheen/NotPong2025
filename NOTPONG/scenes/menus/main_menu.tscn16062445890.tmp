@@ -68,8 +68,6 @@ text = "LEADERBOARD TOP 10 PLAYERS
 [node name="ScoreBoardList" type="ItemList" parent="VBoxContainer2"]
 unique_name_in_owner = true
 layout_mode = 2
-auto_width = true
-auto_height = true
 
 [node name="UsernameEntry" type="LineEdit" parent="VBoxContainer2"]
 unique_name_in_owner = true

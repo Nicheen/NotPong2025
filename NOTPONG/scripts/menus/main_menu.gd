@@ -1,6 +1,8 @@
 extends Control
 
 @onready var options_menu = %OptionsMenu
+@onready var username_entry = %UsernameEntry
+@onready var scoreboard_list = %ScoreBoardList
 
 func _ready():
 	# Connect buttons using Godot 4.x syntax
@@ -10,7 +12,20 @@ func _ready():
 	$VBoxContainer/btn_options.pressed.connect(_on_options_pressed)
 	
 	options_menu.visible = false
+	
+	var sw_result: Dictionary = await SilentWolf.Scores.get_scores().sw_get_scores_complete
+	
+	# Clear any existing items
+	scoreboard_list.clear()
 
+	# Iterate over each score entry
+	for entry in sw_result.scores:
+		var name = entry.player_name
+		var score = entry.score
+		scoreboard_list.add_item("%s - %d" % [name, score])
+		print("Added: " + "%s - %d" % [name, score])
+		
+	print("Scores: " + str(sw_result.scores))
 	# Update fullscreen button text on start
 	update_fullscreen_button_text()
 
@@ -46,3 +61,9 @@ func _on_options_pressed():
 	# Load options scene or show options popup
 	GlobalAudioManager.play_button_click()
 	options_menu.visible = true
+
+
+func _on_username_entry_text_submitted(new_text: String) -> void:
+	Global.save_data.player_name = new_text
+	Global.save_data.save()
+	print("Saved new player name as " + str(new_text))

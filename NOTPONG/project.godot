@@ -22,10 +22,11 @@ flowerwall_crt="*res://addons/flowerwall_postprocess/scenes/flowerwall_pp.tscn"
 Global="*res://autoloads/global.gd"
 GlobalAudioManager="*res://autoloads/GlobalAudioManager.gd"
 PerfectDodgeSystem="*res://autoloads/PerfectDodgeSystem.gd"
+SilentWolf="*res://addons/silent_wolf/SilentWolf.gd"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/flowerwall_postprocess/plugin.cfg")
+enabled=PackedStringArray("res://addons/flowerwall_postprocess/plugin.cfg", "res://addons/silent_wolf/plugin.cfg")
 
 [gui]
 

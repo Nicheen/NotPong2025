@@ -1124,6 +1124,8 @@ func update_ui():
 	# Check for high score updates in real-time and update HUD
 	if current_score > Global.save_data.high_score:
 		check_and_update_high_score()
+		var player_name: String = Global.save_data.player_name
+		SilentWolf.Scores.save_score(player_name, current_score)
 
 func create_grid_background():
 	# You can keep the original grid background if you want

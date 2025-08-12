@@ -13,6 +13,7 @@ anchors_preset = 0
 script = ExtResource("1_60mby")
 
 [node name="Panel" type="Panel" parent="."]
+layout_mode = 0
 offset_left = 13.0
 offset_right = 1165.0
 offset_bottom = 648.0
@@ -73,6 +74,11 @@ layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
 
+[node name="ResetScoreboardButton" type="Button" parent="Panel/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "RESET HIGHSCORE"
+
 [node name="BackButton" type="Button" parent="Panel/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
@@ -81,4 +87,5 @@ text = "BACK"
 [connection signal="value_changed" from="Panel/VBoxContainer/MasterVolumeContainer/MasterVolumeSlider" to="." method="_on_master_volume_slider_value_changed"]
 [connection signal="value_changed" from="Panel/VBoxContainer/MusicVolumeContainer/MusicVolumeSlider" to="." method="_on_music_volume_slider_value_changed"]
 [connection signal="value_changed" from="Panel/VBoxContainer/SFXVolumeContainer/SFXVolumeSlider" to="." method="_on_sfx_volume_slider_value_changed"]
+[connection signal="pressed" from="Panel/VBoxContainer/ResetScoreboardButton" to="." method="_on_reset_scoreboard_button_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/BackButton" to="." method="_on_back_button_pressed"]
