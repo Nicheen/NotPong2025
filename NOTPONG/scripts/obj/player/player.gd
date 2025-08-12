@@ -118,6 +118,10 @@ func handle_teleport_input():
 	# Use Input Map actions for teleporting
 	if Input.is_action_just_pressed("teleport_up"):
 		# Kolla om vi kan teleportera upp
+		if current_wall == WallSide.TOP:
+			print("Already on top wall - cannot teleport up again!")
+			return
+		
 		if can_teleport_up:
 			teleport_direction = Vector2(0, -1)
 		else:
