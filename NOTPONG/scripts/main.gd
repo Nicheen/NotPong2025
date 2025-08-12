@@ -647,11 +647,14 @@ func setup_win_menu():
 func _on_player_died():
 	print("Player died! Final score: ", current_score)
 	
+	var highscore: float = Global.save_data.high_score
+	var player_name: String = Global.save_data.player_name
+	
+	if current_score > highscore:
+		SilentWolf.Scores.save_score(player_name, current_score)
+		
 	# Check and update high score before showing death menu
 	check_and_update_high_score()
-	
-	var player_name: String = Global.save_data.player_name
-	SilentWolf.Scores.save_score(player_name, current_score)
 	
 	# Show death menu with score
 	if death_menu and death_menu.has_method("show_death_menu"):
