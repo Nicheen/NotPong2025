@@ -1,10 +1,9 @@
-[gd_scene load_steps=13 format=3 uid="uid://eppnqq6ap33r"]
+[gd_scene load_steps=17 format=3 uid="uid://eppnqq6ap33r"]
 
 [ext_resource type="Script" uid="uid://57mwgwgrtt80" path="res://scripts/obj/projectile/projectile.gd" id="1_projectile_main"]
 [ext_resource type="Texture2D" uid="uid://ca46r0lbh45dk" path="res://images/PlayerProjectile1.png" id="2_aqdnr"]
 [ext_resource type="Script" uid="uid://c67rqomxck2ae" path="res://scripts/obj/projectile/projectile_collision_handler.gd" id="2_collision_handler"]
 [ext_resource type="Script" uid="uid://dgqp1seq5b42j" path="res://scripts/obj/projectile/projectile_boundary_handler.gd" id="3_boundary_handler"]
-[ext_resource type="Script" uid="uid://oex81gje51m7" path="res://scripts/obj/projectile/projectile_effect_manager.gd" id="4_effect_manager"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_bounce"]
 friction = 0.1
@@ -39,6 +38,38 @@ scale_over_velocity_max = 116.67
 color_ramp = SubResource("GradientTexture1D_x1qnq")
 turbulence_enabled = true
 
+[sub_resource type="Gradient" id="Gradient_1aqux"]
+offsets = PackedFloat32Array(0)
+colors = PackedColorArray(1, 1, 1, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_aqdnr"]
+gradient = SubResource("Gradient_1aqux")
+
+[sub_resource type="Curve" id="Curve_x1qnq"]
+_limits = [0.0, 3.0, 0.0, 1.0]
+_data = [Vector2(0, 3), 0.0, 0.0, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_h011q"]
+curve = SubResource("Curve_x1qnq")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_e6gd3"]
+particle_flag_disable_z = true
+angle_min = 1.07288e-05
+angle_max = 1.07288e-05
+spread = 180.0
+initial_velocity_min = 20.0
+initial_velocity_max = 60.0
+gravity = Vector3(0, 98, 0)
+linear_accel_min = 10.0
+linear_accel_max = 20.0
+scale_max = 2.0
+scale_over_velocity_curve = SubResource("CurveTexture_h011q")
+color_ramp = SubResource("GradientTexture1D_aqdnr")
+collision_mode = 1
+collision_friction = 0.0
+collision_bounce = 0.0
+
 [node name="Projectile" type="RigidBody2D"]
 collision_layer = 2
 collision_mask = 7
@@ -59,9 +90,6 @@ script = ExtResource("2_collision_handler")
 
 [node name="BoundaryHandler" type="Node" parent="Components"]
 script = ExtResource("3_boundary_handler")
-
-[node name="EffectManager" type="Node" parent="Components"]
-script = ExtResource("4_effect_manager")
 
 [node name="DebugInfo" type="Node2D" parent="."]
 visible = false
@@ -90,6 +118,18 @@ offset_bottom = 60.0
 text = "999"
 horizontal_alignment = 1
 
-[node name="GPUParticles2D" type="GPUParticles2D" parent="."]
+[node name="TailParticles" type="GPUParticles2D" parent="."]
+unique_name_in_owner = true
 amount = 20
 process_material = SubResource("ParticleProcessMaterial_jg88d")
+
+[node name="DeathParticles" type="GPUParticles2D" parent="."]
+unique_name_in_owner = true
+emitting = false
+amount = 10
+lifetime = 30.0
+one_shot = true
+speed_scale = 3.0
+explosiveness = 1.0
+collision_base_size = 2.0
+process_material = SubResource("ParticleProcessMaterial_e6gd3")
