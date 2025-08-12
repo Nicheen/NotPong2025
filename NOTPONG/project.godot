@@ -21,6 +21,7 @@ config/icon="res://icon.svg"
 flowerwall_crt="*res://addons/flowerwall_postprocess/scenes/flowerwall_pp.tscn"
 Global="*res://autoloads/global.gd"
 GlobalAudioManager="*res://autoloads/GlobalAudioManager.gd"
+PerfectDodgeSystem="*res://autoloads/PerfectDodgeSystem.gd"
 
 [editor_plugins]
 

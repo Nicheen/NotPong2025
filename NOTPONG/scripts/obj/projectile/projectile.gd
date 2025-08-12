@@ -5,6 +5,7 @@ var direction: Vector2
 var speed: float = 500.0
 var lifetime: float = 8.0
 var is_player_projectile: bool = false
+var damage_multiplier: float = 1.0
 
 # World boundaries - default to your game area
 var world_bounds: Rect2 = Rect2(200, 0, 752, 648)  # Your actual play area bounds
@@ -103,13 +104,115 @@ func update_debug_info():
 		if distance_label:
 			distance_label.text = str(int(get_distance_to_bounds()))
 
+func set_damage_multiplier(multiplier: float):
+	"""Sätt damage multiplier för perfect dodge"""
+	damage_multiplier = multiplier
+	
+	# Visuell feedback om enhanced damage
+	if multiplier > 1.0:
+		show_enhanced_projectile_effect()
+
+func get_actual_damage() -> int:
+	"""Få den faktiska skadan med multiplier - använd befintligt damage system"""
+	# FIX 4: Istället för base_damage, returnera multiplier som ska användas
+	# i befintliga take_damage calls
+	return int(damage_multiplier)  # 10 är standardskadan i ditt system
+
+func show_enhanced_projectile_effect():
+	"""Visuell effekt för enhanced projektiler under slow motion"""
+	if not has_node("Sprite2D"):
+		return
+		
+	var sprite = get_node("Sprite2D")
+	
+	# Guldglow för enhanced damage
+	var tween = create_tween()
+	tween.set_loops()  # Loop tills projektilen förstörs
+	tween.tween_property(sprite, "modulate", Color.GOLD, 0.3)
+	tween.tween_property(sprite, "modulate", Color.YELLOW, 0.3)
+
+# Uppdatera din damage-funktion:
+func deal_damage_to_target(target):
+	"""Ge skada till målet med damage multiplier"""
+	var actual_damage = get_actual_damage()
+	
+	if target.has_method("take_damage"):
+		target.take_damage(actual_damage)
+		
+		# Visuell feedback för enhanced damage
+		if damage_multiplier > 1.0:
+			show_critical_hit_effect(target)
+		
+		print("Projectile dealt ", actual_damage, " damage (multiplier: ", damage_multiplier, ")")
+
+# Uppdatera din collision handler för att använda damage multiplier:
+func _on_body_entered(body):
+	"""När projektilen träffar något"""
+	# Kolla collision layer för att avgöra vad vi träffade
+	var layer = body.collision_layer
+	
+	if layer & 1:  # Player layer
+		if collision_handler:
+			collision_handler.handle_player_hit(body)
+	elif layer & 2:  # Damage layer  
+		if collision_handler:
+			collision_handler.handle_damaged_hit(body)
+		# Använd vår enhanced damage system
+		deal_damage_to_target(body)
+	elif layer & 3:  # CollisionBounce layer
+		if collision_handler:
+			collision_handler.handle_player_hit(body)
+	elif layer & 4:  # CollisionBounce + Damage layer
+		if collision_handler:
+			collision_handler.handle_damaged_bounce_hit(body)
+		# Använd vår enhanced damage system
+		deal_damage_to_target(body)
+		
+func handle_enemy_collision(enemy_body):
+	"""Hantera kollision med enemy - använd enhanced damage"""
+	var actual_damage = get_actual_damage()
+	
+	if enemy_body.has_method("take_damage"):
+		enemy_body.take_damage(actual_damage)
+		
+		# Visuell feedback för enhanced damage
+		if damage_multiplier > 1.0:
+			show_critical_hit_effect(enemy_body)
+		
+		print("Projectile dealt ", actual_damage, " damage (multiplier: ", damage_multiplier, ")")
+	
+	# Förstör projektilen efter träff
+	queue_free()
+	
+func show_critical_hit_effect(target):
+	"""Extra visuell effekt för critical hits"""
+	# Skapa floating damage text
+	create_floating_damage_text(target.global_position, get_actual_damage())
+
+func create_floating_damage_text(pos: Vector2, damage: int):
+	"""Skapa floating damage text"""
+	var label = Label.new()
+	label.text = str(int(damage*10)) + "!"
+	label.add_theme_font_size_override("font_size", 24)
+	label.add_theme_color_override("font_color", Color.GOLD)
+	label.global_position = pos
+	get_tree().current_scene.add_child(label)
+	
+	# Skapa tween från scene tree istället för create_tween()
+	var tween = get_tree().create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(label, "global_position", pos + Vector2(0, -50), 1.0)
+	tween.tween_property(label, "modulate:a", 0.0, 1.0)
+	
+	# Ta bort efter animation
+	tween.finished.connect(func(): 
+		if is_instance_valid(label):
+			label.queue_free()
+	)
+
 func toggle_debug_info():
 	if debug_info:
 		debug_info.visible = !debug_info.visible
-
-func _on_body_entered(body):
-	if collision_handler:
-		collision_handler.handle_collision(body)
 
 func create_explosion_at(position: Vector2, velocity1: Vector2, velocity2: Vector2):
 	if effect_manager:

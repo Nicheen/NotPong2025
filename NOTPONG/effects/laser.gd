@@ -207,6 +207,7 @@ func get_sprite_from_object(obj) -> Sprite2D:
 	
 	return null
 	
+
 func get_object_color(hit_object) -> Color:
 	if not hit_object:
 		return original_particle_color

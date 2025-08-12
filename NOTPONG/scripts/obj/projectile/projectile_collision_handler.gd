@@ -12,7 +12,8 @@ var projectile: RigidBody2D
 @onready var sprite = get_parent().get_parent().get_node("Sprite2D")  # Make sure this path is correct!
 @onready var projectile2_texture = preload("res://images/PlayerProjectile2.png")
 @onready var projectile3_texture = preload("res://images/PlayerProjectile3.png")
-
+@onready var death_particles: GPUParticles2D = %DeathParticles
+@onready var tail_particles: GPUParticles2D = %TailParticles
 
 func _ready():
 	# Get reference to parent projectile when component is ready
@@ -64,7 +65,31 @@ func handle_damaged_hit(other_body):
 	print("[PROJECTILE] Damaged object and free the projectile")
 	if other_body.has_method("take_damage"):
 		other_body.take_damage(10)
-	projectile.queue_free()
+	
+	# Hide the projectile sprite immediately
+	if sprite:
+		sprite.visible = false
+	
+	# Disable collision so it can't hit anything else
+	projectile.collision_layer = 0
+	projectile.collision_mask = 0
+	
+	# Stop the projectile movement
+	projectile.linear_velocity = Vector2.ZERO
+	
+	# Turn of tail projectiles
+	tail_particles.emitting = false
+	
+	# Trigger explosion effect
+	projectile.create_explosion_at(projectile.global_position, projectile.linear_velocity, Vector2.ZERO)
+	
+	# Wait for particle effect to finish (death particles lifetime is 0.8s)
+	var timer = Timer.new()
+	timer.wait_time = 30.0  # Slightly longer than particle lifetime
+	timer.one_shot = true
+	timer.timeout.connect(func(): projectile.queue_free())
+	projectile.add_child(timer)
+	timer.start()
 
 func handle_damaged_bounce_hit(other_body):
 	print("[PROJECTILE] Damaged object and bounced projectile")
@@ -87,7 +112,7 @@ func handle_projectile_collision(other_projectile):
 	print("My velocity: ", my_velocity, " Other velocity: ", other_velocity)
 	
 	# Create explosion effect
-	projectile.create_explosion_at(collision_point, my_velocity, other_velocity)
+	death_particles.emitting = true
 	
 	# Emit signals for achievement tracking
 	projectile.projectile_destroyed_by_collision.emit(is_defensive_save)

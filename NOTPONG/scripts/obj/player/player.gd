@@ -50,6 +50,11 @@ var shift_released: bool = true
 var teleport_effect_duration: float = 0.1
 var is_teleporting: bool = false
 
+#DodgeDetector
+@onready var dodge_detector: Area2D = $DodgeDetector
+var perfect_dodge_active: bool = false
+var perfect_dodge_timer: float = 0.0
+
 # Signals
 signal player_died
 
@@ -69,6 +74,7 @@ func _physics_process(delta):
 	handle_shoot_input()
 	handle_dash_input()  # Lägg till dash input
 	handle_teleport_effect(delta)
+	handle_perfect_dodge_system(delta)
 	
 	# Apply movement
 	move_and_slide()
@@ -141,38 +147,6 @@ func handle_shoot_input():
 	# Check for mouse click or shoot action
 	if Input.is_action_just_pressed("shoot") or Input.is_action_just_pressed("ui_accept"):
 		shoot_projectile()
-
-func shoot_projectile():
-	if not projectile_scene or not can_shoot:
-		return
-		
-	print("=== SHOOTING PROJECTILE ===")
-	
-	# Get shoot direction toward mouse
-	var mouse_pos = get_global_mouse_position()
-	var shoot_direction = (mouse_pos - global_position).normalized()
-	
-	# Create projectile
-	var projectile = projectile_scene.instantiate()
-	
-	# Position it in front of player
-	var spawn_position = global_position + (shoot_direction * 80)
-	projectile.global_position = spawn_position
-	
-	print("Spawning projectile at: ", spawn_position)
-	print("Shoot direction: ", shoot_direction)
-	
-	# Add to scene first
-	get_tree().current_scene.add_child(projectile)
-	
-	# Wait one frame then initialize
-	await get_tree().process_frame
-	
-	# Initialize the projectile
-	projectile.initialize(shoot_direction, projectile_speed)
-	
-	# Start cooldown
-	start_shoot_cooldown()
 
 # FIXED: Använd lokala variabler istället för Global
 func teleport_to_edge(direction: Vector2):
@@ -278,6 +252,110 @@ func handle_teleport_cooldown(delta):
 		if teleport_timer <= 0:
 			can_teleport = true
 
+func setup_perfect_dodge():
+	# Anslut dodge detector signals
+	if dodge_detector:
+		dodge_detector.perfect_dodge_detected.connect(_on_perfect_dodge_detected)
+	
+	# Anslut perfect dodge system signals
+	if PerfectDodgeSystem:
+		PerfectDodgeSystem.time_slow_started.connect(_on_time_slow_started)
+		PerfectDodgeSystem.time_slow_ended.connect(_on_time_slow_ended)
+
+# Lägg till dessa funktioner i din Player.gd:
+
+func _on_perfect_dodge_detected(enemy_attack):
+	"""Kallas när en perfect dodge detekteras"""
+	print("Perfect dodge performed against: ", enemy_attack.name)
+	perfect_dodge_active = true
+	
+	# Visuell feedback
+	show_perfect_dodge_effect()
+
+func _on_time_slow_started():
+	"""Kallas när time slow effekten börjar"""
+	print("Time slow activated - damage multiplier active!")
+	# Här kan du lägga till visuella effekter för slow motion
+
+func _on_time_slow_ended():
+	"""Kallas när time slow effekten slutar"""
+	print("Time slow ended - back to normal")
+	perfect_dodge_active = false
+
+func show_perfect_dodge_effect():
+	"""Visuell feedback för perfect dodge"""
+	if not sprite:
+		return
+	
+	# Blå glöd-effekt för att visa successful dodge
+	var tween = create_tween()
+	tween.set_parallel(true)
+	
+	# Färgeffekt - blå glow
+	tween.tween_property(sprite, "modulate", Color.CYAN, 0.1)
+	tween.tween_property(sprite, "modulate", Color.WHITE, 0.4)
+	
+	# Liten skala-effekt
+	var original_scale = sprite.scale
+	tween.tween_property(sprite, "scale", original_scale * 1.2, 0.1)
+	tween.tween_property(sprite, "scale", original_scale, 0.4)
+
+# Uppdatera din befintliga shoot_projectile() funktion för att använda damage multiplier:
+
+func shoot_projectile():
+	if not projectile_scene or not can_shoot:
+		return
+		
+	print("=== SHOOTING PROJECTILE ===")
+	
+	# Get shoot direction toward mouse (din befintliga logik)
+	var mouse_pos = get_global_mouse_position()
+	var shoot_direction = (mouse_pos - global_position).normalized()
+	
+	# Create projectile
+	var projectile = projectile_scene.instantiate()
+	
+	# Position it in front of player
+	var spawn_position = global_position + (shoot_direction * 80)
+	projectile.global_position = spawn_position
+	
+	print("Spawning projectile at: ", spawn_position)
+	print("Shoot direction: ", shoot_direction)
+	
+	# Add to scene first
+	get_tree().current_scene.add_child(projectile)
+	
+	# Wait one frame then initialize
+	await get_tree().process_frame
+	
+	# NYTT: Kontrollera enhanced shots från dodge detector
+	var damage_mult = 1.0
+	if dodge_detector and "enhanced_shots_remaining" in dodge_detector and dodge_detector.enhanced_shots_remaining > 0:
+		damage_mult = PerfectDodgeSystem.get_damage_multiplier() if PerfectDodgeSystem else 5.0
+		dodge_detector.enhanced_shots_remaining -= 1
+		print("Using enhanced shot! Remaining: ", dodge_detector.enhanced_shots_remaining)
+	elif PerfectDodgeSystem and PerfectDodgeSystem.is_in_slow_motion():
+		damage_mult = PerfectDodgeSystem.get_damage_multiplier()
+		print("Shooting during slow motion! Damage multiplier: ", damage_mult)
+	
+	# Initialize the projectile med enhanced damage
+	projectile.initialize(shoot_direction, projectile_speed)
+	
+	# Applicera damage multiplier
+	if projectile.has_method("set_damage_multiplier"):
+		projectile.set_damage_multiplier(damage_mult)
+	elif "damage_multiplier" in projectile:
+		projectile.damage_multiplier = damage_mult
+	
+	# Start cooldown
+	start_shoot_cooldown()
+
+# Lägg till i din _process() eller _physics_process() funktion:
+func handle_perfect_dodge_system(delta):
+	"""Hantera perfect dodge timing och effects"""
+	if perfect_dodge_timer > 0:
+		perfect_dodge_timer -= delta
+		
 func start_shoot_cooldown():
 	can_shoot = false
 	shoot_timer = shoot_cooldown
