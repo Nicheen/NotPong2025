@@ -20,6 +20,9 @@ var teleport_up_cooldown_timer: float = 0.0
 var teleport_up_cooldown_duration: float = 4.0  # 4 sekunder cooldown
 var can_teleport_up: bool = true
 
+@onready var player_texture = preload("res://images/NewPlayer.png")
+@onready var player_damaged_texture_1 = preload("res://images/NewPlayerDamaged1.png")
+@onready var player_damaged_texture_2 = preload("res://images/NewPlayerDamaged2.png")
 # Dash settings
 @export var dash_distance: float = 75.0
 @export var dash_cooldown: float = 1.5
@@ -200,6 +203,18 @@ func start_teleport_up_cooldown():
 	teleport_up_cooldown_timer = teleport_up_cooldown_duration
 	print("Teleport UP cooldown started - ", teleport_up_cooldown_duration, " seconds")
 
+func update_sprite():
+	if sprite == null:
+		print("ERROR: Sprite2D not found!")
+		return
+		
+	if current_health > 60:
+		sprite.texture = player_texture
+	elif current_health <= 60 and current_health > 20:
+		sprite.texture = player_damaged_texture_1
+	elif current_health <= 20:
+		sprite.texture = player_damaged_texture_2
+		
 func handle_teleport_up_cooldown(delta):
 	"""Handle cooldown timer for teleporting up"""
 	if can_teleport_up:
@@ -468,7 +483,7 @@ func create_dash_effect():
 	"""Visual effect for dash on player"""
 	if not sprite:
 		return
-	
+	update_sprite()
 	# Flash effect - snabb cyan blink på spelaren
 	var dash_tween = create_tween()
 	dash_tween.set_parallel(true)
@@ -585,10 +600,13 @@ func take_damage(amount: int):
 	# Check if player died
 	if current_health <= 0:
 		player_died.emit()
+		
+	update_sprite()
 
 func heal(amount: int):
 	current_health += amount
 	current_health = min(max_health, current_health)
+	update_sprite()
 
 func get_health() -> int:
 	return current_health
