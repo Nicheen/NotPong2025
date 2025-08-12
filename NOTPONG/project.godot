@@ -23,6 +23,7 @@ Global="*res://autoloads/global.gd"
 GlobalAudioManager="*res://autoloads/GlobalAudioManager.gd"
 PerfectDodgeSystem="*res://autoloads/PerfectDodgeSystem.gd"
 SilentWolf="*res://addons/silent_wolf/SilentWolf.gd"
+SmartScoreManager="*res://autoloads/SmartScoreManager.gd"
 
 [editor_plugins]
 

@@ -1,8 +1,40 @@
-[gd_scene load_steps=4 format=3 uid="uid://bxsxsg8svbiye"]
+[gd_scene load_steps=12 format=3 uid="uid://bxsxsg8svbiye"]
 
-[ext_resource type="Script" uid="uid://hxs1sdtlbjeo" path="res://scripts/menus/main_menu.gd" id="1_ovrgc"]
+[ext_resource type="Script" uid="uid://hxs1sdtlbjeo" path="res://scenes/menus/main_menu.gd" id="1_ovrgc"]
+[ext_resource type="Shader" uid="uid://dl3megkp7p3mg" path="res://shaders/background.gdshader" id="2_6bivr"]
 [ext_resource type="Texture2D" uid="uid://cgppme0qncc68" path="res://images/background.svg" id="2_ovrgc"]
 [ext_resource type="PackedScene" uid="uid://bvmedrqrrlbo2" path="res://scenes/menus/options_menu.tscn" id="3_2o76q"]
+
+[sub_resource type="Gradient" id="Gradient_6bivr"]
+offsets = PackedFloat32Array(0, 0.0967742, 0.179724, 0.24424, 0.317972, 1)
+colors = PackedColorArray(1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0.435294, 0, 1, 1, 0.713726, 0, 1, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_imvie"]
+gradient = SubResource("Gradient_6bivr")
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_ng0o5"]
+noise_type = 0
+seed = 1
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_8r73w"]
+width = 14
+height = 256
+seamless = true
+noise = SubResource("FastNoiseLite_ng0o5")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_imvie"]
+shader = ExtResource("2_6bivr")
+shader_parameter/texture2 = SubResource("NoiseTexture2D_8r73w")
+shader_parameter/colorTexture = SubResource("GradientTexture1D_imvie")
+shader_parameter/scroll1 = Vector2(0.1, 0.3)
+shader_parameter/scroll2 = Vector2(-0.13, 0.5)
+shader_parameter/corner_radius = 0.03
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_2o76q"]
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_6bivr"]
+seamless = true
+noise = SubResource("FastNoiseLite_2o76q")
 
 [node name="MainMenu" type="Control"]
 z_index = 1
@@ -13,6 +45,7 @@ offset_bottom = 648.0
 script = ExtResource("1_ovrgc")
 
 [node name="TextureRect" type="TextureRect" parent="."]
+visible = false
 layout_mode = 0
 offset_right = 1152.0
 offset_bottom = 648.0
@@ -48,6 +81,7 @@ layout_mode = 2
 text = "QUIT"
 
 [node name="VBoxContainer2" type="VBoxContainer" parent="."]
+custom_minimum_size = Vector2(100, 0)
 layout_mode = 1
 anchors_preset = 11
 anchor_left = 1.0
@@ -55,32 +89,64 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = -441.0
 offset_top = 114.0
-offset_right = -140.0
+offset_right = -215.0
 offset_bottom = -223.0
 grow_horizontal = 0
 grow_vertical = 2
 
 [node name="ScoreBoardTextLabel" type="Label" parent="VBoxContainer2"]
 layout_mode = 2
-text = "LEADERBOARD TOP 10 PLAYERS
-"
+size_flags_horizontal = 0
+size_flags_vertical = 0
+text = "LEADERBOARD TOP 10 PLAYERS"
+horizontal_alignment = 1
+vertical_alignment = 1
+uppercase = true
 
 [node name="ScoreBoardList" type="ItemList" parent="VBoxContainer2"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(200, 200)
 layout_mode = 2
 auto_width = true
 auto_height = true
 
-[node name="UsernameEntry" type="LineEdit" parent="VBoxContainer2"]
+[node name="FireEffect" type="Sprite2D" parent="VBoxContainer2/ScoreBoardList"]
 unique_name_in_owner = true
+z_index = -1
+texture_repeat = 2
+material = SubResource("ShaderMaterial_imvie")
+position = Vector2(113, 88)
+scale = Vector2(0.446, 0.446)
+texture = SubResource("NoiseTexture2D_6bivr")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer2"]
 layout_mode = 2
+
+[node name="UsernameEntry" type="LineEdit" parent="VBoxContainer2/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+size_flags_horizontal = 0
 size_flags_vertical = 8
 placeholder_text = "Enter your playername"
+
+[node name="RefreshButton" type="Button" parent="VBoxContainer2/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+text = "↻"
+
+[node name="RefreshButtonTimeout" type="Timer" parent="VBoxContainer2/HBoxContainer/RefreshButton"]
+unique_name_in_owner = true
+wait_time = 3.0
+one_shot = true
 
 [node name="OptionsMenu" parent="." instance=ExtResource("3_2o76q")]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
 
-[connection signal="ready" from="VBoxContainer2/UsernameEntry" to="." method="_on_username_entry_ready"]
-[connection signal="text_submitted" from="VBoxContainer2/UsernameEntry" to="." method="_on_username_entry_text_submitted"]
+[connection signal="ready" from="VBoxContainer2/HBoxContainer/UsernameEntry" to="." method="_on_username_entry_ready"]
+[connection signal="text_submitted" from="VBoxContainer2/HBoxContainer/UsernameEntry" to="." method="_on_username_entry_text_submitted"]
+[connection signal="pressed" from="VBoxContainer2/HBoxContainer/RefreshButton" to="." method="_on_refresh_button_pressed"]

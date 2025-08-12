@@ -660,7 +660,7 @@ func _on_player_died():
 	if death_menu and death_menu.has_method("show_death_menu"):
 		# Update score display in death menu
 		update_death_menu_score()
-		death_menu.show_death_menu()
+		death_menu.show_death_menu(current_score)
 
 func spawn_thunder_block_at_position(position: Vector2):
 	"""Spawn a single thunder block at the specified position"""

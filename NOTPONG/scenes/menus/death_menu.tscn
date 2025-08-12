@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://d31q5r5qqq1j5"]
 
-[ext_resource type="Script" uid="uid://dbjmyt8kpmxfp" path="res://scripts/menus/death_menu.gd" id="1_jgt2l"]
+[ext_resource type="Script" uid="uid://dbjmyt8kpmxfp" path="res://scenes/menus/death_menu.gd" id="1_jgt2l"]
 [ext_resource type="Texture2D" uid="uid://c40o612s66c43" path="res://images/svart.png" id="2_death_bg"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_death"]
@@ -49,6 +49,17 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 32
 text = "YOU DIED"
 horizontal_alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="UsernameDisplay" type="Label" parent="Panel/VBoxContainer/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="SubmissionStatus" type="Label" parent="Panel/VBoxContainer/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
 
 [node name="ScoreLabel" type="Label" parent="Panel/VBoxContainer"]
 layout_mode = 2
