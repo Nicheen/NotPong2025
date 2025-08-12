@@ -22,7 +22,7 @@ func start_level(level: int):
 
 func is_boss_level(level: int) -> bool:
 	# Only level 5 and 10 are boss levels
-	var is_boss = (level == 10 or level == 5)
+	var is_boss = (level == 1 or level == 5)
 	print("Level ", level, " is boss level: ", is_boss)
 	return is_boss
 
@@ -96,7 +96,7 @@ func spawn_boss(level: int):
 	var boss_name: String
 	
 	# Choose which boss to spawn
-	if level == 10:
+	if level == 1:
 		boss_scene_path = main_scene.BOSS_SCENE  # Boss1
 		boss_name = "Boss1"
 		spawn_single_boss(boss_scene_path, boss_name, level, Vector2(576, 280))

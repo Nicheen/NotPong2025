@@ -14,7 +14,7 @@ var ui_sounds = {
 	"button_click": preload("res://audio/sfx/button_click.mp3"),
 	"button_hover": preload("res://audio/sfx/button_hover.mp3"),
 	"menu_open": preload("res://audio/sfx/menu_open.mp3"),
-	"menu_close": preload("res://audio/sfx/menu_close.mp3")
+	"menu_close": preload("res://audio/sfx/menu_close.mp3"),
 }
 
 func _ready():

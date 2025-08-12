@@ -226,11 +226,15 @@ func get_distance_to_bounds() -> float:
 func handle_bounce(new_velocity: Vector2, new_position: Vector2):
 	if collision_handler:
 		collision_handler.handle_bounce(new_velocity, new_position)
+		GlobalAudioManager.play_sfx(preload("res://audio/noels/thud2.wav"))
+
 
 func _destroy_projectile():
 	print("Destroying projectile at position: ", global_position)
 	queue_free()
+	
 
 func force_destroy():
 	print("Force destroying projectile")
 	queue_free()
+	

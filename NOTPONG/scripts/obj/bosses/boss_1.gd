@@ -131,6 +131,7 @@ func take_damage(damage: int):
 	if armour_active:
 		print("   🛡️ DAMAGE BLOCKED BY ARMOUR!")
 		show_armour_block_effect()
+		GlobalAudioManager.play_sfx(preload("res://audio/noels/thud1.wav"))
 		return
 	
 	# Apply damage - EXAKT som andra enemies

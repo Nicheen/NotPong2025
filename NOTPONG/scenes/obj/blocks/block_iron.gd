@@ -70,7 +70,7 @@ func _physics_process(delta):
 func take_damage(damage: int):
 	if is_dead:
 		return
-	
+	GlobalAudioManager.play_sfx(preload("res://audio/noels/thud1.wav"))
 	print("Iron Block took ", damage, " damage (", current_health - damage, "/", max_health, " remaining)")
 	
 	current_health -= damage
