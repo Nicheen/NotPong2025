@@ -121,3 +121,7 @@ func _on_reset_scoreboard_button_pressed() -> void:
 	Global.save_data.save()
 	
 	print("Scoreboard reset! High score is now 0")
+
+
+func _on_reset_global_leaderboard_pressed() -> void:
+	SilentWolf.Scores.wipe_leaderboard("main")
