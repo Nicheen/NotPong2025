@@ -8,6 +8,8 @@ extends Node2D
 @onready var flare: GPUParticles2D = $Flare
 @onready var point_light: PointLight2D = $PointLight2D
 
+@onready var block_raycast: RayCast2D = %RayCast2D
+
 # Thunder settings
 @export var damage_amount: int = 20
 @export var damage_interval: float = 0.5
@@ -24,12 +26,15 @@ const RIGHT_BOUNDARY = 952
 
 # Internal variables
 var is_active: bool = false
+var previous_thunder_end_position_y: float = 0.0
 var damage_timer: float = 0.0
 var cycle_timer: float = 0.0
 var players_in_area: Array[Node] = []
 var should_cycle: bool = false
 var is_lightning_active: bool = false
 var current_inactive_duration: float = 0.0
+
+var destroyed_blocks: Array[Node] = []
 
 # NEW: Signals to communicate with the thunder block
 signal thunder_activated  # When lightning becomes active
@@ -45,10 +50,82 @@ func _ready():
 		damage_area.body_entered.connect(_on_body_entered)
 		damage_area.body_exited.connect(_on_body_exited)
 	
+	if not block_raycast:
+		block_raycast = RayCast2D.new()
+		add_child(block_raycast)
+	
 	# Set collision layers - area detects players (layer 1)
 	damage_area.collision_layer = 0
 	damage_area.collision_mask = 1
 
+func update_thunder_end_position(end_pos_y: float):
+	var start_world = Vector2(global_position.x + 5, global_position.y + 25)
+	var end_world = Vector2(global_position.x + 5, end_pos_y - 25)
+	
+	var start_local = to_local(start_world)
+	var end_local = to_local(end_world)
+	
+	lightning.points = PackedVector2Array([start_local, end_local])
+	# Position effects at the bottom impact point
+	if sparks:
+		sparks.position = end_local
+	if flare:
+		flare.position = end_local
+	if point_light:
+		point_light.position = end_local
+
+# NEW: Check for blocks to destroy when thunder activates
+func check_and_destroy_blocks():
+	"""Check along the thunder path and destroy the first block hit"""
+	if not block_raycast:
+		print("[THUNDER] No block_raycast found, returning")
+		return
+	
+	# Vertical thunder - cast downward
+	print("[THUNDER] Set vertical raycast direction: ", block_raycast.target_position)
+	
+	print("[THUNDER] Thunder position: ", global_position)
+	
+	# Force raycast update
+	block_raycast.force_raycast_update()
+	print("[THUNDER] Raycast updated, checking collision...")
+	
+	# Check if we hit a block
+	if block_raycast.is_colliding():
+		print("[THUNDER] Raycast hit something!")
+		var hit_body = block_raycast.get_collider()
+		print("[THUNDER] Hit body: ", hit_body.name if hit_body else "null")
+		
+		# Make sure we haven't already destroyed this block
+		if hit_body and not hit_body in destroyed_blocks:
+			print("[THUNDER] Destroying block: ", hit_body.name)
+			
+			# Destroy the block immediately
+			if hit_body.has_method("take_laser_damage"):
+				print("[THUNDER] Using take_laser_damage method")
+				hit_body.take_laser_damage(999)  # High damage = instant kill
+			elif hit_body.has_method("die_silently"):
+				print("[THUNDER] Using die_silently method")
+				hit_body.die_silently()
+			elif hit_body.has_method("destroy_block"):
+				print("[THUNDER] Using destroy_block method")
+				hit_body.destroy_block()
+			else:
+				print("[THUNDER] No destruction method found on hit body")
+				
+			update_thunder_end_position(hit_body.global_position.y)
+			# Remember this block so we don't hit it again
+			destroyed_blocks.append(hit_body)
+			print("[THUNDER] Added block to destroyed list, total destroyed: ", destroyed_blocks.size())
+		else:
+			if not hit_body:
+				print("[THUNDER] Hit body is null")
+			else:
+				print("[THUNDER] Block already destroyed: ", hit_body.name)
+	else:
+		update_thunder_end_position(previous_thunder_end_position_y)
+		print("[THUNDER] Raycast did not hit anything")
+			
 func _process(delta):
 	if is_active and players_in_area.size() > 0 and is_lightning_active:
 		damage_timer += delta
@@ -78,6 +155,7 @@ func setup_vertical_thunder(pos: Vector2 = Vector2.ZERO):
 	var thunder_world_pos = pos
 	var start_world = Vector2(thunder_world_pos.x + 5, global_position.y + 25)
 	var end_world = Vector2(thunder_world_pos.x + 5, BOTTOM_BOUNDARY - 9)
+	previous_thunder_end_position_y = BOTTOM_BOUNDARY + 25
 	
 	# Convert to local coordinates relative to this thunder effect
 	var start_local = to_local(start_world)
@@ -155,6 +233,8 @@ func start_lightning_cycle():
 	"""Start a new lightning active period"""
 	is_lightning_active = true
 	cycle_timer = 0.0
+	
+	check_and_destroy_blocks()
 	
 	# Show the lightning visually
 	lightning.visible = true
@@ -258,6 +338,7 @@ func activate_horizontal_thunder():
 func deactivate_thunder():
 	"""Deactivate the thunder effect"""
 	end_thunder()
+	
 func create_screen_shake():
 	"""Enhanced screen shake"""
 	var camera = find_camera_in_scene()
@@ -287,3 +368,19 @@ func create_screen_shake():
 func find_camera_in_scene():
 	var scene_root = get_tree().current_scene
 	return scene_root.find_child("Camera2D", true, false)
+	
+func get_thunder_targets() -> Array[Node]:
+	"""Return list of targets currently being hit by thunder"""
+	var targets: Array[Node] = []
+	
+	if is_lightning_active and block_raycast and block_raycast.is_colliding():
+		var hit_body = block_raycast.get_collider()
+		if hit_body and not hit_body in destroyed_blocks:
+			targets.append(hit_body)
+	
+	# Also add any players in the damage area
+	for player in players_in_area:
+		if is_instance_valid(player):
+			targets.append(player)
+	
+	return targets

@@ -273,6 +273,12 @@ _data = {
 [node name="VFX_Thunder" type="Node2D"]
 scale = Vector2(0.4, 0.4)
 script = ExtResource("1_ghp0e")
+damage_amount = null
+damage_interval = null
+thunder_width = null
+lightning_active_duration = null
+lightning_inactive_duration_min = null
+lightning_inactive_duration_max = null
 
 [node name="Lightning" type="Line2D" parent="."]
 unique_name_in_owner = true
@@ -327,5 +333,5 @@ autoplay = "start_animation"
 [node name="RayCast2D" type="RayCast2D" parent="."]
 unique_name_in_owner = true
 z_index = 2
-target_position = Vector2(0, 2000)
-collision_mask = 15
+target_position = Vector2(0, 500)
+collision_mask = 31
