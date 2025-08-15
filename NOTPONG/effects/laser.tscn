@@ -142,7 +142,7 @@ script = ExtResource("1_ybewo")
 [node name="Line2D" type="Line2D" parent="."]
 unique_name_in_owner = true
 visible = false
-points = PackedVector2Array(40, 0, 0, 0)
+points = PackedVector2Array(40, 0, 639, 0)
 texture = SubResource("ImageTexture_btyrk")
 texture_mode = 2
 

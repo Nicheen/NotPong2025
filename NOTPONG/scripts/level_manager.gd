@@ -22,7 +22,7 @@ func start_level(level: int):
 
 func is_boss_level(level: int) -> bool:
 	# Only level 5 and 10 are boss levels
-	var is_boss = (level == 1 or level == 5)
+	var is_boss = (level == 5 or level == 10)
 	print("Level ", level, " is boss level: ", is_boss)
 	return is_boss
 
@@ -38,8 +38,8 @@ func spawn_boss_level(level: int):
 	spawn_boss(level)
 		
 func spawn_normal_level(level: int):
-	"""Spawn a normal level using weighted positioning"""
-	# Calculate entity counts based on level
+	"""Spawn a normal level using the simple system"""
+	# Calculate entity counts based on level (keep your existing logic)
 	var base_blocks = 7
 	var base_enemies = 3
 	var base_block_dropper = 1
@@ -66,41 +66,35 @@ func spawn_normal_level(level: int):
 	iron_blocks_count = min(iron_blocks_count, 6)
 	cloud_blocks_count = min(cloud_blocks_count, 6)
 	
-	# SPAWN IN STRATEGIC ORDER (blocks first, then special blocks, enemies last)
+	# SIMPLE SPAWNING - Replace the complex calls with these simple ones!
+	main_scene.spawn_blocks_simple(blocks_count)
+	main_scene.spawn_laser_blocks_simple(lazer_count)
+	main_scene.spawn_blue_blocks_simple(blue_blocks_count)
+	main_scene.spawn_iron_blocks_simple(iron_blocks_count)
+	main_scene.spawn_block_droppers_simple(block_dropper_count)
+	main_scene.spawn_cloud_blocks_simple(cloud_blocks_count)
+	main_scene.spawn_bombs_simple(enemies_count)  # Spawn bombs as enemies
 	
-	# 1. Spawn regular blocks first (they form the base defense)
-	main_scene.spawn_blocks_weighted(blocks_count)
-	
-	# 2. Spawn special blocks in strategic positions
-	main_scene.spawn_laser_blocks_weighted(lazer_count)
-	main_scene.spawn_blue_blocks_weighted(blue_blocks_count)
-	main_scene.spawn_iron_blocks_weighted(iron_blocks_count)
-	main_scene.spawn_block_droppers_weighted(block_dropper_count)
-	main_scene.spawn_cloud_blocks_weighted(cloud_blocks_count)
-	
-	# 3. Spawn enemies last (they avoid block positions)
-	main_scene.spawn_enemies_weighted(enemies_count)
-	
-	print("Level ", level, " spawned with weighted positioning:")
+	print("Level ", level, " spawned with SIMPLE positioning:")
 	print("  - ", blocks_count, " regular blocks")
 	print("  - ", blue_blocks_count, " blue blocks") 
 	print("  - ", iron_blocks_count, " iron blocks")
 	print("  - ", lazer_count, " laser blocks")
 	print("  - ", cloud_blocks_count, " cloud blocks")
 	print("  - ", block_dropper_count, " block droppers")
-	print("  - ", enemies_count, " enemies")
-		
+	print("  - ", enemies_count, " bombs")
+	
 func spawn_boss(level: int):
 	"""Spawn the correct boss based on level"""
 	var boss_scene_path: String
 	var boss_name: String
 	
 	# Choose which boss to spawn
-	if level == 1:
+	if level == 5:
 		boss_scene_path = main_scene.BOSS_SCENE  # Boss1
 		boss_name = "Boss1"
 		spawn_single_boss(boss_scene_path, boss_name, level, Vector2(576, 280))
-	elif level == 5:
+	elif level == 10:
 		boss_scene_path = main_scene.BOSS_THUNDER_SCENE  # Boss_Thunder  
 		boss_name = "Boss_Thunder"
 		# Spawn 3 thunder bosses: center, left, right

@@ -35,12 +35,13 @@ func toggle_pause():
 func show_pause_menu():
 	visible = true
 	get_tree().paused = true
-	
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 	# Optional: Grab focus on resume button
 	$Panel/VBoxContainer/btn_resume.grab_focus()
 
 func hide_pause_menu():
 	visible = false
+	Input.set_mouse_mode(Input.MOUSE_MODE_HIDDEN)
 	get_tree().paused = false
 	is_paused = false
 
