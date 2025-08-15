@@ -65,7 +65,7 @@ func handle_damaged_hit(other_body):
 	print("[PROJECTILE] Damaged object and free the projectile")
 	if other_body.has_method("take_damage"):
 		other_body.take_damage(10)
-	
+		
 	# Hide the projectile sprite immediately
 	if sprite:
 		sprite.visible = false

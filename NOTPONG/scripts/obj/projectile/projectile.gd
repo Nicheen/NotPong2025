@@ -1,4 +1,4 @@
-extends RigidBody2D
+class_name Projectile extends RigidBody2D
 
 # Core projectile settings
 var direction: Vector2

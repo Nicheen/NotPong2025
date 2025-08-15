@@ -9,6 +9,11 @@ const pausemenu_scene:PackedScene = preload("res://scenes/menus/pause_menu.tscn"
 @onready var hud: HUD = %HUD as HUD
 @onready var spawn_manager: SpawnManager = %Spawner as SpawnManager
 
+const HURT_COLOR = Color.RED
+const KILL_COLOR = Color.GOLD
+const HURT_FONT_SIZE = 15
+const KILL_FONT_SIZE = 28
+
 # Hardcoded scene paths
 const PLAYER_SCENE = "res://scenes/obj/Player.tscn"
 const ENEMY_SCENE = "res://scenes/obj/Enemy.tscn"
@@ -26,7 +31,6 @@ const PAUSE_MENU_SCENE = "res://scenes/menus/pause_menu.tscn"
 const DEATH_MENU_SCENE = "res://scenes/menus/death_menu.tscn"
 const WIN_MENU_SCENE = "res://scenes/menus/win_menu.tscn"
 const THUNDER = "res://effects/thunder.tscn"
-
 
 # Game objects
 var level_manager: Node
@@ -279,9 +283,15 @@ func spawn_iron_block_at_position(position: Vector2):
 	var block = block_scene.instantiate()
 	block.global_position = position
 	
-	# Connect signals
-	block.block_died.connect(_on_block_died)
-	block.block_hit.connect(_on_enemy_hit)
+	# Connect signals with position awareness
+	block.block_died.connect(func(score): 
+		create_floating_score_text(block.global_position, score, true)
+		_on_block_died(score)
+	)
+	block.block_hit.connect(func(damage): 
+		create_floating_score_text(block.global_position, damage, false)
+		_on_enemy_hit(damage)
+	)
 	
 	add_child(block)
 	iron_blocks.append(block)
@@ -303,9 +313,15 @@ func spawn_cloud_block_at_position(position: Vector2):
 	var block = block_scene.instantiate()
 	block.global_position = position
 	
-	# Connect signals
-	block.block_died.connect(_on_block_died)
-	block.block_hit.connect(_on_enemy_hit)
+	# Connect signals with position awareness
+	block.block_died.connect(func(score): 
+		create_floating_score_text(block.global_position, score, true)
+		_on_block_died(score)
+	)
+	block.block_hit.connect(func(damage): 
+		create_floating_score_text(block.global_position, damage, false)
+		_on_enemy_hit(damage)
+	)
 	
 	add_child(block)
 	cloud_blocks.append(block)
@@ -371,9 +387,13 @@ func spawn_enemy_at_position(position: Vector2):
 	var enemy = enemy_scene.instantiate()
 	enemy.global_position = position
 	
-	# Connect enemy signals
+	# Connect signals with position awareness
 	enemy.enemy_died.connect(_on_enemy_died_with_distortion)
-	enemy.enemy_hit.connect(_on_enemy_hit)
+	
+	enemy.enemy_hit.connect(func(damage): 
+		create_floating_score_text(enemy.global_position, damage, false)
+		_on_enemy_hit(damage)
+	)
 	
 	add_child(enemy)
 	enemies.append(enemy)
@@ -426,9 +446,15 @@ func spawn_blue_block_at_position(position: Vector2):
 	var block = block_scene.instantiate()
 	block.global_position = position
 	
-	# Connect signals
-	block.block_died.connect(_on_block_died)
-	block.block_hit.connect(_on_enemy_hit)
+	# Connect signals with position awareness
+	block.block_died.connect(func(score): 
+		create_floating_score_text(block.global_position, score, true)
+		_on_block_died(score)
+	)
+	block.block_hit.connect(func(damage): 
+		create_floating_score_text(block.global_position, damage, false)
+		_on_enemy_hit(damage)
+	)
 	
 	add_child(block)
 	blue_blocks.append(block)
@@ -464,9 +490,15 @@ func spawn_enemy_block_dropper_at_position(position: Vector2):
 	var block = block_scene.instantiate()
 	block.global_position = position
 	
-	# Connect signals
-	block.block_dropper_died.connect(_on_block_died)
-	block.block_dropper_hit.connect(_on_enemy_hit)
+	# Connect signals with position awareness
+	block.block_dropper_died.connect(func(score): 
+		create_floating_score_text(block.global_position, score, true)
+		_on_block_died(score)
+	)
+	block.block_dropper_hit.connect(func(damage): 
+		create_floating_score_text(block.global_position, damage, false)
+		_on_enemy_hit(damage)
+	)
 	
 	add_child(block)
 	block_droppers.append(block)
@@ -493,9 +525,15 @@ func spawn_enemy_kvadrat_at_position(position: Vector2):
 	var block = block_scene.instantiate()
 	block.global_position = position
 	
-	# Connect signals
-	block.block_died.connect(_on_block_died)
-	block.block_hit.connect(_on_enemy_hit)
+	# Connect signals with position awareness
+	block.block_died.connect(func(score): 
+		create_floating_score_text(block.global_position, score, true)
+		_on_block_died(score)
+	)
+	block.block_hit.connect(func(damage): 
+		create_floating_score_text(block.global_position, damage, false)
+		_on_enemy_hit(damage)
+	)
 	
 	add_child(block)
 	blocks.append(block)
@@ -581,10 +619,16 @@ func spawn_laser_block_at_position(position: Vector2):
 	
 	var laser_block = laser_scene.instantiate()
 	laser_block.global_position = position
-	
-	# Connect signals
-	laser_block.block_died.connect(_on_block_died)
-	laser_block.block_hit.connect(_on_enemy_hit)
+
+	# Connect signals with position awareness
+	laser_block.block_died.connect(func(score): 
+		create_floating_score_text(laser_block.global_position, score, true)
+		_on_block_died(score)
+	)
+	laser_block.block_hit.connect(func(damage): 
+		create_floating_score_text(laser_block.global_position, damage, false)
+		_on_enemy_hit(damage)
+	)
 	
 	add_child(laser_block)
 	lazer_blocks.append(laser_block)
@@ -738,9 +782,6 @@ func _on_enemy_died(score_points: int):
 		else:
 			player_wins()  # Fallbackback
 			
-# Replace the damage_adjacent_blocks function in main.gd with this improved version:
-
-# Replace the damage_adjacent_blocks function in main.gd with this version that uses the SpawnManager's arrays:
 
 func damage_adjacent_blocks(enemy_position: Vector2, damage: int = 10):
 	"""Damage all blocks in adjacent tiles (8 surrounding tiles)"""
@@ -837,7 +878,7 @@ func damage_adjacent_blocks(enemy_position: Vector2, damage: int = 10):
 
 	
 	print("Total blocks damaged by explosion: ", blocks_damaged)
-
+	
 		
 func find_closest_grid_position(position: Vector2, x_positions: Array, y_positions: Array) -> Vector2:
 	"""Find the closest valid grid position to the given position"""
@@ -970,12 +1011,14 @@ func find_block_at_position(position: Vector2):
 func _on_enemy_died_with_distortion(score_points: int, death_position: Vector2):
 	"""Handle enemy death with distortion effect"""
 	print("\n🔥 ENEMY DIED AT: ", death_position, " 🔥")
+	create_floating_score_text(death_position, score_points, true)
 	create_enemy_death_distortion(death_position)
 	damage_adjacent_blocks(death_position, 10)
 	_on_enemy_died(score_points)
 
 func _on_boss_died_with_distortion(score_points: int, death_position: Vector2):
 	"""Handle boss death with stronger distortion effect"""
+	create_floating_score_text(death_position, score_points, true)
 	create_boss_death_distortion(death_position)
 	_on_enemy_died(score_points)
 
@@ -983,23 +1026,12 @@ func _on_block_died(score_points: int):
 	current_score += score_points
 	enemies_killed += 1
 	
-	# Find and free the position of the destroyed block
-	cleanup_destroyed_entity_position()
-	
 	# Check win condition
 	if enemies_killed >= total_enemies:
 		if level_manager and level_manager.has_method("level_completed"):
-			# VIKTIG FIX: Ta bort denna rad som orsakar dubbel ökning
-			# current_level += 1  <-- RADERA DENNA RAD!
 			level_manager.level_completed()
 		else:
 			player_wins()
-
-func cleanup_destroyed_entity_position():
-	"""Clean up positions of destroyed entities"""
-	# This is called when entities die - you might want to track specific positions
-	# For now, we'll rely on the level clearing to reset positions
-	pass
 
 func _on_enemy_hit(damage: int):
 	# Optional: Add score for hitting enemies
@@ -1123,3 +1155,35 @@ func clear_level_entities():
 	spawn_manager.clear_occupied_positions()
 	
 	print("Level cleared and spawner reset")
+
+func create_floating_score_text(position: Vector2, score: int, is_kill: bool = false):
+	"""Create floating score text that explodes from enemy position"""
+	
+	var label = Label.new()
+	label.text = "+" + str(score)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	
+	# Set color and size based on type
+	if is_kill:
+		label.add_theme_color_override("font_color", KILL_COLOR)
+		label.add_theme_font_size_override("font_size", KILL_FONT_SIZE)
+		label.text += "!"  # Add exclamation for kills
+	else:
+		label.add_theme_color_override("font_color", HURT_COLOR)
+		label.add_theme_font_size_override("font_size", HURT_FONT_SIZE)
+	
+	# Add outline for better visibility
+	label.add_theme_color_override("font_outline_color", Color.BLACK)
+	label.add_theme_constant_override("outline_size", 2)
+	
+	# Position the label
+	get_tree().current_scene.add_child(label)
+	label.global_position = position  # Center on enemy
+
+	label.scale = Vector2(0.3, 0.3)
+	var tween = create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(label, "scale", Vector2.ONE, 0.2)
+	tween.tween_property(label, "global_position", position + Vector2(0, -60), 1.2)
+	tween.tween_property(label, "modulate:a", 0.0, 0.5).set_delay(0.7)
