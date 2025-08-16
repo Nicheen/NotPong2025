@@ -58,27 +58,52 @@ anchors_preset = 13
 anchor_left = 0.5
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -88.5
-offset_right = 87.5
+offset_left = -550.5
+offset_top = 170.0
+offset_right = 29.5
+offset_bottom = -190.0
 grow_horizontal = 2
 grow_vertical = 2
 alignment = 1
 
 [node name="btn_start" type="Button" parent="VBoxContainer"]
 layout_mode = 2
+theme_override_colors/font_hover_color = Color(0.913725, 0, 0, 1)
+theme_override_colors/font_focus_color = Color(0.776471, 0, 0, 1)
+theme_override_colors/font_pressed_color = Color(0.270588, 0, 0, 1)
+theme_override_font_sizes/font_size = 50
 text = "START GAME"
+flat = true
+alignment = 0
 
 [node name="btn_options" type="Button" parent="VBoxContainer"]
 layout_mode = 2
+theme_override_colors/font_hover_color = Color(0.913725, 0, 0, 1)
+theme_override_colors/font_focus_color = Color(0.776471, 0, 0, 1)
+theme_override_colors/font_pressed_color = Color(0.270588, 0, 0, 1)
+theme_override_font_sizes/font_size = 40
 text = "OPTIONS"
+flat = true
+alignment = 0
 
 [node name="btn_fullscreen" type="Button" parent="VBoxContainer"]
 layout_mode = 2
+theme_override_colors/font_hover_color = Color(0.913725, 0, 0, 1)
+theme_override_colors/font_focus_color = Color(0.776471, 0, 0, 1)
+theme_override_colors/font_pressed_color = Color(0.270588, 0, 0, 1)
+theme_override_font_sizes/font_size = 40
 text = "FULLSCREEN"
+flat = true
+alignment = 0
 
 [node name="btn_quit" type="Button" parent="VBoxContainer"]
 layout_mode = 2
+theme_override_colors/font_hover_color = Color(0.913725, 0, 0, 1)
+theme_override_colors/font_pressed_color = Color(0.270588, 0, 0, 1)
+theme_override_font_sizes/font_size = 40
 text = "QUIT"
+flat = true
+alignment = 0
 
 [node name="VBoxContainer2" type="VBoxContainer" parent="."]
 custom_minimum_size = Vector2(100, 0)
@@ -147,6 +172,7 @@ unique_name_in_owner = true
 visible = false
 layout_mode = 2
 
+[connection signal="tree_entered" from="." to="." method="_on_tree_entered"]
 [connection signal="ready" from="VBoxContainer2/HBoxContainer/UsernameEntry" to="." method="_on_username_entry_ready"]
 [connection signal="text_submitted" from="VBoxContainer2/HBoxContainer/UsernameEntry" to="." method="_on_username_entry_text_submitted"]
 [connection signal="pressed" from="VBoxContainer2/HBoxContainer/RefreshButton" to="." method="_on_refresh_button_pressed"]

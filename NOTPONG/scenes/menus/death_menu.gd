@@ -32,7 +32,7 @@ func show_death_menu(score: int = 0):
 	final_score = score
 	visible = true
 	get_tree().paused = true
-	
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 	# Update score display
 	if score_label:
 		score_label.text = "Final Score: " + str(final_score)
@@ -45,29 +45,11 @@ func show_death_menu(score: int = 0):
 		if username_display:
 			username_display.visible = false
 	
-	# Animate UI elements
-	animate_menu_entrance()
-	
 	# Check if it's a high score and submit
 	check_and_submit_score()
 	
 	# Grab focus on restart button
 	$Panel/VBoxContainer/btn_restart.grab_focus()
-
-func animate_menu_entrance():
-	"""Animate the death menu entrance"""
-	# Start with elements transparent/scaled down
-	modulate = Color.TRANSPARENT
-	scale = Vector2(0.8, 0.8)
-	
-	if animation_tween:
-		animation_tween.kill()
-	
-	animation_tween = create_tween()
-	animation_tween.parallel().tween_property(self, "modulate", Color.WHITE, 0.5)
-	animation_tween.parallel().tween_property(self, "scale", Vector2.ONE, 0.5)
-	animation_tween.set_ease(Tween.EASE_OUT)
-	animation_tween.set_trans(Tween.TRANS_BACK)
 
 func check_and_submit_score():
 	"""Enhanced score submission using the smart score manager"""

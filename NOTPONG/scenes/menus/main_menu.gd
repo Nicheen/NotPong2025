@@ -138,7 +138,7 @@ func refresh_leaderboard():
 func populate_leaderboard(scores: Array):
 	"""Populate leaderboard with scores and animations"""
 	scoreboard_list.clear()
-	
+	var highlighted = false
 	for i in range(min(scores.size(), 10)):  # Show top 10
 		var entry = scores[i]
 		var rank = i + 1
@@ -148,16 +148,17 @@ func populate_leaderboard(scores: Array):
 		# Add medal emoji for top 3
 		var medal = ""
 		match rank:
-			1: medal = "🥇 "
-			2: medal = "🥈 "
-			3: medal = "🥉 "
+			1: medal = "1. "
+			2: medal = "2. "
+			3: medal = "3. "
 			_: medal = str(rank) + ". "
 		
 		var score_text = "%s%s - %d" % [medal, name, score]
 		scoreboard_list.add_item(score_text)
 		
 		# Highlight current player
-		if name == Global.save_data.player_name:
+		if name == Global.save_data.player_name and not highlighted:
+			highlighted = true
 			scoreboard_list.set_item_custom_bg_color(i, Color.DARK_GREEN)
 
 func show_loading_state(loading: bool):
