@@ -42,6 +42,10 @@ var regeneration_timer: float = 0.0
 var is_regenerating: bool = false
 var regeneration_tween: Tween
 
+# Heart drop settings
+@export var heart_drop_chance: float = 0.5  # 50% chance
+@export var heart_scene: PackedScene = preload("res://scenes/obj/blocks/heart_pickup.tscn")
+
 # Signals
 signal block_died(score_points: int)
 signal block_hit(damage: int)
@@ -216,7 +220,9 @@ func die():
 	print("laser block died! Awarding ", score_value, " points")
 	
 	laser.is_casting = false
-
+	
+	try_drop_heart()
+	
 	# Emit death signal with score
 	block_died.emit(score_value)
 	
@@ -230,6 +236,8 @@ func die_silently():
 	
 	is_dead = true
 	print("Laser block destroyed by laser (no score awarded)")
+	
+	try_drop_heart()
 	
 	laser.is_casting = false
 	
@@ -248,6 +256,25 @@ func change_to_cracked_sprite():
 	else:
 		print("WARNING: Could not change to cracked sprite - missing sprite or texture")
 
+func try_drop_heart():
+	"""Try to drop a heart with the specified chance"""
+	if randf() <= heart_drop_chance:
+		drop_heart()
+
+func drop_heart():
+	"""Drop a heart at this block's position"""
+	if not heart_scene:
+		print("ERROR: Heart scene not loaded!")
+		return
+	
+	var heart = heart_scene.instantiate()
+	heart.global_position = global_position
+	
+	# Add to the main scene
+	get_tree().current_scene.add_child(heart)
+	
+	print("Heart dropped at: ", global_position)
+	
 func show_damage_effect():
 	if not sprite:
 		return

@@ -1,0 +1,15 @@
+[gd_scene load_steps=3 format=3 uid="uid://cfrgmor4gup43"]
+
+[ext_resource type="Script" uid="uid://umk7dqbsupae" path="res://scenes/obj/blocks/heart_pickup.gd" id="1_3v18u"]
+[ext_resource type="Texture2D" uid="uid://78hbcmnande4" path="res://images/Heart.png" id="1_netu4"]
+
+[node name="Node2D" type="AnimatableBody2D"]
+collision_layer = 2
+collision_mask = 0
+script = ExtResource("1_3v18u")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("1_netu4")
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="."]
+polygon = PackedVector2Array(-2, 8, 2, 8, 8, 1, 8, -6, 6, -8, 1, -8, 0, -7, -1, -8, -6, -8, -8, -6, -8, 1)
