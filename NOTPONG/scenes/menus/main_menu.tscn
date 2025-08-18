@@ -1,9 +1,10 @@
-[gd_scene load_steps=12 format=3 uid="uid://bxsxsg8svbiye"]
+[gd_scene load_steps=13 format=3 uid="uid://bxsxsg8svbiye"]
 
 [ext_resource type="Script" uid="uid://hxs1sdtlbjeo" path="res://scenes/menus/main_menu.gd" id="1_ovrgc"]
 [ext_resource type="Shader" uid="uid://dl3megkp7p3mg" path="res://shaders/background.gdshader" id="2_6bivr"]
 [ext_resource type="Texture2D" uid="uid://cgppme0qncc68" path="res://images/background.svg" id="2_ovrgc"]
 [ext_resource type="PackedScene" uid="uid://bvmedrqrrlbo2" path="res://scenes/menus/options_menu.tscn" id="3_2o76q"]
+[ext_resource type="Texture2D" uid="uid://cdy6ypjkmm56" path="res://images/Final_menu_screen.png" id="3_imvie"]
 
 [sub_resource type="Gradient" id="Gradient_6bivr"]
 offsets = PackedFloat32Array(0, 0.0967742, 0.179724, 0.24424, 0.317972, 1)
@@ -72,7 +73,7 @@ theme_override_colors/font_hover_color = Color(0.913725, 0, 0, 1)
 theme_override_colors/font_focus_color = Color(0.776471, 0, 0, 1)
 theme_override_colors/font_pressed_color = Color(0.270588, 0, 0, 1)
 theme_override_font_sizes/font_size = 50
-text = "START GAME"
+text = "PLAY GAME"
 flat = true
 alignment = 0
 
@@ -105,6 +106,11 @@ text = "QUIT"
 flat = true
 alignment = 0
 
+[node name="FinalMenuScreen" type="Sprite2D" parent="VBoxContainer"]
+z_as_relative = false
+position = Vector2(551, 154)
+texture = ExtResource("3_imvie")
+
 [node name="VBoxContainer2" type="VBoxContainer" parent="."]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 1
@@ -112,10 +118,10 @@ anchors_preset = 11
 anchor_left = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -441.0
-offset_top = 114.0
-offset_right = -215.0
-offset_bottom = -223.0
+offset_left = -431.0
+offset_top = 131.0
+offset_right = -143.0
+offset_bottom = -130.0
 grow_horizontal = 0
 grow_vertical = 2
 
@@ -140,8 +146,8 @@ unique_name_in_owner = true
 z_index = -1
 texture_repeat = 2
 material = SubResource("ShaderMaterial_imvie")
-position = Vector2(113, 88)
-scale = Vector2(0.446, 0.446)
+position = Vector2(144, 166.5)
+scale = Vector2(0.5625, 0.755859)
 texture = SubResource("NoiseTexture2D_6bivr")
 
 [node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer2"]
