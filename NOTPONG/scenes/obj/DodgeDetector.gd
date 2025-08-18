@@ -428,17 +428,27 @@ func is_attack_object(obj) -> bool:
 	if not obj:
 		return false
 	
-	# FIX 1: Exkludera player projectiles och block_dropper projectiles
+	# FIX 1: Exkludera player projectiles
 	if "is_player_projectile" in obj and obj.is_player_projectile:
 		return false
 	
-	# Kontrollera om det är en projektil från block_dropper (dessa ska träffa spelaren)
-	if "projectile" in obj.name.to_lower() and obj.collision_layer == 2:
-		# Om det har en direction neråt, är det troligen från dropper
-		if "linear_velocity" in obj and obj.linear_velocity.y > 0:
-			return false
-	
 	var name_lower = obj.name.to_lower()
+	
+	# NYTT: Speciell hantering för FIREBALLS - dessa BORDE detekteras!
+	if "fireball" in name_lower:
+		print("🔥 FIREBALL DETECTED for dodge detection: ", obj.name)
+		return true
+	
+	# NYTT: Kontrollera för Fireball class
+	if obj.get_script() and obj.get_script().get_global_name() == "Fireball":
+		print("🔥 FIREBALL CLASS DETECTED for dodge detection: ", obj.name)
+		return true
+	
+	# Kontrollera om det är en projektil från vanliga block_droppers (exkludera dessa)
+	if "projectile" in name_lower and obj.collision_layer == 2:
+		# Om det har en direction neråt och INTE är en fireball, exkludera
+		if "linear_velocity" in obj and obj.linear_velocity.y > 0 and "fireball" not in name_lower:
+			return false
 	
 	# Kontrollera namn patterns för hostile attacks
 	if ("enemy" in name_lower and "projectile" not in name_lower):
@@ -456,6 +466,11 @@ func is_attack_object(obj) -> bool:
 	
 	# Kontrollera om objektet har attack-relaterade metoder
 	if obj.has_method("deal_damage") or obj.has_method("explode"):
+		return true
+	
+	# EXTRA: Kontrollera för Area2D fireballs med damage method
+	if obj is Area2D and obj.has_method("hit_player"):
+		print("🔥 AREA2D FIREBALL DETECTED: ", obj.name)
 		return true
 	
 	return false

@@ -106,7 +106,8 @@ func get_actual_damage() -> int:
 	"""Få den faktiska skadan med multiplier - använd befintligt damage system"""
 	# FIX 4: Istället för base_damage, returnera multiplier som ska användas
 	# i befintliga take_damage calls
-	return int(damage_multiplier)  # 10 är standardskadan i ditt system
+	var base_damage = 10
+	return int(base_damage * damage_multiplier)  # 10 är standardskadan i ditt system
 
 func show_enhanced_projectile_effect():
 	"""Visuell effekt för enhanced projektiler under slow motion"""
@@ -182,7 +183,7 @@ func show_critical_hit_effect(target):
 func create_floating_damage_text(pos: Vector2, damage: int):
 	"""Skapa floating damage text"""
 	var label = Label.new()
-	label.text = str(int(damage*10)) + "!"
+	label.text = str(int(damage)) + "!"
 	label.add_theme_font_size_override("font_size", 24)
 	label.add_theme_color_override("font_color", Color.GOLD)
 	label.global_position = pos

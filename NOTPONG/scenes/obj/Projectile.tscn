@@ -10,7 +10,7 @@ friction = 0.1
 bounce = 0.8
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_projectile"]
-radius = 8.06226
+radius = 8.0
 
 [sub_resource type="Gradient" id="Gradient_aqdnr"]
 colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)

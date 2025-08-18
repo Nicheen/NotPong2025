@@ -47,6 +47,7 @@ func spawn_normal_level(level: int):
 	var base_blue_blocks = 2
 	var base_iron_blocks = 1  
 	var base_cloud_blocks = 1
+	var base_fireball_droppers = 1
 	
 	# Increase difficulty each level
 	var blocks_count = base_blocks + (level - 1) * 3
@@ -56,6 +57,7 @@ func spawn_normal_level(level: int):
 	var blue_blocks_count = base_blue_blocks + (level - 1) / 2
 	var iron_blocks_count = base_iron_blocks + max(0, (level - 3) / 2)
 	var cloud_blocks_count = base_cloud_blocks + max(0, (level - 3) / 2)
+	var fireball_dropper_count = base_fireball_droppers + (level - 1) / 3
 	
 	# Apply maximum limits
 	blocks_count = min(blocks_count, 20)
@@ -65,6 +67,7 @@ func spawn_normal_level(level: int):
 	blue_blocks_count = min(blue_blocks_count, 8)
 	iron_blocks_count = min(iron_blocks_count, 6)
 	cloud_blocks_count = min(cloud_blocks_count, 6)
+	fireball_dropper_count = min(fireball_dropper_count, 5)
 	
 	# SIMPLE SPAWNING - Replace the complex calls with these simple ones!
 	main_scene.spawn_blocks_simple(blocks_count)
@@ -74,6 +77,7 @@ func spawn_normal_level(level: int):
 	main_scene.spawn_block_droppers_simple(block_dropper_count)
 	main_scene.spawn_cloud_blocks_simple(cloud_blocks_count)
 	main_scene.spawn_bombs_simple(enemies_count)  # Spawn bombs as enemies
+	main_scene.spawn_block_droppers_fireball_simple(fireball_dropper_count)
 	
 	print("Level ", level, " spawned with SIMPLE positioning:")
 	print("  - ", blocks_count, " regular blocks")
@@ -83,6 +87,7 @@ func spawn_normal_level(level: int):
 	print("  - ", cloud_blocks_count, " cloud blocks")
 	print("  - ", block_dropper_count, " block droppers")
 	print("  - ", enemies_count, " bombs")
+	print("  - ", fireball_dropper_count, " fireball droppers")
 	
 func spawn_boss(level: int):
 	"""Spawn the correct boss based on level"""

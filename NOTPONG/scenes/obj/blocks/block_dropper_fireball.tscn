@@ -1,0 +1,26 @@
+[gd_scene load_steps=5 format=3 uid="uid://cpjehlbp3y8bi"]
+
+[ext_resource type="Script" uid="uid://cca0q8skerc85" path="res://block_dropper_fireball.gd" id="1_o62ld"]
+[ext_resource type="Texture2D" uid="uid://d1xgqssoyr8m5" path="res://images/BlockDropperFireball.png" id="2_83m4d"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_i7kf2"]
+size = Vector2(50, 50)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_usy3k"]
+polygon = PackedVector2Array(-26, -26, 26, -26, 26, 26, -26, 26)
+
+[node name="Node2D" type="StaticBody2D"]
+collision_layer = 2
+collision_mask = 0
+script = ExtResource("1_o62ld")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(4.76837e-07, 4.76837e-07)
+scale = Vector2(1.5625, 1.5625)
+texture = ExtResource("2_83m4d")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_i7kf2")
+
+[node name="LightOccluder2D" type="LightOccluder2D" parent="."]
+occluder = SubResource("OccluderPolygon2D_usy3k")

@@ -23,6 +23,8 @@ const ENEMY_BLOCK_LASER_SCENE = "res://scenes/obj/blocks/block_laser.tscn"
 const ENEMY_BLOCK_DROPPER_SCENE = "res://scenes/obj/blocks/block_dropper.tscn"
 const ENEMY_BLOCK_IRON_SCENE = "res://scenes/obj/blocks/block_iron.tscn"
 const ENEMY_BLOCK_CLOUD_SCENE = "res://scenes/obj/blocks/block_cloud.tscn"
+const ENEMY_BLOCK_DROPPER_FIREBALL_SCENE = "res://scenes/obj/blocks/block_dropper_fireball.tscn"
+
 
 const BOSS_SCENE = "res://scenes/obj/bosses/Boss1.tscn"
 const BOSS_THUNDER_SCENE = "res://scenes/obj/bosses/Boss_Thunder.tscn"
@@ -48,6 +50,8 @@ var bosses: Array[StaticBody2D] = []
 var all_spawn_positions: Array[Vector2] = []
 var iron_blocks: Array = []
 var cloud_blocks: Array[StaticBody2D] = []
+var block_droppers_fireball: Array[StaticBody2D] = []
+
 
 
 # Game state
@@ -480,13 +484,39 @@ func spawn_boss_at_center():
 	
 	# Spawna boss här...
 	print("Spawning boss at: ", boss_pos)
-
+	
+func spawn_enemy_block_dropper_fireball_at_position(position: Vector2):
+	var block_scene = load(ENEMY_BLOCK_DROPPER_FIREBALL_SCENE)
+	if not block_scene:
+		print("ERROR: Could not load block dropper fireball scene at: ", ENEMY_BLOCK_DROPPER_FIREBALL_SCENE)
+		return
+	var block = block_scene.instantiate()
+	block.global_position = position
+	
+	# Connect signals with position awareness
+	block.fireball_dropper_died.connect(func(score): 
+		create_floating_score_text(block.global_position, score, true)
+		_on_block_died(score)
+	)
+	block.fireball_dropper_hit.connect(func(damage): 
+		create_floating_score_text(block.global_position, damage, false)
+		_on_enemy_hit(damage)
+	)
+	
+	add_child(block)
+	block_droppers_fireball.append(block)
+	total_enemies += 1
+	
+	# FIX: Använd typed array
+	var positions: Array[Vector2] = [position]
+	spawn_manager.reserve_positions(positions)
+	
+	print("Spawned block dropper fireball at: ", position)
 func spawn_enemy_block_dropper_at_position(position: Vector2):
 	var block_scene = load(ENEMY_BLOCK_DROPPER_SCENE)
 	if not block_scene:
 		print("ERROR: Could not load block dropper scene at: ", ENEMY_BLOCK_DROPPER_SCENE)
 		return
-	
 	var block = block_scene.instantiate()
 	block.global_position = position
 	
@@ -914,6 +944,7 @@ func find_block_at_position(position: Vector2):
 	print("  blue_blocks: ", blue_blocks.size())
 	print("  lazer_blocks: ", lazer_blocks.size())
 	print("  block_droppers: ", block_droppers.size())
+	print("  block_droppers_fireball: ", block_droppers_fireball.size())
 	
 	# Check blocks array
 	print("Checking blocks array:")
@@ -1125,6 +1156,14 @@ func spawn_block_droppers_simple(count: int):
 	var positions = spawn_manager.get_spawn_positions_in_area(count, min_row, max_row, min_col, max_col)
 	for pos in positions: spawn_enemy_block_dropper_at_position(pos)
 
+func spawn_block_droppers_fireball_simple(count: int):
+	var min_row = 0    # Top area
+	var max_row = 3    # Top area
+	var min_col = 1    # Avoid far edges
+	var max_col = 13   # Avoid far edges
+	var positions = spawn_manager.get_spawn_positions_in_area(count, min_row, max_row, min_col, max_col)
+	for pos in positions: spawn_enemy_block_dropper_fireball_at_position(pos)
+	
 func clear_level_entities():
 	"""Clear all entities and reset spawner for new level"""
 	# Clear all your existing arrays
@@ -1136,7 +1175,7 @@ func clear_level_entities():
 	for block in cloud_blocks: if is_instance_valid(block): block.queue_free()
 	for dropper in block_droppers: if is_instance_valid(dropper): dropper.queue_free()
 	for boss in bosses: if is_instance_valid(boss): boss.queue_free()
-	
+	for fireball_dropper in block_droppers_fireball: if is_instance_valid(fireball_dropper): fireball_dropper.queue_free()
 	# Clear arrays
 	enemies.clear()
 	blocks.clear()
@@ -1146,7 +1185,8 @@ func clear_level_entities():
 	cloud_blocks.clear()
 	block_droppers.clear()
 	bosses.clear()
-	
+	block_droppers_fireball.clear()
+
 	# Reset counters
 	total_enemies = 0
 	enemies_killed = 0
@@ -1155,7 +1195,36 @@ func clear_level_entities():
 	spawn_manager.clear_occupied_positions()
 	
 	print("Level cleared and spawner reset")
+func spawn_fireball_dropper_at_position(position: Vector2):
+	var block_scene = load(ENEMY_BLOCK_DROPPER_FIREBALL_SCENE)
+	if not block_scene:
+		print("ERROR: Could not load fireball dropper scene at: ", ENEMY_BLOCK_DROPPER_FIREBALL_SCENE)
+		return
+	
+	var block = block_scene.instantiate()
+	block.global_position = position
+	
+	# Connect signals
+	block.fireball_dropper_died.connect(_on_block_died)
+	block.fireball_dropper_hit.connect(_on_enemy_hit)
+	
+	add_child(block)
+	block_droppers_fireball.append(block)
+	total_enemies += 1
+	
+	# Reserve position
+	var positions: Array[Vector2] = [position]
+	spawn_manager.reserve_positions(positions)
+	
+	print("Spawned fireball dropper at: ", position)
 
+func spawn_fireball_droppers_weighted(count: int):
+	"""Spawn fireball droppers using weighted positioning"""
+	var positions = spawn_manager.get_weighted_spawn_positions("fireball_droppers", count)
+	
+	for pos in positions:
+		spawn_fireball_dropper_at_position(pos)
+		
 func create_floating_score_text(position: Vector2, score: int, is_kill: bool = false):
 	"""Create floating score text that explodes from enemy position"""
 	

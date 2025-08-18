@@ -63,8 +63,12 @@ func handle_player_hit(player_body):
 
 func handle_damaged_hit(other_body):
 	print("[PROJECTILE] Damaged object and free the projectile")
-	if other_body.has_method("take_damage"):
-		other_body.take_damage(10)
+	if projectile.has_method("deal_damage_to_target"):
+		projectile.deal_damage_to_target(other_body)
+	elif other_body.has_method("take_damage"):
+		# Fallback: använd enhanced damage från projectile
+		var damage_amount = projectile.get_actual_damage() if projectile.has_method("get_actual_damage") else 10
+		other_body.take_damage(damage_amount)
 		
 	# Hide the projectile sprite immediately
 	if sprite:
@@ -93,8 +97,12 @@ func handle_damaged_hit(other_body):
 
 func handle_damaged_bounce_hit(other_body):
 	print("[PROJECTILE] Damaged object and bounced projectile")
-	if other_body.has_method("take_damage"):
-		other_body.take_damage(10)
+	if projectile.has_method("deal_damage_to_target"):
+		projectile.deal_damage_to_target(other_body)
+	elif other_body.has_method("take_damage"):
+		# Fallback: använd enhanced damage från projectile
+		var damage_amount = projectile.get_actual_damage() if projectile.has_method("get_actual_damage") else 10
+		other_body.take_damage(damage_amount)
 	handle_player_hit(other_body)
 	
 func handle_projectile_collision(other_projectile):
