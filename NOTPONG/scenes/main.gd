@@ -80,7 +80,7 @@ func _ready():
 	setup_death_menu()
 	setup_win_menu()
 	setup_screen_distortion()
-	Input.set_mouse_mode(Input.MOUSE_MODE_HIDDEN)
+	#Input.set_mouse_mode(Input.MOUSE_MODE_HIDDEN)
 	
 	print("Game scene ready!")
 	print("Total enemies spawned: ", total_enemies)

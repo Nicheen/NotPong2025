@@ -8,7 +8,7 @@ var is_player_projectile: bool = false
 var damage_multiplier: float = 1.0
 
 # World boundaries - default to your game area
-var world_bounds: Rect2 = Rect2(200, 0, 752, 648)  # Your actual play area bounds
+var world_bounds = Rect2(188, 0, 776, 648)  # Your actual play area bounds
 
 # Components (now as Node references)
 @onready var collision_handler: ProjectileCollisionHandler = $Components/CollisionHandler
@@ -19,7 +19,7 @@ var world_bounds: Rect2 = Rect2(200, 0, 752, 648)  # Your actual play area bound
 @onready var sprite: Sprite2D = $Sprite2D
 var original_scale: Vector2
 
-# Debug info (optional)
+# Debug info (optional) 	
 @onready var debug_info: Node2D = $DebugInfo
 @onready var velocity_label: Label = $DebugInfo/VelocityLabel
 @onready var bounce_label: Label = $DebugInfo/BounceLabel
@@ -69,17 +69,7 @@ func initialize(shoot_direction: Vector2, projectile_speed: float, area_center: 
 	direction = shoot_direction.normalized()
 	speed = projectile_speed
 	is_player_projectile = from_player
-	
-	# Update world bounds if provided
-	if area_size != Vector2.ZERO:
-		var half_size = area_size * 0.5
-		world_bounds = Rect2(area_center - half_size, area_size)
-		print("Updated world bounds to: ", world_bounds)
-	else:
-		# Use default play area bounds (adjust these to match your game)
-		world_bounds = Rect2(200, 0, 752, 648)  # Left wall at x=200, right wall at x=952
-		print("Using default world bounds: ", world_bounds)
-	
+		
 	# Update boundary handler with new bounds
 	if boundary_handler:
 		boundary_handler.update_bounds(world_bounds)

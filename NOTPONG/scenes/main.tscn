@@ -8,10 +8,10 @@
 [ext_resource type="Script" uid="uid://jranj8pqoox8" path="res://scenes/bounds.gd" id="5_tbgi4"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_o5qli"]
-size = Vector2(198, 648)
+size = Vector2(194, 648)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_0wfyh"]
-size = Vector2(196, 648)
+size = Vector2(194, 648)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_sugp2"]
 size = Vector2(752, 36)
@@ -165,7 +165,7 @@ collision_layer = 4
 collision_mask = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Borders/StaticBody2DLeft"]
-position = Vector2(99, 324)
+position = Vector2(97, 324)
 shape = SubResource("RectangleShape2D_o5qli")
 
 [node name="StaticBody2DRight" type="StaticBody2D" parent="Borders"]
@@ -173,7 +173,7 @@ collision_layer = 4
 collision_mask = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Borders/StaticBody2DRight"]
-position = Vector2(1055, 324)
+position = Vector2(1055, 325)
 shape = SubResource("RectangleShape2D_0wfyh")
 
 [node name="Spawner" type="Node" parent="."]
