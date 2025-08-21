@@ -1,7 +1,6 @@
 extends Control
 
 var is_paused: bool = false
-
 @onready var options_menu = %OptionsMenu
 
 func _ready():
@@ -12,7 +11,6 @@ func _ready():
 	$Panel/VBoxContainer/btn_quit.pressed.connect(_on_quit_pressed)
 	
 	options_menu.visible = false
-
 	# Hide pause menu initially
 	visible = false
 	
@@ -20,8 +18,13 @@ func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
 func _input(event):
-	# Toggle pause when ESC is pressed
+	# Toggle pause when ESC is pressed, but only if death menu is not visible
 	if event.is_action_pressed("ui_cancel"):  # ESC key
+		# Check if death menu exists and is visible
+		var death_menu = get_node_or_null("../DeathMenu")
+		if death_menu and death_menu.visible:
+			return  # Don't allow pause if death menu is showing
+		
 		toggle_pause()
 
 func toggle_pause():
@@ -46,16 +49,19 @@ func hide_pause_menu():
 	is_paused = false
 
 func _on_resume_pressed():
+	GlobalAudioManager.play_button_click()
 	hide_pause_menu()
 
 func _on_options_pressed():
+	GlobalAudioManager.play_button_click()
 	options_menu.visible = true
 
-
 func _on_main_menu_pressed():
+	GlobalAudioManager.play_button_click()
 	# Unpause before changing scene
 	get_tree().paused = false
 	get_tree().change_scene_to_file("res://scenes/menus/main_menu.tscn")
 
 func _on_quit_pressed():
+	GlobalAudioManager.play_button_click()
 	get_tree().quit()
