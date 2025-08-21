@@ -91,7 +91,26 @@ func play_sfx(sound: AudioStream):
 	if sound and sfx_player:
 		sfx_player.stream = sound
 		sfx_player.play()
-		
+
+# Play sound effect with volume, start_time, and end_time
+func play_sfx_advanced(sound: AudioStream, volume_db: float = 0.0, start_time: float = 0.0, end_time: float = -1.0):
+	if not sound or not sfx_player:
+		return
+	
+	sfx_player.stream = sound
+	sfx_player.volume_db = volume_db
+	
+	# Start playing from given position
+	sfx_player.play(start_time)
+	
+	# If end_time is set, stop after reaching it
+	if end_time > 0.0 and end_time > start_time:
+		var duration = end_time - start_time
+		var timer = get_tree().create_timer(duration)
+		await timer.timeout
+		if sfx_player.playing and sfx_player.stream == sound:
+			sfx_player.stop()
+
 # Play UI sounds
 func play_ui_sound(sound_name: String):
 	if sound_name in ui_sounds:
