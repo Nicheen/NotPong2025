@@ -142,6 +142,13 @@ func _on_body_entered(body):
 	"""När projektilen träffar något"""
 	print("Projectile hit body: ", body.name, " on layer: ", body.collision_layer)
 	
+	if body.is_in_group("projectiles") or body.has_method("get_script") and body.get_script() == get_script():
+		print("=== PROJEKTILER TRÄFFADE VARANDRA ===")
+		# Förstör båda projektilerna direkt
+		body.queue_free()
+		queue_free()
+		return
+		
 	var layer = body.collision_layer
 	
 	if layer & 1:  # Player layer
