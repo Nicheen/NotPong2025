@@ -29,7 +29,6 @@ var level_configs = {
 		"block_laser": 2,
 		"block_iron": 5,
 		"enemy": 4,
-		"block_dropper": 1
 	},
 	5: {
 		# Boss level
@@ -44,9 +43,9 @@ var level_configs = {
 		"block_dropper_fireball": 1
 	},
 	7: {
-		"block_red": 40,
+		"block_red": 30,
 		"block_blue": 12,
-		"enemy": 30,
+		"enemy": 20,
 	},
 	8: {
 		"block_red": 8,
@@ -57,8 +56,8 @@ var level_configs = {
 		"block_dropper_fireball": 1
 	},
 	9: {
-		"block_red": 25,
-		"block_blue": 12,
+		"block_red": 20,
+		"block_blue": 10,
 		"block_laser": 2,
 		"block_cloud": 5,
 	},

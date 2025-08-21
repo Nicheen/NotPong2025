@@ -5,10 +5,10 @@
 [ext_resource type="PackedScene" uid="uid://b4npt30yvwa8q" path="res://effects/thunder.tscn" id="3_2430s"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_5u526"]
-size = Vector2(52, 51)
+size = Vector2(50, 50)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_cocgj"]
-size = Vector2(100, 49)
+size = Vector2(100, 50)
 
 [node name="EnemyBlockThunder" type="AnimatableBody2D"]
 scale = Vector2(0.5, 0.5)
@@ -25,7 +25,7 @@ texture = ExtResource("2_elsg4")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 unique_name_in_owner = true
 light_mask = 2
-position = Vector2(0, -24.5)
+position = Vector2(0, -25)
 shape = SubResource("RectangleShape2D_5u526")
 
 [node name="VFX_Thunder" parent="." instance=ExtResource("3_2430s")]
@@ -38,6 +38,6 @@ collision_layer = 32772
 collision_mask = 0
 
 [node name="CollisionShape2D2" type="CollisionShape2D" parent="Cloud"]
-light_mask = 4
-position = Vector2(0, 25.5)
+light_mask = 8
+position = Vector2(0, 25)
 shape = SubResource("RectangleShape2D_cocgj")

@@ -1,30 +1,31 @@
-extends StaticBody2D
-@export var max_health: int = 100  # 3-hit kill (10 damage per hit)
-@export var score_value: int = 300  # Increased score for larger block
+extends AnimatableBody2D
+@export var max_health: int = 100  
+@export var score_value: int = 300  
 @export var enemy_type: String = "thunder"
 
 # Thunder settings
-@export var thunder_delay: float = 2.0  # Time before thunder activates
-@export var thunder_duration: float = 3.0  # How long thunder stays active
+@export var thunder_delay: float = 2.0  
+@export var thunder_duration: float = 3.0  
 @export var thunder_damage_per_second: float = 15.0
 @export var thunder_damage_interval: float = 0.1
 
 # Movement and teleportation settings
-@export var y_movement_range: float = 50.0  # Max movement in Y direction
-@export var teleport_distance: float = 50.0  # Distance to teleport in X direction
+@export var y_movement_range: float = 50.0  
+@export var teleport_distance: float = 50.0  
 var original_spawn_position: Vector2
-var current_teleport_position: int = 0  # -2, -1, 0, +1, +2 (relative to spawn)
-var hit_counter: int = 0  # Count hits to trigger teleport every other hit
+var current_teleport_position: int = 0  
+var hit_counter: int = 0  
 var y_movement_timer: float = 0.0
-var y_movement_speed: float = 30.0  # Pixels per second
-var y_direction: int = 1  # 1 for up, -1 for down
+var y_movement_speed: float = 30.0  
+var y_direction: int = 1  
 
 # Node references
 @onready var sprite: Sprite2D = %Sprite2D
 @onready var thunder_effect: Node2D = $VFX_Thunder
-@onready var collision_shape: CollisionShape2D = %CollisionShape2D
+@onready var boss_collision: StaticBody2D = $Boss
+@onready var cloud_collision: StaticBody2D = $Cloud
 
-# Textures for different states - adjust paths as needed
+# Textures for different states
 var textures = {
 	"normal": preload("res://images/bosses/Boss2.png"),
 	"crack1": preload("res://images/bosses/Boss2Cracked1.png"),
@@ -52,34 +53,26 @@ signal block_destroyed(score: int)
 
 func _ready():
 	current_health = max_health
-	
-	# Store original spawn position for teleport calculations
 	original_spawn_position = global_position
-	
-	# Add random offset to movement timer so bosses don't move in sync
 	y_movement_timer = randf() * 2.0
 	
-	# Store original sprite color
 	if sprite:
 		original_color = sprite.modulate
 		sprite.scale = Vector2(3.125, 3.125)
 	
-	# Start thunder timer
 	thunder_timer = 0.0
 	
-	# Set up thunder effect and connect its signals
+	# Set up thunder effect
 	if thunder_effect:
-		# FIXED: Pass boss position to setup_vertical_thunder
 		thunder_effect.setup_vertical_thunder(global_position)
 		thunder_effect.visible = false
 		
-		# Connect to thunder controller signals
 		if thunder_effect.has_signal("thunder_activated"):
 			thunder_effect.thunder_activated.connect(_on_thunder_activated)
 		if thunder_effect.has_signal("thunder_deactivated"):
 			thunder_effect.thunder_deactivated.connect(_on_thunder_deactivated)
 		
-		print("Thunder effect configured and signals connected for boss at position: ", global_position)
+		print("Thunder effect configured at position: ", global_position)
 	
 	print("Thunder boss created with ", max_health, " health at spawn position: ", original_spawn_position)
 
@@ -87,17 +80,13 @@ func _physics_process(delta):
 	if is_dead:
 		return
 	
-	# Handle Y-axis movement (continuous floating)
 	handle_y_movement(delta)
 	
-	# Handle thunder timing
 	thunder_timer += delta
 	
-	# Start thunder system after initial delay
 	if not thunder_has_started and thunder_timer >= thunder_delay:
 		start_thunder_system()
 	
-	# Handle thunder damage while active
 	if thunder_active:
 		thunder_damage_timer += delta
 		if thunder_damage_timer >= thunder_damage_interval:
@@ -105,81 +94,63 @@ func _physics_process(delta):
 			thunder_damage_timer = 0.0
 
 func handle_y_movement(delta):
-	"""Handle continuous Y-axis floating movement"""
 	y_movement_timer += delta
-	
-	# Create smooth sine wave movement
 	var y_offset = sin(y_movement_timer * y_movement_speed / 30.0) * y_movement_range
 	var target_x = original_spawn_position.x + (current_teleport_position * teleport_distance)
 	var target_y = original_spawn_position.y + y_offset
-	
 	global_position = Vector2(target_x, target_y)
 
 func teleport_boss():
-	"""Teleport boss in X direction based on current position and constraints"""
 	var possible_directions = []
 	
-	# Check which directions are allowed
-	if current_teleport_position > -2:  # Can go left
+	if current_teleport_position > -2:  
 		possible_directions.append(-1)
-	if current_teleport_position < 2:   # Can go right
+	if current_teleport_position < 2:   
 		possible_directions.append(1)
 	
 	if possible_directions.size() == 0:
 		print("Boss cannot teleport - at maximum range")
 		return
 	
-	# Choose random direction from available options
 	var direction = possible_directions[randi() % possible_directions.size()]
 	current_teleport_position += direction
-	
-	# Create teleport effect
 	create_teleport_effect()
 	
 	var direction_text = "left" if direction == -1 else "right"
 	print("Boss teleported ", direction_text, " - new teleport position: ", current_teleport_position)
 
 func create_teleport_effect():
-	"""Visual effect for teleportation"""
 	if not sprite:
 		return
 	
-	# Flash white briefly for teleport effect
 	var tween = create_tween()
 	tween.tween_property(sprite, "modulate", Color.WHITE, 0.1)
 	tween.tween_property(sprite, "modulate", original_color, 0.1)
 
 func start_thunder_system():
-	"""Start the continuous thunder cycling system"""
 	thunder_has_started = true
 	
 	if thunder_effect and thunder_effect.has_method("start_thunder"):
-		# FIXED: Make sure thunder effect knows correct position before starting
 		if thunder_effect.has_method("setup_vertical_thunder"):
 			thunder_effect.setup_vertical_thunder(global_position)
 		thunder_effect.start_thunder()
 		print("Thunder cycling system started on boss at position: ", global_position)
 
-# Signal handlers for thunder state changes
 func _on_thunder_activated():
-	"""Called when the thunder controller activates lightning"""
 	thunder_active = true
 	update_sprite()
 	print("Boss thunder received activation signal - updating sprite")
 
 func _on_thunder_deactivated():
-	"""Called when the thunder controller deactivates lightning"""
 	thunder_active = false
 	update_sprite()
-	thunder_damage_timer = 0.0  # Reset damage timer
+	thunder_damage_timer = 0.0  
 	print("Boss thunder received deactivation signal - updating sprite")
 
 func apply_thunder_damage():
-	"""Apply continuous damage to whatever the thunder is hitting"""
 	if not thunder_effect:
 		return
 	
-	# If thunder effect has a method to check for collisions, use it
 	if thunder_effect.has_method("get_thunder_targets"):
 		var targets = thunder_effect.get_thunder_targets()
 		for target in targets:
@@ -187,6 +158,32 @@ func apply_thunder_damage():
 				var damage_amount = thunder_damage_per_second * thunder_damage_interval
 				target.take_damage(damage_amount)
 				print("Boss thunder dealing ", damage_amount, " damage to ", target.name)
+
+# Use the original collision detection method with body_entered
+func _on_body_entered(body):
+	"""Handle collision with projectiles"""
+	if not body.name.contains("Projectile"):
+		return
+	
+	# Get the collision point to determine if it hit boss or cloud part
+	var collision_point = body.global_position
+	var boss_center = global_position
+	
+	# Simple check: if projectile is in upper half, it hit boss; lower half = cloud
+	if collision_point.y < boss_center.y:
+		# Hit boss part - take damage
+		print("Projectile hit boss part")
+		take_damage(10)
+		if body.has_method("queue_free"):
+			body.queue_free()
+	else:
+		# Hit cloud part - bounce
+		print("Projectile hit cloud part - bouncing")
+		if body.has_method("linear_velocity"):
+			var current_velocity = body.linear_velocity
+			var bounce_velocity = Vector2(current_velocity.x * 0.8, -abs(current_velocity.y) * 0.8)
+			body.linear_velocity = bounce_velocity
+			body.global_position += Vector2(0, -10)  # Separate to prevent multiple hits
 
 func take_damage(damage: int):
 	if is_dead:
@@ -198,7 +195,7 @@ func take_damage(damage: int):
 	current_health = max(0, current_health)
 	hit_counter += 1
 	
-	# Teleport every other hit (every 2nd hit)
+	# Teleport every other hit
 	if hit_counter % 2 == 0:
 		teleport_boss()
 	
@@ -212,11 +209,9 @@ func update_sprite():
 	if not sprite or is_dead:
 		return
 	
-	# Determine texture based on health and thunder state
 	var texture_key = "normal"
 	
 	if thunder_active:
-		# Thunder is active - use attack versions
 		if current_health > 80:
 			texture_key = "attack"
 		elif current_health > 60:
@@ -228,7 +223,6 @@ func update_sprite():
 		else: 
 			texture_key = "attack_crack4"
 	else:
-		# Thunder is inactive - use normal versions
 		if current_health > 80: 
 			texture_key = "normal"
 		elif current_health > 60:
@@ -248,7 +242,6 @@ func show_damage_effect():
 	if not sprite:
 		return
 	
-	# Flash red when hit
 	var tween = create_tween()
 	tween.tween_property(sprite, "modulate", Color.RED, 0.1)
 	tween.tween_property(sprite, "modulate", original_color, 0.1)
@@ -256,25 +249,22 @@ func show_damage_effect():
 func destroy_block():
 	if is_dead:
 		return
+	
 	var blop_sounds = [
 		preload("res://audio/noels/blop1.wav"),
 		preload("res://audio/noels/blop2.wav"),
 		preload("res://audio/noels/blop3.wav")
 	]
 	
-	# Pick a random sound and play it
 	var random_sound = blop_sounds[randi() % blop_sounds.size()]
 	GlobalAudioManager.play_sfx(random_sound)
 	is_dead = true
 	print("Boss thunder destroyed! Awarding ", score_value, " points")
 	
-	# Stop thunder system before dying
 	if thunder_effect and thunder_effect.has_method("end_thunder"):
 		thunder_effect.end_thunder()
 	
-	# Emit destruction signal with score
 	block_destroyed.emit(score_value)
-	
 	play_death_effect()
 
 func play_death_effect():
@@ -282,21 +272,15 @@ func play_death_effect():
 		queue_free()
 		return
 	
-	# Disable collision immediately
-	if collision_shape:
-		collision_shape.disabled = true
+	# Disable all collisions immediately
+	collision_layer = 0
+	collision_mask = 0
 	
-	# Lock position so it doesn't move
 	var original_position = sprite.position
-	
-	# Death animation
 	var tween = create_tween()
 	tween.set_parallel(true)
 	
-	# Shrink the scale
 	tween.tween_property(sprite, "scale", Vector2.ZERO, 0.2)
-	
-	# Keep position fixed during animation
 	tween.tween_method(
 		func(pos): sprite.position = pos,
 		original_position, 
@@ -304,18 +288,9 @@ func play_death_effect():
 		0.2
 	)
 	
-	# Destroy after animation
 	await tween.finished
 	queue_free()
 
-func _on_body_entered(body):
-	# Handle collision with player/projectiles
-	if body.has_method("take_damage"):
-		body.take_damage(1)
-	if body.has_method("destroy"):
-		body.destroy()
-
-# Utility methods
 func get_health() -> int:
 	return current_health
 

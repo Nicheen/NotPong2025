@@ -151,7 +151,8 @@ func setup_vertical_thunder(pos: Vector2 = Vector2.ZERO):
 	
 	# Calculate positions in world coordinates
 	var thunder_world_pos = pos
-	var start_world = Vector2(thunder_world_pos.x + 5, global_position.y + 25)
+	# START THUNDER BELOW THE BOSS to avoid visual overlap
+	var start_world = Vector2(thunder_world_pos.x + 5, thunder_world_pos.y + 75)  # CHANGED: +75 instead of +25
 	var end_world = Vector2(thunder_world_pos.x + 5, BOTTOM_BOUNDARY - 9)
 	previous_thunder_end_position_y = BOTTOM_BOUNDARY + 25
 	
