@@ -37,7 +37,11 @@ func _show_text_box():
 	
 func _process(_delta):
 	# Update text box position every frame if dialog is active
-	if is_dialog_active and text_box and target_object:
+	if is_dialog_active and text_box:
+		if not is_instance_valid(target_object):
+			end_dialog()
+			return
+			
 		update_text_box_position()
 
 func update_text_box_position():
@@ -60,9 +64,15 @@ func _unhandled_input(event) -> void:
 		
 		current_line_index += 1
 		if current_line_index >= dialog_lines.size():
-			is_dialog_active = false
-			current_line_index = 0
-			target_object = null
+			end_dialog()
 			return
 		
 		_show_text_box()
+
+func end_dialog():
+	is_dialog_active = false
+	current_line_index = 0
+	target_object = null
+	if text_box:
+		text_box.queue_free()
+		text_box = null

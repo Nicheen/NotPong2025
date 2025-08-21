@@ -21,7 +21,7 @@ var y_direction: int = 1
 
 # Node references
 @onready var sprite: Sprite2D = %Sprite2D
-@onready var thunder_effect: Node2D = $VFX_Thunder
+@onready var thunder_effect: Node2D = %VFX_Thunder
 @onready var boss_collision: StaticBody2D = $Boss
 @onready var cloud_collision: StaticBody2D = $Cloud
 
@@ -67,6 +67,19 @@ func _ready():
 		thunder_effect.setup_vertical_thunder(global_position)
 		thunder_effect.visible = false
 		
+		# Method 2: Modulate specific components (more control)
+		var lightning_line = thunder_effect.get_node_or_null("Lightning")
+		if lightning_line:
+			lightning_line.modulate = Color.PALE_TURQUOISE
+
+		var sparks = thunder_effect.get_node_or_null("Sparks")
+		if sparks:
+			sparks.modulate = Color.MEDIUM_TURQUOISE
+			
+		var flare = thunder_effect.get_node_or_null("Flare") 
+		if flare:
+			flare.modulate = Color.MEDIUM_TURQUOISE
+
 		if thunder_effect.has_signal("thunder_activated"):
 			thunder_effect.thunder_activated.connect(_on_thunder_activated)
 		if thunder_effect.has_signal("thunder_deactivated"):
