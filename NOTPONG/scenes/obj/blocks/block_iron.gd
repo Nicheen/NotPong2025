@@ -1,8 +1,8 @@
 extends StaticBody2D
 
 # Enemy settings - Iron block has 4 lives (40 health = 4 hits of 10 damage each)
-@export var max_health: int = 40
-@export var score_value: int = 25  # More points than blue blocks
+@export var max_health: int = 1000
+@export var score_value: int = 0  # More points than blue blocks
 @export var enemy_type: String = "iron_block"
 
 # Visual settings
