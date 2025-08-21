@@ -11,10 +11,6 @@ extends StaticBody2D
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
 @onready var health_bar: ProgressBar = get_node_or_null("HealthBar")
 
-const lines: Array[String] = [
-	"BOOOM!!"
-]
-
 var normal_texture: Texture2D
 var cracked_texture: Texture2D
 # Internal variables
@@ -59,7 +55,6 @@ func start_burning(exploded_by_bomb: bool = false):
 		
 	is_burning = true
 	print("Enemy started burning! Will explode in 1.5 seconds...")
-	DialogueManager.start_dialog(global_position, lines)
 	
 	# Start the burn timer
 	if exploded_by_bomb:

@@ -95,7 +95,14 @@ func _process(delta):
 	hud.update_timer(game_timer)
 	update_distortions(delta)
 	update_distortion_shader()
-
+	
+# Add this function to handle debug input
+func _input(event):
+	# Debug: Press "1" to increment level and clear field
+	if event is InputEventKey and event.pressed:
+		if event.keycode == KEY_1:
+			debug_next_level()
+			
 func setup_level_manager():
 	level_manager = Node.new()
 	level_manager.name = "LevelManager"
@@ -1093,6 +1100,20 @@ func _on_boss_died_with_distortion(score_points: int, death_position: Vector2):
 	create_floating_score_text(death_position, score_points, true)
 	create_boss_death_distortion(death_position)
 	_on_enemy_died(score_points)
+	
+
+func debug_next_level():
+	"""Debug function to go to next level instantly"""
+	print("🚀 DEBUG: Incrementing level from ", level_manager.current_level, " to ", level_manager.current_level + 1)
+	
+	# Increment level
+	level_manager.current_level += 1
+	
+	# Clear current level and start new one
+	level_manager.start_level(level_manager.current_level)
+	
+	print("✅ DEBUG: Now on level ", level_manager.current_level)
+	
 func check_destructible_blocks_remaining() -> bool:
 	"""
 	Kollar om det finns några förstörbara block kvar på banan.

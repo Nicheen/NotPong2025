@@ -99,6 +99,7 @@ func spawn_boss(level: int):
 		boss_scene_path = main_scene.BOSS_SCENE  # Boss1
 		boss_name = "Boss1"
 		spawn_single_boss(boss_scene_path, boss_name, level, Vector2(576, 280))
+	
 	elif level == 10:
 		boss_scene_path = main_scene.BOSS_THUNDER_SCENE  # Boss_Thunder  
 		boss_name = "Boss_Thunder"
