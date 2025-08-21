@@ -15,7 +15,7 @@ class_name Player extends CharacterBody2D
 @export var play_area_size: Vector2 = Vector2(752, 648)  # Lägg till denna
 @export var play_area_center: Vector2 = Vector2(576, 324)  # Lägg till denna
 var top_wall_timer: float = 0.0
-var top_wall_time_limit: float = 2.0  # 2 sekunder
+var top_wall_time_limit: float = 3.0  # 2 sekunder
 var teleport_up_cooldown_timer: float = 0.0
 var teleport_up_cooldown_duration: float = 2.0  # 4 sekunder cooldown
 var can_teleport_up: bool = true
@@ -166,18 +166,22 @@ func teleport_to_edge(direction: Vector2):
 		"bottom": play_area_center.y + half_size.y
 	}
    
-   # Spara nuvarande x-hastighet innan teleportering
+	# Spara nuvarande x-hastighet innan teleportering
 	var current_x_velocity = velocity.x
    
-   # Teleport to edge and update current wall (only up/down)
+	# Teleport to edge and update current wall (only up/down)
 	if direction.y > 0:  # Teleport down
 		new_position.y = bounds.bottom - 50
+		
+		# FIXA BUGGEN: Starta bara cooldown om vi faktiskt var på toppen tidigare
+		if current_wall == WallSide.TOP:
+			start_teleport_up_cooldown()
+			print("Teleported DOWN from TOP - UP cooldown started")
+		else:
+			print("Already on bottom - no cooldown started")
+		
 		current_wall = WallSide.BOTTOM
 		top_wall_timer = 0.0  # Reset timer när vi går ner
-   	
-   	# STARTA COOLDOWN NÄR VI GÅR NER!
-		start_teleport_up_cooldown()
-		print("Teleported DOWN to bottom wall - UP cooldown started")
    	
 	elif direction.y < 0:  # Teleport up
 		new_position.y = bounds.top + 50
@@ -185,16 +189,16 @@ func teleport_to_edge(direction: Vector2):
 		top_wall_timer = top_wall_time_limit  # Starta 2-sekunder timer
 		print("Teleported UP to top wall - timer started (", top_wall_time_limit, " seconds)")
    
-   # Apply teleportation
+	# Apply teleportation
 	global_position = new_position
    
-   # Behåll x-hastigheten, nollställ bara y-hastigheten
+	# Behåll x-hastigheten, nollställ bara y-hastigheten
 	velocity = Vector2(current_x_velocity, 0)
    
 	start_teleport_cooldown()
 	start_teleport_effect()
    
-   # Update sprite rotation based on wall
+	# Update sprite rotation based on wall
 	update_sprite_rotation()
 	
 func start_teleport_up_cooldown():
