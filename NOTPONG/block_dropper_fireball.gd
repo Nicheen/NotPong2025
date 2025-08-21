@@ -174,7 +174,9 @@ func drop_fireball():
 	
 	print("🔥 FIREBALL DROPPED - WILL DAMAGE PLAYER! 🔥")
 
-# Resten av funktionerna förblir samma...
+func _on_projectile_hit():
+	take_damage(10)
+	
 func take_damage(damage: int):
 	if is_dead:
 		return
