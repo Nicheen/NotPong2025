@@ -3,144 +3,179 @@ extends Node
 var main_scene: Node2D
 var current_level: int = 1
 
+# Level konfigurationer - här definierar vi exakt vad varje level ska ha
+var level_configs = {
+	1: {
+		"block_red": 2,
+		"block_blue": 1,
+		"enemy": 1
+	},
+	2: {
+		"block_red": 3,
+		"block_blue": 2,
+		"enemy": 3,
+		"block_dropper": 1
+	},
+	3: {
+		"block_red": 4,
+		"block_blue": 2,
+		"block_laser": 1,
+		"enemy": 2,
+		"block_dropper": 1
+	},
+	4: {
+		"block_red": 5,
+		"block_blue": 3,
+		"block_laser": 2,
+		"block_iron": 5,
+		"enemy": 4,
+		"block_dropper": 1
+	},
+	5: {
+		# Boss level
+		"boss": "Boss1"
+	},
+	6: {
+		"block_red": 5,
+		"block_blue": 3,
+		"block_laser": 2,
+		"block_iron": 4,
+		"enemy": 3,
+		"block_dropper_fireball": 1
+	},
+	7: {
+		"block_red": 40,
+		"block_blue": 12,
+		"enemy": 30,
+	},
+	8: {
+		"block_red": 8,
+		"block_blue": 4,
+		"block_cloud": 1,
+		"enemy": 2,
+		"block_dropper": 1,
+		"block_dropper_fireball": 1
+	},
+	9: {
+		"block_red": 25,
+		"block_blue": 12,
+		"block_laser": 2,
+		"block_cloud": 5,
+	},
+	10: {
+		# Boss level
+		"boss": "Boss_Thunder"
+	}
+}
+
 func start_level(level: int):
 	current_level = level
 	print("Starting level: ", level)
 	
-	# FIX: Uppdatera UI när nivå startar
+	# Uppdatera UI när nivå startar
 	if main_scene and main_scene.has_method("update_ui"):
 		main_scene.update_ui()
 	
 	# Rensa tidigare enemies/blocks
 	clear_level()
 	
-	# Kolla om det är boss-level
-	if is_boss_level(level):
-		spawn_boss_level(level)
-	else:
-		spawn_normal_level(level)
-
-func is_boss_level(level: int) -> bool:
-	# Only level 5 and 10 are boss levels
-	var is_boss = (level == 5 or level == 10)
-	print("Level ", level, " is boss level: ", is_boss)
-	return is_boss
+	# Spawna level baserat på konfiguration
+	spawn_level(level)
 
 func clear_level():
 	"""Clear level using the main scene's improved clear function"""
 	main_scene.clear_level_entities()
-	
-func spawn_boss_level(level: int):
-	"""Spawn a boss level with supporting entities"""
-	print("BOSS LEVEL ", level, "!")
-	
-	# Spawn boss first
-	spawn_boss(level)
-		
-func spawn_normal_level(level: int):
-	"""Spawn a normal level using the simple system"""
-	# Calculate entity counts based on level (keep your existing logic)
-	var base_blocks = 7
-	var base_enemies = 3
-	var base_block_dropper = 1
-	var base_lazer = 1
-	var base_blue_blocks = 2
-	var base_iron_blocks = 1  
-	var base_cloud_blocks = 1
-	var base_fireball_droppers = 1
-	
-	# Increase difficulty each level
-	var blocks_count = base_blocks + (level - 1) * 3
-	var enemies_count = base_enemies + (level - 1) * 1
-	var block_dropper_count = base_block_dropper + (level - 1) / 3
-	var lazer_count = base_lazer + (level - 1) / 3
-	var blue_blocks_count = base_blue_blocks + (level - 1) / 2
-	var iron_blocks_count = base_iron_blocks + max(0, (level - 3) / 2)
-	var cloud_blocks_count = base_cloud_blocks + max(0, (level - 3) / 2)
-	var fireball_dropper_count = base_fireball_droppers + (level - 1) / 3
-	
-	# Apply maximum limits
-	blocks_count = min(blocks_count, 20)
-	enemies_count = min(enemies_count, 10)
-	block_dropper_count = min(block_dropper_count, 5)
-	lazer_count = min(lazer_count, 5)
-	blue_blocks_count = min(blue_blocks_count, 8)
-	iron_blocks_count = min(iron_blocks_count, 6)
-	cloud_blocks_count = min(cloud_blocks_count, 6)
-	fireball_dropper_count = min(fireball_dropper_count, 5)
-	
-	# SIMPLE SPAWNING - Replace the complex calls with these simple ones!
-	main_scene.spawn_blocks_simple(blocks_count)
-	main_scene.spawn_laser_blocks_simple(lazer_count)
-	main_scene.spawn_blue_blocks_simple(blue_blocks_count)
-	main_scene.spawn_iron_blocks_simple(iron_blocks_count)
-	main_scene.spawn_block_droppers_simple(block_dropper_count)
-	main_scene.spawn_cloud_blocks_simple(cloud_blocks_count)
-	main_scene.spawn_bombs_simple(enemies_count)  # Spawn bombs as enemies
-	main_scene.spawn_block_droppers_fireball_simple(fireball_dropper_count)
-	
-	print("Level ", level, " spawned with SIMPLE positioning:")
-	print("  - ", blocks_count, " regular blocks")
-	print("  - ", blue_blocks_count, " blue blocks") 
-	print("  - ", iron_blocks_count, " iron blocks")
-	print("  - ", lazer_count, " laser blocks")
-	print("  - ", cloud_blocks_count, " cloud blocks")
-	print("  - ", block_dropper_count, " block droppers")
-	print("  - ", enemies_count, " bombs")
-	print("  - ", fireball_dropper_count, " fireball droppers")
-	
-func spawn_boss(level: int):
-	"""Spawn the correct boss based on level"""
-	var boss_scene_path: String
-	var boss_name: String
-	
-	# Choose which boss to spawn
-	if level == 5:
-		boss_scene_path = main_scene.BOSS_SCENE  # Boss1
-		boss_name = "Boss1"
-		spawn_single_boss(boss_scene_path, boss_name, level, Vector2(576, 280))
-	
-	elif level == 10:
-		boss_scene_path = main_scene.BOSS_THUNDER_SCENE  # Boss_Thunder  
-		boss_name = "Boss_Thunder"
-		# Spawn 3 thunder bosses: center, left, right
-		var center_pos = Vector2(576, 280)
-		var left_pos = Vector2(576 - 150, 280)
-		var right_pos = Vector2(576 + 150, 280)
-		
-		spawn_single_boss(boss_scene_path, boss_name + "_Center", level, center_pos)
-		spawn_single_boss(boss_scene_path, boss_name + "_Left", level, left_pos)
-		spawn_single_boss(boss_scene_path, boss_name + "_Right", level, right_pos)
-	else:
-		print("ERROR: No boss defined for level ", level)
+
+func spawn_level(level: int):
+	"""Spawna en level baserat på dess konfiguration"""
+	if not level_configs.has(level):
+		print("ERROR: No configuration found for level ", level)
 		return
+	
+	var config = level_configs[level]
+	
+	# Kolla om det är en boss level
+	if config.has("boss"):
+		spawn_boss_level(level, config["boss"])
+		return
+	
+	# Spawna vanlig level
+	spawn_normal_level(level, config)
+
+func spawn_normal_level(level: int, config: Dictionary):
+	"""Spawna en vanlig level med given konfiguration"""
+	print("Spawning level ", level, " with config: ", config)
+	
+	# Spawna varje typ av entity baserat på konfigurationen
+	for entity_type in config.keys():
+		var count = config[entity_type]
+		spawn_entity_type(entity_type, count)
+	
+	# Skriv ut vad som spawnades
+	print_level_summary(level, config)
+
+func spawn_entity_type(entity_type: String, count: int):
+	"""Spawna en specifik typ av entity"""
+	match entity_type:
+		"block_red":
+			main_scene.spawn_blocks_simple(count)
+		"block_blue":
+			main_scene.spawn_blue_blocks_simple(count)
+		"block_laser":
+			main_scene.spawn_laser_blocks_simple(count)
+		"block_iron":
+			main_scene.spawn_iron_blocks_simple(count)
+		"block_cloud":
+			main_scene.spawn_cloud_blocks_simple(count)
+		"block_dropper":
+			main_scene.spawn_block_droppers_simple(count)
+		"block_dropper_fireball":
+			main_scene.spawn_block_droppers_fireball_simple(count)
+		"enemy":
+			main_scene.spawn_bombs_simple(count)
+		_:
+			print("WARNING: Unknown entity type: ", entity_type)
+
+func spawn_boss_level(level: int, boss_type: String):
+	"""Spawna en boss level"""
+	print("BOSS LEVEL ", level, "! Spawning: ", boss_type)
+	
+	match boss_type:
+		"Boss1":
+			spawn_single_boss(main_scene.BOSS_SCENE, "Boss1", level, Vector2(576, 280))
+		"Boss_Thunder":
+			# Spawna 3 thunder bosses
+			var center_pos = Vector2(576, 280)
+			var left_pos = Vector2(576 - 150, 280)
+			var right_pos = Vector2(576 + 150, 280)
+			
+			spawn_single_boss(main_scene.BOSS_THUNDER_SCENE, "Boss_Thunder_Center", level, center_pos)
+			spawn_single_boss(main_scene.BOSS_THUNDER_SCENE, "Boss_Thunder_Left", level, left_pos)
+			spawn_single_boss(main_scene.BOSS_THUNDER_SCENE, "Boss_Thunder_Right", level, right_pos)
+		_:
+			print("ERROR: Unknown boss type: ", boss_type)
 
 func spawn_single_boss(boss_scene_path: String, boss_name: String, level: int, position: Vector2):
-	"""Spawn a single boss at the specified position"""
-	# Load and spawn the boss
+	"""Spawna en enda boss på specifik position"""
 	var boss_scene = load(boss_scene_path)
 	if not boss_scene:
 		print("ERROR: Could not load boss scene: ", boss_scene_path)
 		return
 	
 	var boss = boss_scene.instantiate()
-	
-	# Place boss at specified position
 	boss.global_position = position
 	
-	# Scale boss health for higher levels (optional)
+	# Skala boss health för högre levels
 	var boss_health_multiplier = 1.0 + (level - 5) * 0.2
 	if boss.has_method("set_health_multiplier"):
 		boss.set_health_multiplier(boss_health_multiplier)
 	
-	# Connect boss signals WITH distortion effects
+	# Connecta boss signals med distortion effects
 	var boss_position = boss.global_position
 	
-	# Connect the appropriate signals based on boss type
 	if boss.has_signal("boss_died"):
 		boss.boss_died.connect(func(score_points): main_scene._on_boss_died_with_distortion(score_points, boss_position))
 	elif boss.has_signal("block_destroyed"):
-		# For Boss_Thunder which uses block_destroyed signal
 		boss.block_destroyed.connect(func(score_points): main_scene._on_boss_died_with_distortion(score_points, boss_position))
 	
 	if boss.has_signal("boss_hit"):
@@ -152,20 +187,29 @@ func spawn_single_boss(boss_scene_path: String, boss_name: String, level: int, p
 	main_scene.bosses.append(boss)
 	main_scene.total_enemies += 1
 	
-	# Reserve boss position
+	# Reservera boss position
 	var boss_positions: Array[Vector2] = [boss_position]
 	main_scene.spawn_manager.reserve_positions(boss_positions)
 	
-	print(boss_name, " spawned for level ", level, " at position ", position, " with health multiplier: ", boss_health_multiplier)
+	print(boss_name, " spawned at ", position, " with health multiplier: ", boss_health_multiplier)
+
+func print_level_summary(level: int, config: Dictionary):
+	"""Skriv ut en sammanfattning av vad som spawnades"""
+	print("Level ", level, " spawned successfully:")
 	
-func _on_boss_died(score_points: int):
-	# Boss ger mycket mer poäng
-	var boss_bonus = current_level * 100  # Extra bonus baserat på level
-	main_scene._on_enemy_died(score_points + boss_bonus)
+	for entity_type in config.keys():
+		var count = config[entity_type]
+		print("  - ", count, " ", entity_type.replace("_", " "))
+
+func is_boss_level(level: int) -> bool:
+	"""Kolla om en level är en boss level"""
+	if not level_configs.has(level):
+		return false
 	
-	print("BOSS DEFEATED! Bonus points: ", boss_bonus)
+	return level_configs[level].has("boss")
 
 func level_completed():
+	"""Hantera när en level är klar"""
 	if is_boss_level(current_level):
 		print("BOSS LEVEL ", current_level, " COMPLETED!")
 		await get_tree().create_timer(2.0).timeout
@@ -175,8 +219,33 @@ func level_completed():
 	
 	current_level += 1
 	
-	# FIX: Uppdatera UI omedelbart efter level ökning
+	# Uppdatera UI omedelbart efter level ökning
 	if main_scene and main_scene.has_method("update_ui"):
 		main_scene.update_ui()
 	
-	start_level(current_level)
+	# Starta nästa level om den finns
+	if level_configs.has(current_level):
+		start_level(current_level)
+	else:
+		print("All levels completed! Player wins!")
+		main_scene.player_wins()
+
+func get_level_config(level: int) -> Dictionary:
+	"""Få konfigurationen för en specifik level"""
+	if level_configs.has(level):
+		return level_configs[level]
+	else:
+		return {}
+
+func add_level_config(level: int, config: Dictionary):
+	"""Lägg till en ny level konfiguration"""
+	level_configs[level] = config
+	print("Added configuration for level ", level, ": ", config)
+
+func modify_level_config(level: int, entity_type: String, count: int):
+	"""Modifiera en specifik entity i en level konfiguration"""
+	if not level_configs.has(level):
+		level_configs[level] = {}
+	
+	level_configs[level][entity_type] = count
+	print("Modified level ", level, ": ", entity_type, " = ", count)
