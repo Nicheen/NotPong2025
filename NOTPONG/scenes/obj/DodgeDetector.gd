@@ -5,7 +5,7 @@ extends Area2D
 signal perfect_dodge_detected(enemy_attack)
 
 # Inställningar
-@export var detection_radius: float = 80.0  # Hur stor area runt spelaren
+@export var detection_radius: float = 200.0  # Hur stor area runt spelaren
 @export var dodge_window: float = 0.3       # Tidsram för perfect dodge
 
 # State tracking

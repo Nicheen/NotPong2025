@@ -131,6 +131,7 @@ func deal_damage_to_target(target):
 		target.take_damage(actual_damage)
 		
 		# Visuell feedback för enhanced damage
+	if damage_multiplier > 1.0:
 		show_critical_hit_effect(target)
 		
 		print("Projectile dealt ", actual_damage, " damage (base: ", base_damage, ", multiplier: ", damage_multiplier, ")")
@@ -141,6 +142,13 @@ func _on_body_entered(body):
 	"""När projektilen träffar något"""
 	print("Projectile hit body: ", body.name, " on layer: ", body.collision_layer)
 	
+	if body.is_in_group("projectiles") or body.has_method("get_script") and body.get_script() == get_script():
+		print("=== PROJEKTILER TRÄFFADE VARANDRA ===")
+		# Förstör båda projektilerna direkt
+		body.queue_free()
+		queue_free()
+		return
+		
 	var layer = body.collision_layer
 	
 	if layer & 1:  # Player layer
@@ -174,6 +182,7 @@ func show_critical_hit_effect(target):
 	create_floating_damage_text(target.global_position, get_actual_damage())
 
 func create_floating_damage_text(pos: Vector2, damage: int):
+	
 	"""Skapa floating damage text"""
 	var label = Label.new()
 	label.text = str(damage) + "!"  # FIXED: Tar bort * 10
@@ -181,9 +190,8 @@ func create_floating_damage_text(pos: Vector2, damage: int):
 	
 	# Färg baserat på damage multiplier
 	if damage_multiplier > 1.0:
-		label.add_theme_color_override("font_color", Color.GOLD)
-	else:
-		label.add_theme_color_override("font_color", Color.WHITE)
+		label.add_theme_color_override("font_color", Color.GREEN_YELLOW)
+	
 		
 	label.global_position = pos
 	get_tree().current_scene.add_child(label)

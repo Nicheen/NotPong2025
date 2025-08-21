@@ -169,6 +169,10 @@ func take_damage(damage: int):
 	if current_health <= 0:
 		destroy_block()
 
+func is_alive() -> bool:
+	"""Returnerar om cloud block fortfarande lever"""
+	return not is_dead and current_health > 0
+	
 func update_sprite():
 	if not sprite or is_dead:
 		return
