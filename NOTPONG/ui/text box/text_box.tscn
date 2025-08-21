@@ -1,0 +1,77 @@
+[gd_scene load_steps=5 format=3 uid="uid://bilwmc2k6k1en"]
+
+[ext_resource type="Script" uid="uid://duufyan28glss" path="res://ui/text box/text_box.gd" id="1_ublha"]
+[ext_resource type="FontFile" uid="uid://cbll3pm4c4ngr" path="res://ui/fonts/Orange Kid.otf" id="2_ln8ck"]
+
+[sub_resource type="Gradient" id="Gradient_ublha"]
+interpolation_mode = 1
+offsets = PackedFloat32Array(0.521661, 0.792419)
+colors = PackedColorArray(0.690196, 0.121569, 0.109804, 0.529412, 0.690196, 0.121569, 0.109804, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_ln8ck"]
+gradient = SubResource("Gradient_ublha")
+width = 15
+height = 15
+use_hdr = true
+fill = 1
+fill_from = Vector2(0.504274, 0.521368)
+fill_to = Vector2(0, 0)
+
+[node name="TextBox" type="MarginContainer"]
+anchors_preset = -1
+anchor_right = 0.059
+anchor_bottom = 0.031
+offset_right = 0.0319977
+offset_bottom = -0.0880013
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_ublha")
+
+[node name="NinePatchRect" type="NinePatchRect" parent="."]
+layout_mode = 2
+texture = SubResource("GradientTexture2D_ln8ck")
+region_rect = Rect2(0, 0, 15, 15)
+patch_margin_left = 10
+patch_margin_top = 10
+patch_margin_right = 10
+patch_margin_bottom = 10
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="Label" type="Label" parent="MarginContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("2_ln8ck")
+theme_override_font_sizes/font_size = 30
+text = "Lorem Ipsum"
+vertical_alignment = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 8
+
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 1
+
+[node name="Label2" type="Label" parent="VBoxContainer/MarginContainer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_ln8ck")
+theme_override_font_sizes/font_size = 13
+text = "Space to Continue ..."
+horizontal_alignment = 2
+vertical_alignment = 2
+
+[node name="LetterDisplayTimer" type="Timer" parent="."]
+unique_name_in_owner = true
+one_shot = true
+
+[connection signal="timeout" from="LetterDisplayTimer" to="." method="_on_letter_display_timer_timeout"]

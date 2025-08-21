@@ -154,7 +154,7 @@ func handle_shoot_input():
 		return
 	
 	# Check for mouse click or shoot action
-	if Input.is_action_just_pressed("shoot") or Input.is_action_just_pressed("ui_accept"):
+	if Input.is_action_just_pressed("shoot"):
 		shoot_projectile()
 
 # FIXED: Använd lokala variabler istället för Global
