@@ -63,6 +63,7 @@ func _ready():
 	current_health = max_health
 	
 	spawn_position = global_position
+	DialogueManager.start_dialog(self, lines, Vector2(70, -120))
 	
 	# Choose random starting pattern
 	var patterns = ["horizontal_eight", "vertical_eight"]
@@ -88,7 +89,6 @@ func deactivate_armoured_mode():
 	"""Simple armoured mode deactivation"""
 	
 	print("🛡️ DEACTIVATING ARMOURED MODE")
-	DialogueManager.start_dialog(global_position, lines)
 	armour_active = false
 	is_transitioning = true
 	collision_layer = 2  # Back to enemy layer
