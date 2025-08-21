@@ -1,7 +1,7 @@
 [gd_scene load_steps=17 format=3 uid="uid://eppnqq6ap33r"]
 
 [ext_resource type="Script" uid="uid://57mwgwgrtt80" path="res://scripts/obj/projectile/projectile.gd" id="1_projectile_main"]
-[ext_resource type="Texture2D" uid="uid://bp0xeo68eq7am" path="res://images/PlayerProjectile1.png" id="2_aqdnr"]
+[ext_resource type="Texture2D" uid="uid://ca46r0lbh45dk" path="res://images/PlayerProjectile1.png" id="2_aqdnr"]
 [ext_resource type="Script" uid="uid://c67rqomxck2ae" path="res://scripts/obj/projectile/projectile_collision_handler.gd" id="2_collision_handler"]
 [ext_resource type="Script" uid="uid://dgqp1seq5b42j" path="res://scripts/obj/projectile/projectile_boundary_handler.gd" id="3_boundary_handler"]
 

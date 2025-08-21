@@ -281,6 +281,9 @@ func drop_heart():
 	# Add to the main scene
 	get_tree().current_scene.add_child(heart)
 	
+	# Heart pickup kommer automatiskt att registrera sig själv i main scene 
+	# via sin _ready() funktion som körs efter add_child()
+	
 	print("Heart dropped at: ", global_position)
 	
 func show_damage_effect():
