@@ -4,7 +4,7 @@ uniform sampler2D texture2;
 uniform sampler2D colorTexture;
 uniform vec2 scroll1 = vec2(0.1, 0.1);
 uniform vec2 scroll2 = vec2(0.2, 0.2);
-uniform float corner_radius : hint_range(0.0, 0.5) = 0.1;
+uniform float corner_radius : hint_range(0.0, 0.5) = 0.01;
 
 void fragment() {
     // Calculate the original color

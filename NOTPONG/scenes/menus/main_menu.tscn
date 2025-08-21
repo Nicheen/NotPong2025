@@ -29,7 +29,7 @@ shader_parameter/texture2 = SubResource("NoiseTexture2D_8r73w")
 shader_parameter/colorTexture = SubResource("GradientTexture1D_imvie")
 shader_parameter/scroll1 = Vector2(0.1, 0.3)
 shader_parameter/scroll2 = Vector2(-0.13, 0.5)
-shader_parameter/corner_radius = 0.03
+shader_parameter/corner_radius = 0.003
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_2o76q"]
 
@@ -146,8 +146,8 @@ unique_name_in_owner = true
 z_index = -1
 texture_repeat = 2
 material = SubResource("ShaderMaterial_imvie")
-position = Vector2(144, 169.5)
-scale = Vector2(0.5625, 0.755859)
+position = Vector2(144, 147.5)
+scale = Vector2(0.5625, 0.669922)
 texture = SubResource("NoiseTexture2D_6bivr")
 
 [node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer2"]
