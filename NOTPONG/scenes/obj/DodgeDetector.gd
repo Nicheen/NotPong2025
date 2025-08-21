@@ -34,12 +34,33 @@ func _ready():
 	print("Dodge detector ready!")
 
 func setup_collision_shape():
-	"""Skapa en cirkulär collision shape för detection"""
+	"""Behåll den stora cirkeln för attack detection"""
 	var collision = CollisionShape2D.new()
 	var circle = CircleShape2D.new()
-	circle.radius = detection_radius
+	circle.radius = detection_radius  # Behåll din 200px cirkel
 	collision.shape = circle
 	add_child(collision)
+	
+	print("Dodge detector setup: Circle radius ", detection_radius, " with dead zone logic")
+
+# Lägg till dead zone funktionen:
+func is_attack_in_player_dead_zone(attack_position: Vector2) -> bool:
+	"""Kontrollera om attacken är i spelarens dead zone (80x40 rektangel)"""
+	var player_pos = player.global_position
+	var relative_pos = attack_position - player_pos
+	
+	# Spelaren är 80x40 pixels - lägg till lite margin för säkerhet
+	var dead_zone_width = 85.0   # 80 + 5px margin
+	var dead_zone_height = 45.0  # 40 + 5px margin
+	
+	# Kontrollera om attacken är inom spelarens rektangel
+	var in_dead_zone = (abs(relative_pos.x) <= dead_zone_width / 2.0 and 
+						abs(relative_pos.y) <= dead_zone_height / 2.0)
+	
+	if in_dead_zone:
+		print("Attack blocked by dead zone! Position: ", relative_pos)
+	
+	return in_dead_zone
 
 func _process(delta):
 	# Kontrollera för perfect dodge
@@ -254,9 +275,13 @@ func _reactivate_laser(laser_block):
 		print("Laser reactivated after dodge period")
 
 func find_incoming_attack():
-	"""Hitta attack som kommer träffa oss inom dodge window"""
+	"""Hitta attack som kommer träffa oss inom dodge window (men inte i dead zone)"""
 	for attack in nearby_attacks:
 		if not is_instance_valid(attack):
+			continue
+		
+		# NYTT: Skippa attacks som är i dead zone
+		if is_attack_in_player_dead_zone(attack.global_position):
 			continue
 			
 		# Kontrollera avstånd och riktning
@@ -271,6 +296,7 @@ func find_incoming_attack():
 				return attack
 	
 	return null
+
 
 func get_attack_speed(attack) -> float:
 	"""Försök hitta attackens hastighet"""
@@ -294,8 +320,12 @@ func mark_attack_as_dodged(attack):
 func _on_attack_entered(body):
 	"""När en attack/enemy kommer in i vårt detection område"""
 	if is_attack_object(body):
-		nearby_attacks.append(body)
-		print("Attack entered detection zone: ", body.name)
+		# Lägg bara till om den inte är i dead zone
+		if not is_attack_in_player_dead_zone(body.global_position):
+			nearby_attacks.append(body)
+			print("Attack entered detection zone: ", body.name)
+		else:
+			print("Attack ignored - in dead zone: ", body.name)
 
 func check_for_active_area_attacks():
 	"""Enkelt system - dodge aktiva laser/thunder attacks"""
@@ -414,8 +444,12 @@ func _on_attack_exited(body):
 func _on_area_entered(area):
 	"""För projektiler som är Area2D"""
 	if is_attack_object(area):
-		nearby_attacks.append(area)
-		print("Projectile entered detection zone: ", area.name)
+		# Lägg bara till om den inte är i dead zone
+		if not is_attack_in_player_dead_zone(area.global_position):
+			nearby_attacks.append(area)
+			print("Projectile entered detection zone: ", area.name)
+		else:
+			print("Projectile ignored - in dead zone: ", area.name)
 
 func _on_area_exited(area):
 	"""För projektiler som är Area2D"""
