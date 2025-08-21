@@ -10,6 +10,10 @@ extends StaticBody2D
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
 @onready var health_bar: ProgressBar = get_node_or_null("HealthBar")
 
+const lines: Array[String] = [
+	"Din mamma suger min kuk", 
+	"hee hee haa"
+]
 
 var textures = {
 	"normal": preload("res://images/bosses/Boss1.png"),
@@ -84,7 +88,7 @@ func deactivate_armoured_mode():
 	"""Simple armoured mode deactivation"""
 	
 	print("🛡️ DEACTIVATING ARMOURED MODE")
-	
+	DialogueManager.start_dialog(global_position, lines)
 	armour_active = false
 	is_transitioning = true
 	collision_layer = 2  # Back to enemy layer
