@@ -51,7 +51,7 @@ var all_spawn_positions: Array[Vector2] = []
 var iron_blocks: Array = []
 var cloud_blocks: Array[StaticBody2D] = []
 var block_droppers_fireball: Array[StaticBody2D] = []
-
+var heart_pickups: Array[StaticBody2D] = []
 
 
 # Game state
@@ -777,6 +777,12 @@ func can_place_2x2_block(center_position: Vector2) -> bool:
 	
 	return true
 
+func register_heart_pickup(heart_pickup):
+	"""Registrera en heart pickup i heart_pickups array när den spawnas"""
+	if heart_pickup and not heart_pickup in heart_pickups:
+		heart_pickups.append(heart_pickup)
+		print("Registered heart pickup at: ", heart_pickup.global_position, " (Total hearts: ", heart_pickups.size(), ")")
+		
 func _on_thunder_block_died(score_points: int):
 	"""Handle thunder block death"""
 	current_score += score_points
@@ -801,17 +807,52 @@ func _on_enemy_died(score_points: int):
 	
 	print("Enemy killed! Score: ", current_score, " Enemies remaining: ", (total_enemies - enemies_killed))
 	
-	# Update UI (this will also check for high score updates in real-time)
+	# Uppdatera UI
 	update_ui()
 	
-	# Check win condition
-	if enemies_killed >= total_enemies:
+	# INTELLIGENT LEVEL COMPLETION CHECK
+	# Samma logik som för block - kolla om alla nödvändiga entities är förstörda
+	if not check_destructible_blocks_remaining():
+		print("🎉 All destructible entities cleared! Level completed!")
+		
+		# Automatiskt rensa bort icke-nödvändiga entiteter
+		auto_clear_optional_entities()
+		
+		# Kort väntetid så spelaren ser vad som händer
+		await get_tree().create_timer(0.5).timeout
+		
+		# Gå till nästa nivå
 		if level_manager and level_manager.has_method("level_completed"):
-			# Remove this line: current_level += 1
 			level_manager.level_completed()
 		else:
-			player_wins()  # Fallbackback
-			
+			player_wins()
+	else:
+		print("Some destructible entities still remain...")
+
+# HJÄLPFUNKTION: Lägg till heart pickups i rätt array när de spawnas
+func spawn_heart_pickup_at_position(position: Vector2):
+	"""Spawna heart pickup och lägg till i heart_pickups array"""
+	# Antag att du har en heart pickup scene
+	var heart_scene = load("res://scenes/obj/HeartPickup.tscn")  # Anpassa sökvägen
+	if not heart_scene:
+		print("ERROR: Could not load heart pickup scene")
+		return
+	
+	var heart = heart_scene.instantiate()
+	heart.global_position = position
+	
+	# Connect signals om de finns
+	if heart.has_signal("heart_collected"):
+		heart.heart_collected.connect(_on_heart_collected)
+	
+	add_child(heart)
+	heart_pickups.append(heart)  # VIKTIGT: Lägg till i heart_pickups array
+	
+	print("Spawned heart pickup at: ", position)
+
+func _on_heart_collected():
+	"""Hanterar när en heart pickup samlas in"""
+	print("Heart collected!")
 
 func damage_adjacent_blocks(enemy_position: Vector2, damage: int = 10):
 	"""Damage all blocks in adjacent tiles (8 surrounding tiles)"""
@@ -1052,17 +1093,138 @@ func _on_boss_died_with_distortion(score_points: int, death_position: Vector2):
 	create_floating_score_text(death_position, score_points, true)
 	create_boss_death_distortion(death_position)
 	_on_enemy_died(score_points)
+func check_destructible_blocks_remaining() -> bool:
+	"""
+	Kollar om det finns några förstörbara block kvar på banan.
+	Returnerar true om det finns block kvar som måste förstöras.
+	Returnerar false om alla nödvändiga block är förstörda.
+	"""
+	var destructible_count = 0
+	
+	# Räkna alla block som MÅSTE förstöras för att klara nivån
+	
+	# Vanliga röda block (måste förstöras)
+	for block in blocks:
+		if is_instance_valid(block) and block.has_method("is_alive") and block.is_alive():
+			destructible_count += 1
+	
+	# Blå block (måste förstöras)
+	for block in blue_blocks:
+		if is_instance_valid(block) and block.has_method("is_alive") and block.is_alive():
+			destructible_count += 1
+	
+	# Laser block (måste förstöras)
+	for block in lazer_blocks:
+		if is_instance_valid(block) and block.has_method("is_alive") and block.is_alive():
+			destructible_count += 1
+	
+	# Block droppers (måste förstöras)
+	for block in block_droppers:
+		if is_instance_valid(block) and block.has_method("is_alive") and block.is_alive():
+			destructible_count += 1
+	
+	# Cloud block (måste förstöras)
+	for block in cloud_blocks:
+		if is_instance_valid(block) and block.has_method("is_alive") and block.is_alive():
+			destructible_count += 1
+	
+	# Thunder blocks (måste förstöras)
+	for block in thunder_blocks:
+		if is_instance_valid(block) and block.has_method("is_alive") and block.is_alive():
+			destructible_count += 1
+			
+	for block in block_droppers_fireball:
+		if is_instance_valid(block) and block.has_method("is_alive") and block.is_alive():
+			destructible_count += 1
+	
+	# Bosses (måste förstöras)
+	for boss in bosses:
+		if is_instance_valid(boss) and boss.has_method("is_alive") and boss.is_alive():
+			destructible_count += 1
+	
+	print("Destructible blocks remaining: ", destructible_count)
+	return destructible_count > 0
 
+func auto_clear_optional_entities():
+	"""
+	Tar automatiskt bort alla icke-nödvändiga entiteter när nivån ska avslutas.
+	Detta inkluderar: iron_blocks, heart_pickups, och enemies (bomber).
+	"""
+	var cleared_count = 0
+	
+	# Ta bort alla iron blocks (de behöver inte förstöras)
+	print("Clearing iron blocks...")
+	for iron_block in iron_blocks:
+		if is_instance_valid(iron_block):
+			print("  - Removing iron block at: ", iron_block.global_position)
+			iron_block.queue_free()
+			cleared_count += 1
+	iron_blocks.clear()
+	
+	# Ta bort alla heart pickups (de behöver inte förstöras)
+	print("Clearing heart pickups...")
+	for heart in heart_pickups:
+		if is_instance_valid(heart):
+			print("  - Removing heart pickup at: ", heart.global_position)
+			heart.queue_free()
+			cleared_count += 1
+	heart_pickups.clear()
+	
+	# Ta bort alla enemies/bomber (de behöver inte förstöras)
+	print("Clearing enemies (bombs)...")
+	for enemy in enemies:
+		if is_instance_valid(enemy):
+			print("  - Removing enemy at: ", enemy.global_position)
+			enemy.queue_free()
+			cleared_count += 1
+	enemies.clear()
+	
+	print("Auto-cleared ", cleared_count, " optional entities for level completion")
+
+# ============================================================================
+# ÄNDRINGAR I HEART_PICKUP.GD
+
+# Lägg till dessa variabler längst upp i heart_pickup.gd
+signal heart_destroyed  # Signal för när heart förstörs utan att samlas in
+var registered_in_main: bool = false
+
+# Ersätt befintliga _on_block_died funktionen med denna förbättrade version
 func _on_block_died(score_points: int):
 	current_score += score_points
 	enemies_killed += 1
 	
-	# Check win condition
-	if enemies_killed >= total_enemies:
+	print("Block destroyed! Score: ", current_score, " Enemies killed: ", enemies_killed, "/", total_enemies)
+	
+	# Uppdatera UI
+	update_ui()
+	
+	# INTELLIGENT LEVEL COMPLETION CHECK
+	# Istället för att kolla om ALLA enemies är döda, kolla om alla NÖDVÄNDIGA block är förstörda
+	if not check_destructible_blocks_remaining():
+		print("🎉 All destructible blocks cleared! Level completed!")
+		
+		# Automatiskt rensa bort icke-nödvändiga entiteter
+		auto_clear_optional_entities()
+		
+		# Kort väntetid så spelaren ser vad som händer
+		await get_tree().create_timer(0.5).timeout
+		
+		# Gå till nästa nivå
 		if level_manager and level_manager.has_method("level_completed"):
 			level_manager.level_completed()
 		else:
 			player_wins()
+	else:
+		# Det finns fortfarande förstörbara block kvar
+		var remaining = 0
+		if check_destructible_blocks_remaining():
+			# Räkna alla levande destructible blocks för bättre feedback
+			for block_array in [blocks, blue_blocks, lazer_blocks, block_droppers, cloud_blocks, thunder_blocks, bosses, block_droppers_fireball]:
+				for block in block_array:
+					if is_instance_valid(block) and block.has_method("is_alive") and block.is_alive():
+						remaining += 1
+		
+		print("Destructible blocks still remaining: ", remaining)
 
 func _on_enemy_hit(damage: int):
 	# Optional: Add score for hitting enemies
@@ -1176,6 +1338,7 @@ func clear_level_entities():
 	for dropper in block_droppers: if is_instance_valid(dropper): dropper.queue_free()
 	for boss in bosses: if is_instance_valid(boss): boss.queue_free()
 	for fireball_dropper in block_droppers_fireball: if is_instance_valid(fireball_dropper): fireball_dropper.queue_free()
+	for heart in heart_pickups: if is_instance_valid(heart): heart.queue_free()
 	# Clear arrays
 	enemies.clear()
 	blocks.clear()
@@ -1186,6 +1349,7 @@ func clear_level_entities():
 	block_droppers.clear()
 	bosses.clear()
 	block_droppers_fireball.clear()
+	heart_pickups.clear()
 
 	# Reset counters
 	total_enemies = 0

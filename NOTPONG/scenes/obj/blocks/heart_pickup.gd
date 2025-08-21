@@ -15,10 +15,16 @@ var current_health: int
 var is_dead: bool = false
 var velocity: Vector2 = Vector2.ZERO
 
+signal heart_destroyed  # Signal för när heart förstörs utan att samlas in
+var registered_in_main: bool = false
+
 func _ready():
 	# Set up heart
 	current_health = max_health
 	velocity = Vector2(0, fall_speed)  # Fall downward
+	
+	# Registrera denna heart pickup i main scene
+	register_with_main_scene()
 	
 	print("Heart pickup created with ", max_health, " health at position: ", global_position)
 
@@ -31,8 +37,20 @@ func _physics_process(delta):
 	
 	# Remove heart if it goes off screen
 	if global_position.y > get_viewport().get_visible_rect().size.y + 50:
+		remove_from_main_scene()  # Ta bort från array innan queue_free
 		queue_free()
-
+		
+func register_with_main_scene():
+	"""Registrera denna heart pickup i main scene så den kan rensas vid level completion"""
+	var main_scene = get_tree().current_scene
+	
+	if main_scene and main_scene.has_method("register_heart_pickup"):
+		main_scene.register_heart_pickup(self)
+		registered_in_main = true
+		print("Heart pickup registered with main scene")
+	else:
+		print("Warning: Could not register heart pickup with main scene")
+		
 func take_damage(damage: int):
 	if is_dead:
 		return
@@ -52,6 +70,7 @@ func take_damage(damage: int):
 func die():
 	if is_dead:
 		return
+	
 	var blop_sounds = [
 		preload("res://audio/noels/blop1.wav"),
 		preload("res://audio/noels/blop2.wav"),
@@ -67,12 +86,26 @@ func die():
 	# Heal the player
 	heal_player()
 	
+	# Ta bort från main scene array
+	remove_from_main_scene()
+	
 	# Simple destruction effect
 	show_destruction_effect()
 	
 	# Remove from scene
 	queue_free()
 
+func remove_from_main_scene():
+	"""Ta bort denna heart pickup från main scene array när den förstörs"""
+	var main_scene = get_tree().current_scene
+	
+	if main_scene and "heart_pickups" in main_scene:
+		var heart_array = main_scene.heart_pickups
+		var index = heart_array.find(self)
+		if index != -1:
+			heart_array.remove_at(index)
+			print("Removed heart pickup from main scene array")
+			
 func heal_player():
 	"""Find the player and heal them"""
 	var player = find_player_in_scene()
