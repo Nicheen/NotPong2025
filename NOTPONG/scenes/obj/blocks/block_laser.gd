@@ -72,6 +72,9 @@ func _physics_process(delta):
 	# Handle laser timing
 	if laser_ready and not laser_activated and not is_dead:
 		laser_timer += delta
+		if laser_timer >= laser_activation_delay - 1.0:
+			GlobalAudioManager.play_sfx_advanced(preload("res://audio/sfx/laser-charge-175727.mp3"), -30.0, 0.0, laser_duration + 0.5)
+		
 		if laser_timer >= laser_activation_delay:
 			activate_laser()
 			
@@ -134,7 +137,6 @@ func activate_laser():
 	laser_duration_timer = 0.0
 	laser_damage_timer = 0.0
 	laser.is_casting = true
-	
 	print("laser activated on laser block at: ", global_position)
 
 func deactivate_laser():

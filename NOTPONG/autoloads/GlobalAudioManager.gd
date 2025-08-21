@@ -3,7 +3,8 @@ extends Node
 
 # Audio players for global sounds
 var music_player: AudioStreamPlayer
-var sfx_player: AudioStreamPlayer
+var sfx_players: Array[AudioStreamPlayer] = []
+var max_sfx_players: int = 8
 
 # Current music track
 var current_music: AudioStream
@@ -21,17 +22,18 @@ func _ready():
 	var bus_layout = load("res://default_bus_layout.tres")
 	if bus_layout:
 		AudioServer.set_bus_layout(bus_layout)
+		
 	# Create global audio players
 	music_player = AudioStreamPlayer.new()
-	sfx_player = AudioStreamPlayer.new()
-	
-	# Set up audio players
 	music_player.bus = "Music"
-	sfx_player.bus = "SFX"
-
-	# Add to scene tree
 	add_child(music_player)
-	add_child(sfx_player)
+	
+	# Create multiple SFX players
+	for i in max_sfx_players:
+		var sfx_player = AudioStreamPlayer.new()
+		sfx_player.bus = "SFX"
+		add_child(sfx_player)
+		sfx_players.append(sfx_player)
 	
 	# Connect to scene changes to persist music
 	get_tree().tree_changed.connect(_on_scene_changed)
@@ -43,6 +45,15 @@ func _on_scene_changed():
 	if music_player.playing:
 		music_position = music_player.get_playback_position()
 
+# Find an available SFX player (not currently playing)
+func get_available_sfx_player() -> AudioStreamPlayer:
+	for player in sfx_players:
+		if not player.playing:
+			return player
+	
+	# If all players are busy, use the first one (will interrupt)
+	return sfx_players[0]
+	
 # Play background music (persists across scenes)
 func play_music(music: AudioStream, fade_in: bool = true, loop: bool = true):
 	if current_music == music and music_player.playing:
@@ -88,28 +99,33 @@ func fade_in_music(duration: float = 1.0):
 
 # Play sound effect
 func play_sfx(sound: AudioStream):
-	if sound and sfx_player:
-		sfx_player.stream = sound
-		sfx_player.play()
+	if not sound:
+		return
+	
+	var player = get_available_sfx_player()
+	player.stream = sound
+	player.play()
 
 # Play sound effect with volume, start_time, and end_time
 func play_sfx_advanced(sound: AudioStream, volume_db: float = 0.0, start_time: float = 0.0, end_time: float = -1.0):
-	if not sound or not sfx_player:
+	if not sound:
 		return
-	
-	sfx_player.stream = sound
-	sfx_player.volume_db = volume_db
+		
+	var player = get_available_sfx_player()
+	player.stream = sound
+	if volume_db != 0.0:
+		player.volume_db = volume_db
 	
 	# Start playing from given position
-	sfx_player.play(start_time)
+	player.play(start_time)
 	
 	# If end_time is set, stop after reaching it
 	if end_time > 0.0 and end_time > start_time:
 		var duration = end_time - start_time
 		var timer = get_tree().create_timer(duration)
 		await timer.timeout
-		if sfx_player.playing and sfx_player.stream == sound:
-			sfx_player.stop()
+		if player.playing and player.stream == sound:
+			player.stop()
 
 # Play UI sounds
 func play_ui_sound(sound_name: String):
