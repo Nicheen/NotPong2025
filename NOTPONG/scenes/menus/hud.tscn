@@ -58,17 +58,21 @@ uppercase = true
 
 [node name="HBoxContainer2" type="HBoxContainer" parent="Panel"]
 layout_mode = 1
-anchors_preset = 10
+anchors_preset = 14
+anchor_top = 0.5
 anchor_right = 1.0
-offset_bottom = 23.0
+anchor_bottom = 0.5
+offset_top = -18.5
+offset_bottom = 18.5
 grow_horizontal = 2
-alignment = 1
+grow_vertical = 2
 
 [node name="MarginContainer" type="MarginContainer" parent="Panel/HBoxContainer2"]
 layout_mode = 2
-theme_override_constants/margin_top = 4
+theme_override_constants/margin_left = 530
 
 [node name="Timer" type="Label" parent="Panel/HBoxContainer2/MarginContainer"]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_font_sizes/font_size = 30
 text = "00:00:00"

@@ -1,8 +1,7 @@
-[gd_scene load_steps=13 format=3 uid="uid://bxsxsg8svbiye"]
+[gd_scene load_steps=12 format=3 uid="uid://bxsxsg8svbiye"]
 
 [ext_resource type="Script" uid="uid://hxs1sdtlbjeo" path="res://scenes/menus/main_menu.gd" id="1_ovrgc"]
 [ext_resource type="Shader" uid="uid://dl3megkp7p3mg" path="res://shaders/background.gdshader" id="2_6bivr"]
-[ext_resource type="Texture2D" uid="uid://cgppme0qncc68" path="res://images/background.svg" id="2_ovrgc"]
 [ext_resource type="PackedScene" uid="uid://bvmedrqrrlbo2" path="res://scenes/menus/options_menu.tscn" id="3_2o76q"]
 [ext_resource type="Texture2D" uid="uid://bb82qf7tjkqmh" path="res://images/Final_menu_screen.png" id="3_imvie"]
 
@@ -45,13 +44,10 @@ offset_right = 1151.0
 offset_bottom = 648.0
 script = ExtResource("1_ovrgc")
 
-[node name="TextureRect" type="TextureRect" parent="."]
-visible = false
-layout_mode = 0
-offset_right = 1152.0
-offset_bottom = 648.0
-texture = ExtResource("2_ovrgc")
-expand_mode = 1
+[node name="FinalMenuScreen" type="Sprite2D" parent="."]
+z_as_relative = false
+position = Vector2(576, 324)
+texture = ExtResource("3_imvie")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 1
@@ -59,10 +55,10 @@ anchors_preset = 13
 anchor_left = 0.5
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -550.5
-offset_top = 170.0
-offset_right = 29.5
-offset_bottom = -190.0
+offset_left = -476.5
+offset_top = 143.0
+offset_right = -270.5
+offset_bottom = -217.0
 grow_horizontal = 2
 grow_vertical = 2
 alignment = 1
@@ -105,11 +101,6 @@ theme_override_font_sizes/font_size = 40
 text = "QUIT"
 flat = true
 alignment = 0
-
-[node name="FinalMenuScreen" type="Sprite2D" parent="VBoxContainer"]
-z_as_relative = false
-position = Vector2(551, 154)
-texture = ExtResource("3_imvie")
 
 [node name="VBoxContainer2" type="VBoxContainer" parent="."]
 custom_minimum_size = Vector2(100, 0)

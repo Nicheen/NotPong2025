@@ -916,9 +916,11 @@ func damage_adjacent_blocks(enemy_position: Vector2, damage: int = 10):
 	
 	# Check all 8 adjacent positions (including diagonals)
 	var adjacent_offsets = [
-		Vector2(-1, -1), Vector2(0, -1), Vector2(1, -1),  # Top row
-		Vector2(-1,  0),                 Vector2(1,  0),  # Middle row (skip center)
-		Vector2(-1,  1), Vector2(0,  1), Vector2(1,  1)   # Bottom row
+						 				  Vector2(0, -2),
+						 Vector2(-1, -1), Vector2(0, -1), Vector2(1, -1),  				# Top row
+		Vector2(-2, 0),  Vector2(-1,  0),                 Vector2(1,  0), Vector2(2, 0),# Middle row (skip center)
+						 Vector2(-1,  1), Vector2(0,  1), Vector2(1,  1),   			# Bottom row
+										  Vector2(0,  2),
 	]
 	
 	var blocks_damaged = 0
