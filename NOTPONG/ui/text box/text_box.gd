@@ -70,6 +70,7 @@ func _display_letter():
 	print("[TEXT] Current label text: '", label.text, "'")
 	
 	letter_index += 1
+	GlobalAudioManager.play_sfx(preload("res://audio/speaking_voice.mp3"))
 	
 	if letter_index >= text.length():
 		print("[TEXT] Finished displaying all letters!")
