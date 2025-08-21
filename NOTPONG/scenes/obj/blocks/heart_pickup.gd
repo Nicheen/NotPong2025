@@ -2,7 +2,7 @@
 extends AnimatableBody2D
 
 # Heart settings
-@export var health_restore: int = 10
+@export var health_restore: int = 20
 @export var max_health: int = 10
 @export var fall_speed: float = 0.0
 
@@ -52,7 +52,15 @@ func take_damage(damage: int):
 func die():
 	if is_dead:
 		return
+	var blop_sounds = [
+		preload("res://audio/noels/blop1.wav"),
+		preload("res://audio/noels/blop2.wav"),
+		preload("res://audio/noels/blop3.wav")
+	]
 	
+	# Pick a random sound and play it
+	var random_sound = blop_sounds[randi() % blop_sounds.size()]
+	GlobalAudioManager.play_sfx(random_sound)
 	is_dead = true
 	print("Heart destroyed - healing player!")
 	

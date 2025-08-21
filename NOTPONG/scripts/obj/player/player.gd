@@ -17,7 +17,7 @@ class_name Player extends CharacterBody2D
 var top_wall_timer: float = 0.0
 var top_wall_time_limit: float = 2.0  # 2 sekunder
 var teleport_up_cooldown_timer: float = 0.0
-var teleport_up_cooldown_duration: float = 4.0  # 4 sekunder cooldown
+var teleport_up_cooldown_duration: float = 2.0  # 4 sekunder cooldown
 var can_teleport_up: bool = true
 
 @onready var player_texture = preload("res://images/NewPlayer.png")
@@ -29,7 +29,7 @@ var can_teleport_up: bool = true
 
 # Shooting settings
 @export var projectile_scene: PackedScene = load("res://scenes/obj/Projectile.tscn")
-@export var projectile_speed: float = 500.0
+@export var projectile_speed: float = 400.0
 @export var shoot_cooldown: float = 0.1
 
 # Health settings

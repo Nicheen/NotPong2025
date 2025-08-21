@@ -2,8 +2,8 @@ class_name Projectile extends RigidBody2D
 
 # Core projectile settings
 var direction: Vector2
-var speed: float = 500.0
-var lifetime: float = 8.0
+var speed: float = 400.0
+var lifetime: float = 16.0
 var is_player_projectile: bool = false
 var damage_multiplier: float = 1.0
 var base_damage: int = 10  # Standard skada

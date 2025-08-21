@@ -247,6 +247,15 @@ func die():
 	if is_dead:
 		return
 	is_dead = true
+	var blop_sounds = [
+		preload("res://audio/noels/blop1.wav"),
+		preload("res://audio/noels/blop2.wav"),
+		preload("res://audio/noels/blop3.wav")
+	]
+	
+	# Pick a random sound and play it
+	var random_sound = blop_sounds[randi() % blop_sounds.size()]
+	GlobalAudioManager.play_sfx(random_sound)
 	print("Block Dropper died! Awarding ", score_value, " points")
 	
 	# Stop any warning effects
