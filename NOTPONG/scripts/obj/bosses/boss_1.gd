@@ -135,7 +135,16 @@ func take_damage(damage: int):
 	if armour_active:
 		print("   🛡️ DAMAGE BLOCKED BY ARMOUR!")
 		show_armour_block_effect()
-		GlobalAudioManager.play_sfx(preload("res://audio/noels/thud1.wav"))
+		var blop_sounds = [
+			preload("res://audio/sfx/metal-hit-94-200422.mp3"),
+			preload("res://audio/sfx/metal-hit-92-200420.mp3"),
+			preload("res://audio/sfx/metal-hit-90-200426.mp3"),
+			preload("res://audio/sfx/metal-hit-95-200424.mp3")
+		]
+	
+	# Pick a random sound and play it
+		var random_sound = blop_sounds[randi() % blop_sounds.size()]
+		GlobalAudioManager.play_sfx(random_sound)
 		return
 	
 	# Apply damage - EXAKT som andra enemies
@@ -273,7 +282,7 @@ func update_sprite():
 
 func activate_armoured_mode():
 	"""Simple armoured mode activation"""
-
+	GlobalAudioManager.play_sfx(preload("res://audio/sfx/metal-whoosh-hit-4-201906.mp3"))
 	if armour_active or is_transitioning:
 		return
 	
