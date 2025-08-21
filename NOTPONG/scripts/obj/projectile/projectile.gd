@@ -6,9 +6,10 @@ var speed: float = 500.0
 var lifetime: float = 8.0
 var is_player_projectile: bool = false
 var damage_multiplier: float = 1.0
+var base_damage: int = 10  # Standard skada
 
 # World boundaries - default to your game area
-var world_bounds = Rect2(188, 0, 776, 648)  # Your actual play area bounds
+var world_bounds = Rect2(188, 0, 776, 648)
 
 # Components (now as Node references)
 @onready var collision_handler: ProjectileCollisionHandler = $Components/CollisionHandler
@@ -97,17 +98,17 @@ func update_debug_info():
 func set_damage_multiplier(multiplier: float):
 	"""Sätt damage multiplier för perfect dodge"""
 	damage_multiplier = multiplier
+	print("Projectile damage multiplier set to: ", damage_multiplier)
 	
 	# Visuell feedback om enhanced damage
-	if multiplier > 1.0:
+	if damage_multiplier > 1.0:
 		show_enhanced_projectile_effect()
 
 func get_actual_damage() -> int:
-	"""Få den faktiska skadan med multiplier - använd befintligt damage system"""
-	# FIX 4: Istället för base_damage, returnera multiplier som ska användas
-	# i befintliga take_damage calls
-	var base_damage = 10
-	return int(base_damage * damage_multiplier)  # 10 är standardskadan i ditt system
+	"""Få den faktiska skadan med multiplier"""
+	var actual_damage = int(base_damage * damage_multiplier)
+	print("Calculating damage: ", base_damage, " * ", damage_multiplier, " = ", actual_damage)
+	return actual_damage
 
 func show_enhanced_projectile_effect():
 	"""Visuell effekt för enhanced projektiler under slow motion"""
@@ -122,7 +123,6 @@ func show_enhanced_projectile_effect():
 	tween.tween_property(sprite, "modulate", Color.GOLD, 0.3)
 	tween.tween_property(sprite, "modulate", Color.YELLOW, 0.3)
 
-# Uppdatera din damage-funktion:
 func deal_damage_to_target(target):
 	"""Ge skada till målet med damage multiplier"""
 	var actual_damage = get_actual_damage()
@@ -131,15 +131,16 @@ func deal_damage_to_target(target):
 		target.take_damage(actual_damage)
 		
 		# Visuell feedback för enhanced damage
-		if damage_multiplier > 1.0:
-			show_critical_hit_effect(target)
+		show_critical_hit_effect(target)
 		
-		print("Projectile dealt ", actual_damage, " damage (multiplier: ", damage_multiplier, ")")
+		print("Projectile dealt ", actual_damage, " damage (base: ", base_damage, ", multiplier: ", damage_multiplier, ")")
+	else:
+		print("Target doesn't have take_damage method!")
 
-# Uppdatera din collision handler för att använda damage multiplier:
 func _on_body_entered(body):
 	"""När projektilen träffar något"""
-	# Kolla collision layer för att avgöra vad vi träffade
+	print("Projectile hit body: ", body.name, " on layer: ", body.collision_layer)
+	
 	var layer = body.collision_layer
 	
 	if layer & 1:  # Player layer
@@ -148,16 +149,12 @@ func _on_body_entered(body):
 	elif layer & 2:  # Damage layer  
 		if collision_handler:
 			collision_handler.handle_damaged_hit(body)
-		# Använd vår enhanced damage system
-		deal_damage_to_target(body)
 	elif layer & 3:  # CollisionBounce layer
 		if collision_handler:
 			collision_handler.handle_player_hit(body)
 	elif layer & 4:  # CollisionBounce + Damage layer
 		if collision_handler:
 			collision_handler.handle_damaged_bounce_hit(body)
-		# Använd vår enhanced damage system
-		deal_damage_to_target(body)
 		
 func handle_enemy_collision(enemy_body):
 	"""Hantera kollision med enemy - använd enhanced damage"""
@@ -165,11 +162,7 @@ func handle_enemy_collision(enemy_body):
 	
 	if enemy_body.has_method("take_damage"):
 		enemy_body.take_damage(actual_damage)
-		
-		# Visuell feedback för enhanced damage
-		if damage_multiplier > 1.0:
-			show_critical_hit_effect(enemy_body)
-		
+				
 		print("Projectile dealt ", actual_damage, " damage (multiplier: ", damage_multiplier, ")")
 	
 	# Förstör projektilen efter träff
@@ -183,9 +176,15 @@ func show_critical_hit_effect(target):
 func create_floating_damage_text(pos: Vector2, damage: int):
 	"""Skapa floating damage text"""
 	var label = Label.new()
-	label.text = str(int(damage)) + "!"
+	label.text = str(damage) + "!"  # FIXED: Tar bort * 10
 	label.add_theme_font_size_override("font_size", 24)
-	label.add_theme_color_override("font_color", Color.GOLD)
+	
+	# Färg baserat på damage multiplier
+	if damage_multiplier > 1.0:
+		label.add_theme_color_override("font_color", Color.GOLD)
+	else:
+		label.add_theme_color_override("font_color", Color.WHITE)
+		
 	label.global_position = pos
 	get_tree().current_scene.add_child(label)
 	
@@ -219,13 +218,10 @@ func handle_bounce(new_velocity: Vector2, new_position: Vector2):
 		collision_handler.handle_bounce(new_velocity, new_position)
 		GlobalAudioManager.play_sfx(preload("res://audio/noels/thud2.wav"))
 
-
 func _destroy_projectile():
 	print("Destroying projectile at position: ", global_position)
 	queue_free()
-	
 
 func force_destroy():
 	print("Force destroying projectile")
 	queue_free()
-	

@@ -9,7 +9,7 @@ var has_collided: bool = false
 
 # Reference to parent projectile
 var projectile: RigidBody2D
-@onready var sprite = get_parent().get_parent().get_node("Sprite2D")  # Make sure this path is correct!
+@onready var sprite = get_parent().get_parent().get_node("Sprite2D")
 @onready var projectile2_texture = preload("res://images/PlayerProjectile2.png")
 @onready var projectile3_texture = preload("res://images/PlayerProjectile3.png")
 @onready var death_particles: GPUParticles2D = %DeathParticles
@@ -17,7 +17,6 @@ var projectile: RigidBody2D
 
 func _ready():
 	# Get reference to parent projectile when component is ready
-	# Components are children of the Components node, so we need get_parent().get_parent()
 	projectile = get_parent().get_parent() as RigidBody2D
 	
 func initialize():
@@ -25,7 +24,6 @@ func initialize():
 	pass
 
 func handle_collision(other_body):
-	
 	print("[PROJECTILE] Projectile collided with: ", other_body.name, " on layer: ", other_body.collision_layer)
 	
 	# Markera att kollision har skett
@@ -42,7 +40,6 @@ func handle_collision(other_body):
 		handle_damaged_bounce_hit(other_body)
 	else:
 		print("[PROJECTILE] This object is not DEFINED!")
-		
 
 func handle_player_hit(player_body):
 	print("[PROJECTILE] Hit something and should bounce")
@@ -63,13 +60,16 @@ func handle_player_hit(player_body):
 
 func handle_damaged_hit(other_body):
 	print("[PROJECTILE] Damaged object and free the projectile")
+	
+	# FIXED: Använd projektilens egen damage system istället för hårdkodad 10
 	if projectile.has_method("deal_damage_to_target"):
 		projectile.deal_damage_to_target(other_body)
 	elif other_body.has_method("take_damage"):
-		# Fallback: använd enhanced damage från projectile
+		# Fallback: använd projektilens faktiska skada
 		var damage_amount = projectile.get_actual_damage() if projectile.has_method("get_actual_damage") else 10
 		other_body.take_damage(damage_amount)
-		
+		print("Applied damage via fallback: ", damage_amount)
+	
 	# Hide the projectile sprite immediately
 	if sprite:
 		sprite.visible = false
@@ -97,12 +97,16 @@ func handle_damaged_hit(other_body):
 
 func handle_damaged_bounce_hit(other_body):
 	print("[PROJECTILE] Damaged object and bounced projectile")
+	
+	# FIXED: Använd projektilens egen damage system istället för hårdkodad 10
 	if projectile.has_method("deal_damage_to_target"):
 		projectile.deal_damage_to_target(other_body)
 	elif other_body.has_method("take_damage"):
-		# Fallback: använd enhanced damage från projectile
+		# Fallback: använd projektilens faktiska skada
 		var damage_amount = projectile.get_actual_damage() if projectile.has_method("get_actual_damage") else 10
 		other_body.take_damage(damage_amount)
+		print("Applied damage via fallback: ", damage_amount)
+	
 	handle_player_hit(other_body)
 	
 func handle_projectile_collision(other_projectile):
