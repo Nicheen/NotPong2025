@@ -154,7 +154,7 @@ func take_laser_damage(damage: int):
 func die():
 	if is_dead:
 		return
-	
+	GlobalAudioManager.play_sfx(preload("res://audio/sfx/large-underwater-explosion-190270.wav"))
 	is_dead = true
 	print("Enemy died! Awarding ", score_value, " points")
 	enemy_died.emit(score_value, global_position)
