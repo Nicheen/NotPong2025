@@ -83,10 +83,7 @@ func handle_damaged_hit(other_body):
 	
 	# Turn of tail projectiles
 	tail_particles.emitting = false
-	
-	# Trigger explosion effect
-	projectile.create_explosion_at(projectile.global_position, projectile.linear_velocity, Vector2.ZERO)
-	
+
 	# Wait for particle effect to finish (death particles lifetime is 0.8s)
 	var timer = Timer.new()
 	timer.wait_time = 30.0  # Slightly longer than particle lifetime

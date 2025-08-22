@@ -69,6 +69,10 @@ var active_distortions: Array[Dictionary] = []
 var distortion_id_counter: int = 0
 const MAX_DISTORTIONS = 5
 
+# Chain reaction optimization variables
+var explosion_queue: Array = []
+var processing_explosions: bool = false
+
 # Distortion settings for more realistic explosion effects
 var default_force: float = 15.0  # Reduced for more subtle effect
 var default_radius: float = 400.0  # Larger radius for bigger explosions
@@ -872,48 +876,18 @@ func damage_adjacent_blocks(enemy_position: Vector2, damage: int = 10):
 	var x_positions = spawn_manager.x_positions
 	var y_positions = spawn_manager.y_positions
 	
-	print("DEBUG: Enemy position = ", enemy_position)
-	print("DEBUG: Enemy position x type = ", typeof(enemy_position.x))
-	print("DEBUG: Enemy position y type = ", typeof(enemy_position.y))
-	print("DEBUG: First x_position = ", x_positions[0], " type = ", typeof(x_positions[0]))
-	print("DEBUG: First y_position = ", y_positions[0], " type = ", typeof(y_positions[0]))
-	
 	# Convert enemy position to integers to match array values
 	var enemy_x = int(enemy_position.x)
 	var enemy_y = int(enemy_position.y)
 	
-	print("DEBUG: Converted enemy_x = ", enemy_x, " enemy_y = ", enemy_y)
-	
 	# Find the grid index of the enemy position
 	var enemy_x_idx = x_positions.find(enemy_x)
 	var enemy_y_idx = y_positions.find(enemy_y)
-	
-	print("DEBUG: enemy_x_idx = ", enemy_x_idx, " enemy_y_idx = ", enemy_y_idx)
-	
+
 	if enemy_x_idx == -1 or enemy_y_idx == -1:
-		print("Enemy position still not found after conversion: (", enemy_x, ", ", enemy_y, ")")
+		print("Enemy position not found in grid: (", enemy_x, ", ", enemy_y, ")")
+		return
 		
-		# Manual search with debug info
-		print("Manual search for x = ", enemy_x)
-		for i in range(x_positions.size()):
-			print("  x_positions[", i, "] = ", x_positions[i], " match = ", (x_positions[i] == enemy_x))
-			if x_positions[i] == enemy_x:
-				enemy_x_idx = i
-				break
-		
-		print("Manual search for y = ", enemy_y)
-		for i in range(y_positions.size()):
-			print("  y_positions[", i, "] = ", y_positions[i], " match = ", (y_positions[i] == enemy_y))
-			if y_positions[i] == enemy_y:
-				enemy_y_idx = i
-				break
-		
-		if enemy_x_idx == -1 or enemy_y_idx == -1:
-			print("Manual search also failed. Aborting damage calculation.")
-			return
-	
-	print("Enemy died at grid position [", enemy_x_idx, ", ", enemy_y_idx, "] = (", enemy_x, ", ", enemy_y, ")")
-	
 	# Check all 8 adjacent positions (including diagonals)
 	var adjacent_offsets = [
 						 				  Vector2(0, -2),
@@ -923,7 +897,7 @@ func damage_adjacent_blocks(enemy_position: Vector2, damage: int = 10):
 										  Vector2(0,  2),
 	]
 	
-	var blocks_damaged = 0
+	var blocks_to_damage = []
 	
 	for offset in adjacent_offsets:
 		var check_x_idx = enemy_x_idx + offset.x
@@ -931,35 +905,53 @@ func damage_adjacent_blocks(enemy_position: Vector2, damage: int = 10):
 		
 		# Make sure we're within grid bounds
 		if check_x_idx < 0 or check_x_idx >= x_positions.size():
-			print("Adjacent position out of bounds X: ", check_x_idx)
 			continue
 		if check_y_idx < 0 or check_y_idx >= y_positions.size():
-			print("Adjacent position out of bounds Y: ", check_y_idx)
 			continue
 		
 		# Get the world position to check
 		var check_position = Vector2(x_positions[check_x_idx], y_positions[check_y_idx])
-		print("Checking adjacent position: ", check_position, " (grid [", check_x_idx, ", ", check_y_idx, "])")
-		
 		var block_to_damage = find_block_at_position(check_position)
-		if block_to_damage and block_to_damage.has_method("take_damage"):
-			var method_info = block_to_damage.get_method_list().filter(func(m): return m.name == "take_damage")
-			if method_info.size() > 0 and method_info[0].args.size() == 2:
-				block_to_damage.take_damage(damage, true)
-			elif method_info.size() > 0 and method_info[0].args.size() == 1:
-				block_to_damage.take_damage(damage)
-			else:
-				print("✗ take_damage has unexpected number of arguments for block at: ", check_position)
-			
-			blocks_damaged += 1
-			print("✓ Enemy death damaged adjacent block at: ", check_position, " for ", damage, " damage")
-		else:
-			print("✗ No block found at adjacent position: ", check_position)
-
-	
-	print("Total blocks damaged by explosion: ", blocks_damaged)
-	
 		
+		if block_to_damage and block_to_damage.has_method("take_damage"):
+			blocks_to_damage.append({
+				"block": block_to_damage,
+				"position": check_position,
+				"distance": enemy_position.distance_to(check_position)
+			})
+	# Sort blocks by distance for more natural chain reaction
+	blocks_to_damage.sort_custom(func(a, b): return a.distance < b.distance)
+	
+	# Damage blocks with staggered timing
+	for i in range(blocks_to_damage.size()):
+		var block_data = blocks_to_damage[i]
+		var delay = i * 0.15  # 150ms between each explosion
+		
+		# Use timer for staggered damage
+		get_tree().create_timer(delay).timeout.connect(func():
+			damage_single_block(block_data.block, damage)
+		)
+		
+func damage_single_block(block, damage: int):
+	"""Damage a single block with proper method detection"""
+	if not is_instance_valid(block):
+		return
+	
+	if not block.has_method("take_damage"):
+		return
+	
+	# Check method signature and call appropriately
+	var method_info = block.get_method_list().filter(func(m): return m.name == "take_damage")
+	if method_info.size() > 0:
+		var args_count = method_info[0].args.size()
+		
+		if args_count == 2:
+			block.take_damage(damage, true)  # Include exploded_by_bomb parameter
+		elif args_count == 1:
+			block.take_damage(damage)
+		else:
+			print("Unexpected take_damage method signature for: ", block.name)
+					
 func find_closest_grid_position(position: Vector2, x_positions: Array, y_positions: Array) -> Vector2:
 	"""Find the closest valid grid position to the given position"""
 	var closest_x = x_positions[0]

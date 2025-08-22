@@ -212,10 +212,6 @@ func toggle_debug_info():
 	if debug_info:
 		debug_info.visible = !debug_info.visible
 
-func create_explosion_at(position: Vector2, velocity1: Vector2, velocity2: Vector2):
-	if effect_manager:
-		effect_manager.create_explosion_effect(position, velocity1, velocity2)
-
 func get_distance_to_bounds() -> float:
 	if boundary_handler:
 		return boundary_handler.get_distance_to_bounds()
