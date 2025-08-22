@@ -15,6 +15,7 @@ extends StaticBody2D
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
 @onready var lightning_effect: Node2D = $VFX_Thunder
+@onready var lighning_audio_player: AudioStreamPlayer = $ThunderAudioPlayer
 
 # All 12 cloud sprites based on health states and attack phases
 var textures = {
@@ -117,10 +118,11 @@ func start_lightning_attack():
 	if lightning_effect and lightning_effect.has_method("start_thunder"):
 		lightning_effect.start_thunder()
 		print("Cloud block lightning attack started")
-
+		
 func _on_lightning_activated():
 	"""Called when the lightning controller activates"""
 	lightning_active = true
+	lighning_audio_player.play()
 	update_sprite()
 	print("Cloud block received lightning activation signal")
 
@@ -128,6 +130,7 @@ func _on_lightning_deactivated():
 	"""Called when the lightning controller deactivated"""
 	lightning_active = false
 	lightning_warning = false
+	lighning_audio_player.stop()
 	update_sprite()
 	lightning_damage_timer = 0.0
 	

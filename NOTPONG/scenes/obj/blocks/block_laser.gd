@@ -1,8 +1,5 @@
 extends StaticBody2D
 
-var laser_audio_player: AudioStreamPlayer
-var is_laser_sound_playing: bool = false
-
 # Enemy settings
 @export var max_health: int = 20
 @export var score_value: int = 30  # Points awarded when killed
@@ -18,6 +15,7 @@ var is_laser_sound_playing: bool = false
 @onready var sprite: Sprite2D = %Sprite2D
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
 @onready var laser := %LaserBeam2D
+@onready var laser_audio_player: AudioStreamPlayer = $LaserAudioPlayer
 
 # Sprite textures
 var normal_texture: Texture2D
@@ -57,12 +55,6 @@ func _ready():
 	# Set up enemy
 	current_health = max_health
 	
-	# Set up laser audio player
-	laser_audio_player = AudioStreamPlayer.new()
-	laser_audio_player.volume_db = -15.0
-	laser_audio_player.bus = "SFX"  # Use the SFX audio bus
-	add_child(laser_audio_player)
-	
 	# Store original sprite color and texture
 	if sprite:
 		original_color = sprite.modulate
@@ -82,7 +74,7 @@ func _physics_process(delta):
 	if laser_ready and not laser_activated and not is_dead:
 		laser_timer += delta
 		if laser_timer >= laser_activation_delay - 1.0:
-			start_laser_audio()
+			laser_audio_player.play()
 		if laser_timer >= laser_activation_delay:
 			activate_laser()
 			
@@ -153,25 +145,8 @@ func deactivate_laser():
 	laser_duration_timer = 0.0
 	laser_damage_timer = 0.0
 	laser.is_casting = false
-	stop_laser_audio()
+	laser_audio_player.stop()
 	print("laser deactivated on laser block")
-	
-func start_laser_audio():
-	"""Start playing the laser sound effect"""
-	if not is_laser_sound_playing and laser_audio_player:
-		# Replace with your actual laser sound file path
-		var laser_sound = preload("res://audio/sfx/laser-charge-175727.mp3")  # Update this path!
-		laser_audio_player.stream = laser_sound
-		laser_audio_player.play()
-		is_laser_sound_playing = true
-		print("Laser audio started")
-
-func stop_laser_audio():
-	"""Stop playing the laser sound effect"""
-	if is_laser_sound_playing and laser_audio_player:
-		laser_audio_player.stop()
-		is_laser_sound_playing = false
-		print("Laser audio stopped")
 		
 func take_damage(damage: int):
 	if is_dead:
@@ -247,7 +222,7 @@ func die():
 		preload("res://audio/noels/blop2.wav"),
 		preload("res://audio/noels/blop3.wav")
 	]
-	stop_laser_audio()
+	laser_audio_player.stop()
 	# Pick a random sound and play it
 	var random_sound = blop_sounds[randi() % blop_sounds.size()]
 	GlobalAudioManager.play_sfx(random_sound)
@@ -268,7 +243,7 @@ func die_silently():
 	"""Die without awarding score - used for laser kills"""
 	if is_dead:
 		return
-	
+	laser_audio_player.stop()
 	is_dead = true
 	print("Laser block destroyed by laser (no score awarded)")
 	
