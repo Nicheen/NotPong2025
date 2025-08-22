@@ -109,8 +109,67 @@ var level_configs = {
 	10: {
 		# Boss level
 		"boss": "Boss_Thunder"
+	},
+	11: {
+		# Level 11 - "NOT" med red blocks (flyttat ett steg till höger)
+		"precise_spawning": true,
+		"entities": {
+			"block_blue": [
+				# N (flyttat ett steg till höger)
+				{"x": 13, "y": 2}, {"x": 13, "y": 3}, {"x": 13, "y": 4}, {"x": 13, "y": 5}, {"x": 13, "y": 6},
+				{"x": 12, "y": 3}, {"x": 11, "y": 4}, {"x": 10, "y": 5},
+				{"x": 9, "y": 2}, {"x": 9, "y": 3}, {"x": 9, "y": 4}, {"x": 9, "y": 5}, {"x": 9, "y": 6},
+				
+				# T (flyttat ett steg till höger)
+				{"x": 3, "y": 2}, {"x": 2, "y": 2}, {"x": 1, "y": 2},
+				{"x": 2, "y": 3}, {"x": 2, "y": 4}, {"x": 2, "y": 5}, {"x": 2, "y": 6}
+			],
+			"block_red": [
+				{"x": 7, "y": 2}, {"x": 6, "y": 2}, {"x": 5, "y": 2},
+				{"x": 7, "y": 3}, {"x": 5, "y": 3},
+				{"x": 7, "y": 4}, {"x": 5, "y": 4},
+				{"x": 7, "y": 5}, {"x": 5, "y": 5},
+				{"x": 7, "y": 6}, {"x": 6, "y": 6}, {"x": 5, "y": 6},
+				]
+		}
+	},
+	12: {
+		# Level 12 - "PONG" med justerade positioner
+		"precise_spawning": true,
+		"entities": {
+			"block_red": [
+				# P (flyttat upp två steg: y=0,1,2,3,4 istället för y=2,3,4,5,6)
+				{"x": 14, "y": 0}, {"x": 14, "y": 1}, {"x": 14, "y": 2}, {"x": 14, "y": 3}, {"x": 14, "y": 4}, {"x": 14, "y": 5},
+				{"x": 13, "y": 0}, {"x": 12, "y": 0}, {"x": 11, "y": 0},
+				{"x": 11, "y": 1}, {"x": 11, "y": 2}, {"x": 11, "y": 3},
+				{"x": 13, "y": 3}, {"x": 12, "y": 3},
+				
+				# N (flyttat upp två steg och ett steg till vänster: y=0,1,2,3,4 och x=5,4,3,2,1)
+				{"x": 8, "y": 0}, {"x": 8, "y": 1}, {"x": 8, "y": 2}, {"x": 8, "y": 3}, 
+				{"x": 7, "y": 1}, {"x": 6, "y": 2}, {"x": 5, "y": 3},
+				{"x": 4, "y": 0}, {"x": 4, "y": 1}, {"x": 4, "y": 2}, {"x": 4, "y": 3}, {"x": 4, "y": 4},
+			],
+			"block_blue": [
+				# O (flyttat ned två steg och ett steg till vänster: y=4,5,6,7,8 och x=9,8,7)
+				{"x": 11, "y": 4}, {"x": 10, "y": 4}, {"x": 9, "y": 4},
+				{"x": 11, "y": 5}, {"x": 8, "y": 5},
+				{"x": 11, "y": 6}, {"x": 8, "y": 6},
+				{"x": 11, "y": 7}, {"x": 8, "y": 7},
+				{"x": 11, "y": 8}, {"x": 10, "y": 8},{"x": 9, "y": 8}, {"x": 8, "y": 8},
+				
+				# G (flyttat ned 1 steg och omgjord för att se ut som G: y=3,4,5,6,7)
+				{"x": 0, "y": 4}, {"x": 0, "y": 6}, {"x": 1, "y": 6}, {"x": 0, "y": 8},
+				{"x": 1, "y": 4}, {"x": 2, "y": 4}, {"x": 3, "y": 4}, {"x": 0, "y": 7}, # Topp
+				{"x": 3, "y": 8}, {"x": 2, "y": 8}, {"x": 1, "y": 8},  # Botten
+				{"x": 3, "y": 5}, {"x": 3, "y": 6},{"x": 3, "y": 7},  # Mittstreck (G-karakteristik)
+			],
+			"block_laser":[
+				{"x": 8, "y": 4}
+			]
+		}
 	}
 }
+
 
 func start_level(level: int):
 	current_level = level
