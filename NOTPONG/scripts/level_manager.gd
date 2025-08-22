@@ -3,6 +3,10 @@ extends Node
 var main_scene: Node2D
 var current_level: int = 1
 
+# Grid koordinater (från spawn manager)
+var x_positions = [926, 876, 826, 776, 726, 676, 626, 576, 526, 476, 426, 376, 326, 276, 226]
+var y_positions = [124, 174, 224, 274, 324, 374, 424, 474, 524]
+
 # Level konfigurationer - här definierar vi exakt vad varje level ska ha
 var level_configs = {
 	1: {
@@ -24,11 +28,27 @@ var level_configs = {
 		"block_dropper": 1
 	},
 	4: {
-		"block_red": 5,
-		"block_blue": 3,
-		"block_laser": 2,
-		"block_iron": 5,
-		"enemy": 4,
+		# Level 4 - Test för alla entity typer i rader
+		"precise_spawning": true,
+		"entities": {
+			
+			"block_iron": [
+				{"x": 0, "y": 0, "rotation": 180}, {"x": 1, "y": 0, "rotation": 270}, {"x": 2, "y": 0, "rotation": 180}, {"x": 3, "y": 0, "rotation": 270}, {"x": 4, "y": 0, "rotation": 180},
+				{"x": 5, "y": 0, "rotation": 270}, {"x": 6, "y": 0, "rotation": 180}, {"x": 8, "y": 0, "rotation": 270}, {"x": 9, "y": 0, "rotation": 180},
+				{"x": 10, "y": 0, "rotation": 270}, {"x": 11, "y": 0, "rotation": 180}, {"x": 12, "y": 0, "rotation": 270}, {"x": 13, "y": 0, "rotation": 180}, {"x": 14, "y": 0, "rotation": 270},
+				
+				{"x": 3, "y": 5, "rotation": 270}, {"x": 2, "y": 5, "rotation": 180}, {"x": 11,"y": 5, "rotation": 180}, {"x": 12,"y": 5, "rotation": 270},
+				
+				{"x": 4, "y": 4, "rotation": 270}, {"x": 1, "y": 4, "rotation": 180}, {"x": 10,"y": 4, "rotation": 180}, {"x": 13,"y": 4, "rotation": 270},
+			],
+			"block_laser": [
+				{"x": 7, "y": 0},  
+			],
+			"block_red": [
+				{"x": 3, "y": 4}, {"x": 2, "y": 4}, {"x": 11,"y": 4}, {"x": 12,"y": 4},
+			]
+			
+		}
 	},
 	5: {
 		# Boss level
@@ -37,29 +57,54 @@ var level_configs = {
 	6: {
 		"block_red": 5,
 		"block_blue": 3,
-		"block_laser": 2,
-		"block_iron": 4,
+		"block_laser": 3,
+		"block_iron": 8,
 		"enemy": 3,
-		"block_dropper_fireball": 1
 	},
 	7: {
 		"block_red": 30,
 		"block_blue": 12,
 		"enemy": 20,
+		"block_iron": 5,
 	},
 	8: {
-		"block_red": 8,
+		"block_red": 10,
 		"block_blue": 4,
-		"block_cloud": 1,
+		"block_cloud": 2,
 		"enemy": 2,
 		"block_dropper": 1,
-		"block_dropper_fireball": 1
 	},
 	9: {
-		"block_red": 20,
-		"block_blue": 10,
-		"block_laser": 2,
-		"block_cloud": 5,
+		# Level 9 - Specifika positioner med avancerat mönster
+		"precise_spawning": true,
+		"entities": {
+			"block_cloud": [
+				{"x": 2, "y": 0}, {"x": 4, "y": 0}, {"x": 6, "y": 0}, {"x": 8, "y": 0}, {"x": 10, "y": 0}, {"x": 12, "y": 0}
+			],
+			"block_blue": [
+				{"x": 2, "y": 1}, {"x": 4, "y": 1}, {"x": 6, "y": 1}, {"x": 8, "y": 1}, {"x": 10, "y": 1}, {"x": 12, "y": 1},  # Rad 2: Blå
+				{"x": 2, "y": 3}, {"x": 4, "y": 3}, {"x": 6, "y": 3}, {"x": 8, "y": 3}, {"x": 10, "y": 3}, {"x": 12, "y": 3},  # Rad 4: Blå
+				{"x": 2, "y": 5}, {"x": 4, "y": 5}, {"x": 6, "y": 5}, {"x": 8, "y": 5}, {"x": 10, "y": 5}, {"x": 12, "y": 5},  # Rad 6: Blå
+				{"x": 2, "y": 7}, {"x": 4, "y": 7}, {"x": 6, "y": 7}, {"x": 8, "y": 7}, {"x": 10, "y": 7}, {"x": 12, "y": 7}   # Rad 8: Blå
+			],
+			"block_red": [
+				{"x": 2, "y": 2}, {"x": 4, "y": 2}, {"x": 6, "y": 2}, {"x": 8, "y": 2}, {"x": 10, "y": 2}, {"x": 12, "y": 2},  # Rad 3: Röd
+				{"x": 2, "y": 4}, {"x": 4, "y": 4}, {"x": 6, "y": 4}, {"x": 8, "y": 4}, {"x": 10, "y": 4}, {"x": 12, "y": 4},  # Rad 5: Röd
+				{"x": 2, "y": 6}, {"x": 4, "y": 6}, {"x": 6, "y": 6}, {"x": 8, "y": 6}, {"x": 10, "y": 6}, {"x": 12, "y": 6},  # Rad 7: Röd
+				{"x": 2, "y": 8}, {"x": 4, "y": 8}, {"x": 6, "y": 8}, {"x": 8, "y": 8}, {"x": 10, "y": 8}, {"x": 12, "y": 8},  # Rad 9: Röd
+				# Röda block mellan blå block (på blå rader)
+				{"x": 3, "y": 1}, {"x": 5, "y": 1}, {"x": 7, "y": 1}, {"x": 9, "y": 1}, {"x": 11, "y": 1},  # Mellan blå på rad 2
+				{"x": 3, "y": 3}, {"x": 5, "y": 3}, {"x": 7, "y": 3}, {"x": 9, "y": 3}, {"x": 11, "y": 3},  # Mellan blå på rad 4
+				{"x": 3, "y": 5}, {"x": 5, "y": 5}, {"x": 7, "y": 5}, {"x": 9, "y": 5}, {"x": 11, "y": 5},  # Mellan blå på rad 6
+				{"x": 3, "y": 7}, {"x": 5, "y": 7}, {"x": 7, "y": 7}, {"x": 9, "y": 7}, {"x": 11, "y": 7},  # Mellan blå på rad 8
+				# Röda block på yttersidorna av de blå raderna
+				{"x": 1, "y": 1}, {"x": 13, "y": 1},  # Yttersidor på rad 2
+				{"x": 1, "y": 3}, {"x": 13, "y": 3},  # Yttersidor på rad 4
+				{"x": 1, "y": 5}, {"x": 13, "y": 5},  # Yttersidor på rad 6
+				{"x": 1, "y": 7}, {"x": 13, "y": 7}   # Yttersidor på rad 8
+			],
+			
+		}
 	},
 	10: {
 		# Boss level
@@ -98,12 +143,15 @@ func spawn_level(level: int):
 		spawn_boss_level(level, config["boss"])
 		return
 	
-	# Spawna vanlig level
-	spawn_normal_level(level, config)
+	# Kolla om det är precision spawning
+	if config.has("precise_spawning") and config["precise_spawning"]:
+		spawn_precise_level(level, config)
+	else:
+		spawn_normal_level(level, config)
 
 func spawn_normal_level(level: int, config: Dictionary):
-	"""Spawna en vanlig level med given konfiguration"""
-	print("Spawning level ", level, " with config: ", config)
+	"""Spawna en vanlig level med random/weighted positioning"""
+	print("Spawning level ", level, " with random positioning and config: ", config)
 	
 	# Spawna varje typ av entity baserat på konfigurationen
 	for entity_type in config.keys():
@@ -113,8 +161,62 @@ func spawn_normal_level(level: int, config: Dictionary):
 	# Skriv ut vad som spawnades
 	print_level_summary(level, config)
 
+func spawn_precise_level(level: int, config: Dictionary):
+	"""Spawna en level med exakta positioner"""
+	print("Spawning level ", level, " with PRECISE positioning!")
+	
+	if not config.has("entities"):
+		print("ERROR: Precise level missing 'entities' key!")
+		return
+	
+	var entities = config["entities"]
+	
+	# Spawna varje entity typ på sina specifika positioner
+	for entity_type in entities.keys():
+		var positions_data = entities[entity_type]
+		spawn_entities_at_precise_positions(entity_type, positions_data)
+	
+	print_precise_level_summary(level, entities)
+
+func spawn_entities_at_precise_positions(entity_type: String, positions_data: Array):
+	"""Spawna entities på exakta grid positioner"""
+	print("Spawning ", positions_data.size(), " ", entity_type, " at precise positions")
+	
+	for pos_data in positions_data:
+		if not pos_data.has("x") or not pos_data.has("y"):
+			print("ERROR: Position data missing x or y: ", pos_data)
+			continue
+		
+		var grid_x = pos_data["x"]
+		var grid_y = pos_data["y"]
+		var rotation = pos_data.get("rotation", null)  # Hämta rotation om den finns
+		
+		# Konvertera grid koordinater till world position
+		var world_pos = grid_to_world_position(grid_x, grid_y)
+		if world_pos == Vector2.ZERO:
+			print("ERROR: Invalid grid position: (", grid_x, ", ", grid_y, ")")
+			continue
+		
+		# Spawna entity på world position med optional rotation
+		spawn_entity_at_position_with_rotation(entity_type, world_pos, rotation)
+
+func grid_to_world_position(grid_x: int, grid_y: int) -> Vector2:
+	"""Konvertera grid koordinater (0-14, 0-8) till world position"""
+	if grid_x < 0 or grid_x >= x_positions.size():
+		print("ERROR: Invalid grid_x: ", grid_x, " (valid range: 0-", x_positions.size()-1, ")")
+		return Vector2.ZERO
+	
+	if grid_y < 0 or grid_y >= y_positions.size():
+		print("ERROR: Invalid grid_y: ", grid_y, " (valid range: 0-", y_positions.size()-1, ")")
+		return Vector2.ZERO
+	
+	var world_x = x_positions[grid_x]
+	var world_y = y_positions[grid_y]
+	
+	return Vector2(world_x, world_y)
+
 func spawn_entity_type(entity_type: String, count: int):
-	"""Spawna en specifik typ av entity"""
+	"""Spawna en specifik typ av entity med random/weighted positioning"""
 	match entity_type:
 		"block_red":
 			main_scene.spawn_blocks_simple(count)
@@ -134,6 +236,43 @@ func spawn_entity_type(entity_type: String, count: int):
 			main_scene.spawn_bombs_simple(count)
 		_:
 			print("WARNING: Unknown entity type: ", entity_type)
+
+func spawn_entity_at_position_with_rotation(entity_type: String, world_pos: Vector2, rotation: Variant = null):
+	"""Spawna en specifik entity på en exakt world position med optional rotation"""
+	match entity_type:
+		"block_red":
+			main_scene.spawn_enemy_kvadrat_at_position(world_pos)
+		"block_blue":
+			main_scene.spawn_blue_block_at_position(world_pos)
+		"block_laser":
+			main_scene.spawn_laser_block_at_position(world_pos)
+		"block_iron":
+			spawn_iron_block_with_rotation(world_pos, rotation)
+		"block_cloud":
+			main_scene.spawn_cloud_block_at_position(world_pos)
+		"block_dropper":
+			main_scene.spawn_enemy_block_dropper_at_position(world_pos)
+		"block_dropper_fireball":
+			main_scene.spawn_fireball_dropper_at_position(world_pos)
+		"enemy":
+			main_scene.spawn_enemy_at_position(world_pos)
+		_:
+			print("WARNING: Unknown entity type for precise spawning: ", entity_type)
+
+func spawn_iron_block_with_rotation(world_pos: Vector2, rotation: Variant = null):
+	"""Spawna iron block med specifik rotation"""
+	# Använd main scene för att spawna iron block
+	main_scene.spawn_iron_block_at_position(world_pos)
+	
+	# Om rotation specificerades, ändra rotationen
+	if rotation != null:
+		# Hitta det senast spawnerade iron blocket
+		var iron_blocks = main_scene.iron_blocks
+		if iron_blocks.size() > 0:
+			var latest_iron_block = iron_blocks[-1]  # Senast tillagda
+			if is_instance_valid(latest_iron_block):
+				latest_iron_block.rotation_degrees = rotation
+				print("Set iron block rotation to ", rotation, " degrees at position ", world_pos)
 
 func spawn_boss_level(level: int, boss_type: String):
 	"""Spawna en boss level"""
@@ -193,12 +332,21 @@ func spawn_single_boss(boss_scene_path: String, boss_name: String, level: int, p
 	print(boss_name, " spawned at ", position, " with health multiplier: ", boss_health_multiplier)
 
 func print_level_summary(level: int, config: Dictionary):
-	"""Skriv ut en sammanfattning av vad som spawnades"""
-	print("Level ", level, " spawned successfully:")
+	"""Skriv ut en sammanfattning av vad som spawnades (random)"""
+	print("Level ", level, " spawned successfully (random positioning):")
 	
 	for entity_type in config.keys():
-		var count = config[entity_type]
-		print("  - ", count, " ", entity_type.replace("_", " "))
+		if entity_type != "precise_spawning":
+			var count = config[entity_type]
+			print("  - ", count, " ", entity_type.replace("_", " "))
+
+func print_precise_level_summary(level: int, entities: Dictionary):
+	"""Skriv ut en sammanfattning av vad som spawnades (precise)"""
+	print("Level ", level, " spawned successfully (PRECISE positioning):")
+	
+	for entity_type in entities.keys():
+		var positions = entities[entity_type]
+		print("  - ", positions.size(), " ", entity_type.replace("_", " "), " at specific positions")
 
 func is_boss_level(level: int) -> bool:
 	"""Kolla om en level är en boss level"""
@@ -229,6 +377,8 @@ func level_completed():
 		print("All levels completed! Player wins!")
 		main_scene.player_wins()
 
+# === UTILITY FUNCTIONS ===
+
 func get_level_config(level: int) -> Dictionary:
 	"""Få konfigurationen för en specifik level"""
 	if level_configs.has(level):
@@ -236,15 +386,53 @@ func get_level_config(level: int) -> Dictionary:
 	else:
 		return {}
 
-func add_level_config(level: int, config: Dictionary):
-	"""Lägg till en ny level konfiguration"""
-	level_configs[level] = config
-	print("Added configuration for level ", level, ": ", config)
+func add_precise_level_config(level: int, entities: Dictionary):
+	"""Lägg till en ny precision level konfiguration"""
+	level_configs[level] = {
+		"precise_spawning": true,
+		"entities": entities
+	}
+	print("Added precise configuration for level ", level)
 
-func modify_level_config(level: int, entity_type: String, count: int):
-	"""Modifiera en specifik entity i en level konfiguration"""
+func add_normal_level_config(level: int, config: Dictionary):
+	"""Lägg till en ny vanlig level konfiguration"""
+	level_configs[level] = config
+	print("Added normal configuration for level ", level, ": ", config)
+
+func set_entity_at_grid_position_with_rotation(level: int, entity_type: String, grid_x: int, grid_y: int, rotation: int = 0):
+	"""Lägg till en entity på en specifik grid position för en level med rotation"""
 	if not level_configs.has(level):
-		level_configs[level] = {}
+		level_configs[level] = {"precise_spawning": true, "entities": {}}
 	
-	level_configs[level][entity_type] = count
-	print("Modified level ", level, ": ", entity_type, " = ", count)
+	var config = level_configs[level]
+	
+	# Konvertera till precision format om det inte redan är det
+	if not config.has("precise_spawning"):
+		config["precise_spawning"] = true
+		config["entities"] = {}
+	
+	# Lägg till entity position med rotation
+	if not config["entities"].has(entity_type):
+		config["entities"][entity_type] = []
+	
+	var entity_data = {"x": grid_x, "y": grid_y}
+	if rotation != 0:  # Lägg bara till rotation om den inte är 0
+		entity_data["rotation"] = rotation
+	
+	config["entities"][entity_type].append(entity_data)
+	print("Added ", entity_type, " at grid position (", grid_x, ", ", grid_y, ") with rotation ", rotation, "° for level ", level)
+
+func visualize_grid():
+	"""Debug funktion för att visa grid koordinater"""
+	print("\n=== GRID VISUALIZATION ===")
+	print("Grid size: ", x_positions.size(), "x", y_positions.size())
+	print("X positions (0-14): ", x_positions)
+	print("Y positions (0-8): ", y_positions)
+	
+	print("\nGrid layout:")
+	for y in range(y_positions.size()):
+		var line = "Row " + str(y) + " (y=" + str(y_positions[y]) + "): "
+		for x in range(x_positions.size()):
+			line += "(" + str(x) + "," + str(y) + ") "
+		print(line)
+	print("=== END GRID ===\n")
