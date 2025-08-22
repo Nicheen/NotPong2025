@@ -4,7 +4,7 @@ extends Node
 # Audio players for global sounds
 var music_player: AudioStreamPlayer
 var sfx_players: Array[AudioStreamPlayer] = []
-var max_sfx_players: int = 8
+var max_sfx_players: int = 80
 
 # Current music track
 var current_music: AudioStream
