@@ -124,7 +124,7 @@ func get_collision_info(colliding_body):
 
 func handle_bounce(colliding_body):
 	current_bounces += 1
-	
+	update_sprite()
 	# Check if we've bounced too many times
 	if current_bounces >= max_bounces:
 		destroy()
@@ -253,6 +253,7 @@ func update_sprite():
 
 func destroy():
 	print("[PROJECTILE] Projectile was destroyed.")
+	death_particles.emitting = true
 	queue_free()
 
 func _on_death_timer_timeout() -> void:

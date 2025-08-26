@@ -26,6 +26,10 @@ SilentWolf="*res://addons/silent_wolf/SilentWolf.gd"
 SmartScoreManager="*res://autoloads/SmartScoreManager.gd"
 DialogueManager="*res://autoloads/DialogueManager.gd"
 
+[display]
+
+window/stretch/mode="viewport"
+
 [editor_plugins]
 
 enabled=PackedStringArray("res://addons/flowerwall_postprocess/plugin.cfg", "res://addons/silent_wolf/plugin.cfg")

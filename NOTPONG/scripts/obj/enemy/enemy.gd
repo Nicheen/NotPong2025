@@ -235,54 +235,7 @@ func play_death_effect():
 		health_bar.visible = false
 	
 	check_blast_damage()
-	create_optimized_explosion()
-
-func create_optimized_explosion():
-	"""Fast, simple explosion that doesn't lag"""
-	# Hide original sprite
-	sprite.visible = false
-	
-	# Create simple explosion sprite
-	var explosion = Sprite2D.new()
-	explosion.texture = create_explosion_texture()
-	explosion.global_position = global_position
-	explosion.modulate = Color.ORANGE_RED
-	explosion.scale = Vector2(0.5, 0.5)
-	get_parent().add_child(explosion)
-	
-	# Quick scale and fade animation
-	var tween = create_tween()
-	tween.set_parallel(true)
-	tween.tween_property(explosion, "scale", Vector2(2.5, 2.5), 0.4)
-	tween.tween_property(explosion, "modulate", Color.TRANSPARENT, 0.4)
-	
-	# Clean up
-	tween.finished.connect(func(): 
-		if is_instance_valid(explosion):
-			explosion.queue_free()
-	)
-	
-	# Remove enemy immediately to prevent further interactions
 	queue_free()
-
-func create_explosion_texture() -> ImageTexture:
-	"""Create simple explosion texture"""
-	var size = 24
-	var image = Image.create(size, size, false, Image.FORMAT_RGBA8)
-	var center = Vector2(size/2, size/2)
-	
-	for x in range(size):
-		for y in range(size):
-			var pixel_pos = Vector2(x, y)
-			var distance = center.distance_to(pixel_pos)
-			
-			if distance <= size/2:
-				var alpha = 1.0 - (distance / (size/2))
-				image.set_pixel(x, y, Color(1, 0.6, 0, alpha))
-	
-	var texture = ImageTexture.new()
-	texture.set_image(image)
-	return texture
 	
 func create_screen_shake():
 	"""Enhanced screen shake"""

@@ -384,7 +384,7 @@ func shoot_projectile():
 	var shoot_direction = (mouse_pos - global_position).normalized()
 	var angle_rad = atan2(shoot_direction.y, shoot_direction.x)   # angle in radians
 	
-	# So the player cannot shoot downwards
+	# So the player cannot shoot into the lava and kill themselfs
 	if (angle_rad >= 0.0 and current_wall == WallSide.BOTTOM) or (angle_rad <= 0.0 and current_wall == WallSide.TOP):
 		return
 

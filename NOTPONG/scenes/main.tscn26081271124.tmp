@@ -1,4 +1,4 @@
-[gd_scene load_steps=32 format=3 uid="uid://b5flfw85xnn3s"]
+[gd_scene load_steps=31 format=3 uid="uid://b5flfw85xnn3s"]
 
 [ext_resource type="Script" uid="uid://c2dkvm0rwmi1d" path="res://scenes/main.gd" id="1_elqb8"]
 [ext_resource type="Texture2D" uid="uid://003gl8sksmsl" path="res://images/RutnatBakgrund.png" id="2_tbgi4"]
@@ -7,7 +7,6 @@
 [ext_resource type="Script" uid="uid://2stp3m5gk2bv" path="res://scenes/spawner.gd" id="3_tefeu"]
 [ext_resource type="Script" uid="uid://jranj8pqoox8" path="res://scenes/bounds.gd" id="5_tbgi4"]
 [ext_resource type="PackedScene" uid="uid://vmx5l2ssbjjb" path="res://scenes/arrow.tscn" id="7_o6xl0"]
-[ext_resource type="PackedScene" uid="uid://b6vavrt755vuu" path="res://scenes/fluid.tscn" id="8_tipki"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_o5qli"]
 size = Vector2(194, 648)
@@ -151,9 +150,6 @@ z_index = -10
 position = Vector2(576, 324)
 texture = ExtResource("2_tbgi4")
 
-[node name="Fluid" parent="." instance=ExtResource("8_tipki")]
-position = Vector2(-4, 606)
-
 [node name="Borders" type="Node2D" parent="."]
 
 [node name="Line2DLeft" type="Line2D" parent="Borders"]
@@ -213,7 +209,6 @@ default_color = Color(1, 0.164706, 0.180392, 1)
 antialiased = true
 
 [node name="Line2D2Bot" type="Line2D" parent="Deathzone"]
-visible = false
 z_index = 2
 position = Vector2(-311.756, -1612.95)
 scale = Vector2(1.57642, 3.55)

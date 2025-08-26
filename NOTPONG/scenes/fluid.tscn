@@ -1,0 +1,42 @@
+[gd_scene load_steps=6 format=3 uid="uid://b6vavrt755vuu"]
+
+[ext_resource type="Script" uid="uid://fnufd854s07c" path="res://scenes/fluid.gd" id="1_cvepl"]
+[ext_resource type="Shader" uid="uid://de2aomrb0o14o" path="res://scenes/fluid.gdshader" id="2_0va8q"]
+[ext_resource type="Script" uid="uid://ch5wgkjv4cn0j" path="res://scripts/smooth_path.gd" id="3_dbp7g"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_0va8q"]
+shader = ExtResource("2_0va8q")
+shader_parameter/water_color = Color(0.631373, 0, 0, 0.701961)
+shader_parameter/wave_speed = 1.0
+shader_parameter/wave_frequency = 2.0
+shader_parameter/wave_amplitude = 0.02
+
+[sub_resource type="Curve2D" id="Curve2D_tcnku"]
+
+[node name="Fluid" type="Node2D"]
+position = Vector2(1, 1)
+script = ExtResource("1_cvepl")
+d = 0.15
+spread = 0.05
+distance_between_springs = 10
+spring_number = 150
+
+[node name="water_polygon" type="Polygon2D" parent="."]
+material = SubResource("ShaderMaterial_0va8q")
+color = Color(0.890196, 0.0156863, 0.0980392, 0.627451)
+antialiased = true
+
+[node name="Water_Border" type="Path2D" parent="."]
+curve = SubResource("Curve2D_tcnku")
+script = ExtResource("3_dbp7g")
+spline_length = 5
+color = null
+metadata/_custom_type_script = "uid://ch5wgkjv4cn0j"
+
+[node name="Area2D" type="Area2D" parent="."]
+collision_layer = 16
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+
+[connection signal="body_entered" from="Area2D" to="." method="_on_area_2d_body_entered"]

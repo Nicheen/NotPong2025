@@ -53,6 +53,8 @@ var cloud_blocks: Array[StaticBody2D] = []
 var block_droppers_fireball: Array[StaticBody2D] = []
 var heart_pickups: Array[StaticBody2D] = []
 
+var projectiles: Array[RigidBody2D] = []
+
 
 # Game state
 var current_level: int = 1
@@ -88,10 +90,6 @@ func _ready():
 	setup_death_menu()
 	setup_win_menu()
 	setup_screen_distortion()
-	#Input.set_mouse_mode(Input.MOUSE_MODE_HIDDEN)
-	
-	print("Game scene ready!")
-	print("Total enemies spawned: ", total_enemies)
 
 func _process(delta):
 	"""Update distortion effects each frame"""
@@ -1365,6 +1363,7 @@ func clear_level_entities():
 	bosses.clear()
 	block_droppers_fireball.clear()
 	heart_pickups.clear()
+	projectiles.clear()
 
 	# Reset counters
 	total_enemies = 0
@@ -1374,6 +1373,7 @@ func clear_level_entities():
 	spawn_manager.clear_occupied_positions()
 	
 	print("Level cleared and spawner reset")
+	
 func spawn_fireball_dropper_at_position(position: Vector2):
 	var block_scene = load(ENEMY_BLOCK_DROPPER_FIREBALL_SCENE)
 	if not block_scene:
