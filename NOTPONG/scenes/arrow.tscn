@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://vmx5l2ssbjjb"]
+
+[ext_resource type="Script" uid="uid://bv2r0s6uv81jv" path="res://scenes/arrow.gd" id="1_umosx"]
+
+[node name="Arrow" type="Node2D"]
+script = ExtResource("1_umosx")

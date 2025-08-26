@@ -1,4 +1,4 @@
-[gd_scene load_steps=30 format=3 uid="uid://b5flfw85xnn3s"]
+[gd_scene load_steps=31 format=3 uid="uid://b5flfw85xnn3s"]
 
 [ext_resource type="Script" uid="uid://c2dkvm0rwmi1d" path="res://scenes/main.gd" id="1_elqb8"]
 [ext_resource type="Texture2D" uid="uid://003gl8sksmsl" path="res://images/RutnatBakgrund.png" id="2_tbgi4"]
@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://dc25tu6hyq1e2" path="res://scenes/menus/hud.tscn" id="3_sugp2"]
 [ext_resource type="Script" uid="uid://2stp3m5gk2bv" path="res://scenes/spawner.gd" id="3_tefeu"]
 [ext_resource type="Script" uid="uid://jranj8pqoox8" path="res://scenes/bounds.gd" id="5_tbgi4"]
+[ext_resource type="PackedScene" uid="uid://vmx5l2ssbjjb" path="res://scenes/arrow.tscn" id="7_o6xl0"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_o5qli"]
 size = Vector2(194, 648)
@@ -274,3 +275,8 @@ amount = 200
 texture = SubResource("GradientTexture2D_tipki")
 lifetime = 10.0
 process_material = SubResource("ParticleProcessMaterial_tefeu")
+
+[node name="Arrow" parent="." instance=ExtResource("7_o6xl0")]
+visible = false
+position = Vector2(95, 95)
+vector = Vector2(0, 1)

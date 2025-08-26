@@ -378,22 +378,25 @@ func update_projectile_preview():
 func shoot_projectile():
 	if not projectile_scene or not can_shoot:
 		return
-		
-	print("=== SHOOTING PROJECTILE ===")
 	
 	# Get shoot direction toward mouse (din befintliga logik)
 	var mouse_pos = get_global_mouse_position()
 	var shoot_direction = (mouse_pos - global_position).normalized()
+	var angle_rad = atan2(shoot_direction.y, shoot_direction.x)   # angle in radians
 	
+	# So the player cannot shoot downwards
+	if (angle_rad >= 0.0 and current_wall == WallSide.BOTTOM) or (angle_rad <= 0.0 and current_wall == WallSide.TOP):
+		return
+
 	# Create projectile
 	var projectile = projectile_scene.instantiate()
 	
 	# Position it in front of player
 	var spawn_position = global_position + (shoot_direction * 80)
 	projectile.global_position = spawn_position
-	
-	print("Spawning projectile at: ", spawn_position)
-	print("Shoot direction: ", shoot_direction)
+	projectile.player = self
+	print("[PROJECTILE] Spawning projectile at: ", spawn_position)
+	print("[PROJECTILE] Shoot direction: ", shoot_direction)
 	
 	# Add to scene first
 	get_tree().current_scene.add_child(projectile)
@@ -413,12 +416,6 @@ func shoot_projectile():
 	
 	# Initialize the projectile med enhanced damage
 	projectile.initialize(shoot_direction, projectile_speed)
-	
-	# Applicera damage multiplier
-	if projectile.has_method("set_damage_multiplier"):
-		projectile.set_damage_multiplier(damage_mult)
-	elif "damage_multiplier" in projectile:
-		projectile.damage_multiplier = damage_mult
 	
 	# Start cooldown
 	start_shoot_cooldown()
