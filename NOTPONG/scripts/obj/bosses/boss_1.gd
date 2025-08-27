@@ -43,7 +43,6 @@ var armour_rotation: float = 0.0
 var activate_armour_duration: float = randf_range(2.0, 6.0)
 var activate_armour_timer: float = 0.0
 
-
 var spawn_position: Vector2  # Where boss spawned
 var movement_timer: float = 0.0
 var movement_speed: float = 0.4  # 5x långsammare (var 2.0, nu 0.4)
@@ -54,6 +53,7 @@ var is_moving: bool = true
 # Movement boundaries (from spawn position)
 var max_horizontal_range: float = 200.0  # 150 pixels left/right
 var max_vertical_range: float = 100.0    # 100 pixels up/down
+
 # Signals
 signal boss_died(score_points: int)
 signal boss_hit(damage: int)
@@ -80,9 +80,6 @@ func _ready():
 		health_bar.max_value = max_health
 		health_bar.value = current_health
 	
-	# Position enemy in middle of screen (or wherever you want)
-	# This can be overridden when spawning
-	
 	print("Enemy created with ", max_health, " health at position: ", global_position)
 
 func deactivate_armoured_mode():
@@ -94,7 +91,11 @@ func deactivate_armoured_mode():
 	collision_layer = 2  # Back to enemy layer
 	
 	var tween = create_tween()
+	tween.set_parallel(true)  # Tillåt parallella animationer
+	
+	# Rotera både sprite och collision shape tillsammans
 	tween.tween_property(sprite, "rotation_degrees", original_rotation, 0.25)
+	tween.tween_property(collision_shape, "rotation_degrees", original_rotation, 0.25)
 	
 	await tween.finished
 	
@@ -105,8 +106,6 @@ func deactivate_armoured_mode():
 	resume_movement()
 
 	print("🛡️ ARMOURED MODE DEACTIVATED")
-	
-	
 	
 func _physics_process(delta):
 	# Handle armoured mode timing
@@ -296,8 +295,13 @@ func activate_armoured_mode():
 	
 	is_transitioning = true
 	pause_movement()
+	
 	var tween = create_tween()
+	tween.set_parallel(true)  # Tillåt parallella animationer
+	
+	# Rotera både sprite och collision shape tillsammans
 	tween.tween_property(sprite, "rotation_degrees", armour_rotation, 0.25)
+	tween.tween_property(collision_shape, "rotation_degrees", armour_rotation, 0.25)
 	
 	await tween.finished
 	
@@ -330,8 +334,6 @@ func die():
 	boss_died.emit(score_value)
 	
 	play_death_effect()
-	
-	
 	
 func show_damage_effect():
 	if not sprite:

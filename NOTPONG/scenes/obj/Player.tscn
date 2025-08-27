@@ -1,7 +1,7 @@
 [gd_scene load_steps=6 format=3 uid="uid://b4g35yo4tk2kb"]
 
 [ext_resource type="Script" uid="uid://dctpv4rhjpa0w" path="res://scripts/obj/player/player.gd" id="1_j31ew"]
-[ext_resource type="Texture2D" uid="uid://bniug5abdlkid" path="res://images/NewPlayer.png" id="2_mb3g1"]
+[ext_resource type="Texture2D" uid="uid://bncqxj2ue12r0" path="res://images/NewPlayer.png" id="2_mb3g1"]
 [ext_resource type="Script" uid="uid://bc4tovuk71dgr" path="res://scenes/obj/DodgeDetector.gd" id="3_j31ew"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_j31ew"]
