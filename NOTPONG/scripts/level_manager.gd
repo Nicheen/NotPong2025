@@ -10,9 +10,10 @@ var y_positions = [124, 174, 224, 274, 324, 374, 424, 474, 524]
 # Level konfigurationer - här definierar vi exakt vad varje level ska ha
 var level_configs = {
 	1: {
-		"block_red": 2,
+		"block_red": 12,
 		"block_blue": 1,
-		"enemy": 1
+		"enemy": 1,
+		"block_dropper_fireball": 4
 	},
 	2: {
 		"block_red": 3,
