@@ -18,7 +18,8 @@ var hit_counter: int = 0
 var y_movement_timer: float = 0.0
 var y_movement_speed: float = 30.0  
 var y_direction: int = 1  
-
+@export var min_teleport_position: int = -2  # Default minimum (2 steps left)
+@export var max_teleport_position: int = 2   # Default maximum (2 steps right)
 # Node references
 @onready var sprite: Sprite2D = %Sprite2D
 @onready var thunder_effect: Node2D = %VFX_Thunder
@@ -61,6 +62,21 @@ func _ready():
 		sprite.scale = Vector2(3.125, 3.125)
 	
 	thunder_timer = 0.0
+	
+	if boss_collision:
+		boss_collision.collision_layer = 2  # Damage layer - projectiles deal damage and are destroyed
+		boss_collision.collision_mask = 0   # Don't detect anything
+		print("Boss collision set to damage layer (2)")
+		
+		# Connect collision signal if not already connected
+		if boss_collision.has_signal("body_entered") and not boss_collision.body_entered.is_connected(_on_boss_hit):
+			boss_collision.body_entered.connect(_on_boss_hit)
+	
+	# Cloud part should be on bounce layer (4) like armoured boss
+	if cloud_collision:
+		cloud_collision.collision_layer = 4  # Bounce layer - projectiles bounce off
+		cloud_collision.collision_mask = 0   # Don't detect anything  
+		print("Cloud collision set to bounce layer (4)")
 	
 	# Set up thunder effect
 	if thunder_effect:
@@ -116,21 +132,26 @@ func handle_y_movement(delta):
 func teleport_boss():
 	var possible_directions = []
 	
-	if current_teleport_position > -2:  
+	# Check if we can move left (respecting the minimum limit)
+	if current_teleport_position > min_teleport_position:  
 		possible_directions.append(-1)
-	if current_teleport_position < 2:   
+	
+	# Check if we can move right (respecting the maximum limit)
+	if current_teleport_position < max_teleport_position:   
 		possible_directions.append(1)
 	
 	if possible_directions.size() == 0:
-		print("Boss cannot teleport - at maximum range")
+		print("Boss cannot teleport - at position limits (", min_teleport_position, " to ", max_teleport_position, ")")
 		return
 	
+	# Choose a random valid direction
 	var direction = possible_directions[randi() % possible_directions.size()]
 	current_teleport_position += direction
 	create_teleport_effect()
 	
 	var direction_text = "left" if direction == -1 else "right"
-	print("Boss teleported ", direction_text, " - new teleport position: ", current_teleport_position)
+	print("Boss teleported ", direction_text, " - new position: ", current_teleport_position, 
+		  " (limits: ", min_teleport_position, " to ", max_teleport_position, ")")
 
 func create_teleport_effect():
 	if not sprite:
@@ -172,31 +193,14 @@ func apply_thunder_damage():
 				target.take_damage(damage_amount)
 				print("Boss thunder dealing ", damage_amount, " damage to ", target.name)
 
-# Use the original collision detection method with body_entered
-func _on_body_entered(body):
-	"""Handle collision with projectiles"""
-	if not body.name.contains("Projectile"):
-		return
-	
-	# Get the collision point to determine if it hit boss or cloud part
-	var collision_point = body.global_position
-	var boss_center = global_position
-	
-	# Simple check: if projectile is in upper half, it hit boss; lower half = cloud
-	if collision_point.y < boss_center.y:
-		# Hit boss part - take damage
-		print("Projectile hit boss part")
-		take_damage(10)
-		if body.has_method("queue_free"):
-			body.queue_free()
-	else:
-		# Hit cloud part - bounce
-		print("Projectile hit cloud part - bouncing")
-		if body.has_method("linear_velocity"):
-			var current_velocity = body.linear_velocity
-			var bounce_velocity = Vector2(current_velocity.x * 0.8, -abs(current_velocity.y) * 0.8)
-			body.linear_velocity = bounce_velocity
-			body.global_position += Vector2(0, -10)  # Separate to prevent multiple hits
+# NEW: Dedicated handler for boss hits (called by projectile's collision system)
+func _on_boss_hit(body):
+	"""Called when boss part is hit by a projectile"""
+	if body.name.contains("Projectile"):
+		print("Boss part hit by projectile - taking damage")
+		# The projectile handles its own destruction when hitting damage layer
+		# We just need to register the damage here
+		# Damage is already applied by the projectile itself via take_damage
 
 func take_damage(damage: int):
 	if is_dead:
@@ -280,6 +284,7 @@ func destroy_block():
 	block_destroyed.emit(score_value)
 	play_death_effect()
 
+
 func play_death_effect():
 	if not sprite:
 		queue_free()
@@ -288,6 +293,12 @@ func play_death_effect():
 	# Disable all collisions immediately
 	collision_layer = 0
 	collision_mask = 0
+	if boss_collision:
+		boss_collision.collision_layer = 0
+		boss_collision.collision_mask = 0
+	if cloud_collision:
+		cloud_collision.collision_layer = 0
+		cloud_collision.collision_mask = 0
 	
 	var original_position = sprite.position
 	var tween = create_tween()

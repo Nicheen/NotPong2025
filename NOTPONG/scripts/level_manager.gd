@@ -342,19 +342,85 @@ func spawn_boss_level(level: int, boss_type: String):
 		"Boss1":
 			spawn_single_boss(main_scene.BOSS_SCENE, "Boss1", level, Vector2(576, 280))
 		"Boss_Thunder":
-			# Spawna 3 thunder bosses
+			# Spawna 3 thunder bosses med olika teleport begränsningar
 			var center_pos = Vector2(576, 280)
-			var left_pos = Vector2(576 - 150, 280)
-			var right_pos = Vector2(576 + 150, 280)
+			var left_pos = Vector2(576 - 200, 330)
+			var right_pos = Vector2(576 + 200, 230)
 			
-			spawn_single_boss(main_scene.BOSS_THUNDER_SCENE, "Boss_Thunder_Center", level, center_pos)
-			spawn_single_boss(main_scene.BOSS_THUNDER_SCENE, "Boss_Thunder_Left", level, left_pos)
-			spawn_single_boss(main_scene.BOSS_THUNDER_SCENE, "Boss_Thunder_Right", level, right_pos)
+			# Spawn center boss - kan teleportera 1 steg åt vänster eller höger
+			var center_boss = spawn_thunder_boss_with_teleport_limits(
+				"Boss_Thunder_Center", 
+				level, 
+				center_pos,
+				-1,  # min_teleport_position (1 steg vänster)
+				1    # max_teleport_position (1 steg höger)
+			)
+			
+			# Spawn left boss - kan teleportera 2 steg vänster eller 1 steg höger
+			var left_boss = spawn_thunder_boss_with_teleport_limits(
+				"Boss_Thunder_Left", 
+				level, 
+				left_pos,
+				-2,  # min_teleport_position (2 steg vänster)
+				1    # max_teleport_position (1 steg höger)
+			)
+			
+			# Spawn right boss - kan teleportera 1 steg vänster eller 2 steg höger
+			var right_boss = spawn_thunder_boss_with_teleport_limits(
+				"Boss_Thunder_Right", 
+				level, 
+				right_pos,
+				-1,  # min_teleport_position (1 steg vänster)
+				2    # max_teleport_position (2 steg höger)
+			)
 		_:
 			print("ERROR: Unknown boss type: ", boss_type)
 
+func spawn_thunder_boss_with_teleport_limits(boss_name: String, level: int, position: Vector2, min_teleport: int, max_teleport: int):
+	"""Spawna en thunder boss med specifika teleport begränsningar"""
+	var boss_scene = load(main_scene.BOSS_THUNDER_SCENE)
+	if not boss_scene:
+		print("ERROR: Could not load thunder boss scene")
+		return null
+	
+	var boss = boss_scene.instantiate()
+	boss.global_position = position
+	
+	# Sätt teleport begränsningar för denna specifika boss
+	boss.min_teleport_position = min_teleport
+	boss.max_teleport_position = max_teleport
+	boss.current_teleport_position = 0  # Börja alltid i mitten
+	
+	print(boss_name, " teleport limits: min=", min_teleport, " max=", max_teleport)
+	
+	# Skala boss health för högre levels
+	var boss_health_multiplier = 1.0 + (level - 10) * 0.2  # Thunder boss är på level 10
+	if boss.has_method("set_health_multiplier"):
+		boss.set_health_multiplier(boss_health_multiplier)
+	
+	# Connecta boss signals med distortion effects
+	var boss_position = boss.global_position
+	
+	if boss.has_signal("block_destroyed"):
+		boss.block_destroyed.connect(func(score_points): main_scene._on_boss_died_with_distortion(score_points, boss_position))
+	
+	if boss.has_signal("block_hit"):
+		boss.block_hit.connect(main_scene._on_enemy_hit)
+	
+	main_scene.add_child(boss)
+	main_scene.bosses.append(boss)
+	main_scene.total_enemies += 1
+	
+	# Reservera boss position
+	var boss_positions: Array[Vector2] = [boss_position]
+	main_scene.spawn_manager.reserve_positions(boss_positions)
+	
+	print(boss_name, " spawned at ", position, " with health multiplier: ", boss_health_multiplier)
+	
+	return boss
+	
 func spawn_single_boss(boss_scene_path: String, boss_name: String, level: int, position: Vector2):
-	"""Spawna en enda boss på specifik position"""
+	"""Spawna en enda boss på specifik position (för icke-thunder bosses)"""
 	var boss_scene = load(boss_scene_path)
 	if not boss_scene:
 		print("ERROR: Could not load boss scene: ", boss_scene_path)

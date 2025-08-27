@@ -19,13 +19,14 @@ script = ExtResource("1_d3mcc")
 [node name="Sprite2D" type="Sprite2D" parent="."]
 unique_name_in_owner = true
 position = Vector2(9.53674e-07, 0)
-scale = Vector2(1.5625, 1.5625)
+scale = Vector2(3.126, 3.126)
 texture = ExtResource("2_elsg4")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 unique_name_in_owner = true
 light_mask = 2
-position = Vector2(0, -25)
+position = Vector2(0, -50)
+scale = Vector2(2, 2)
 shape = SubResource("RectangleShape2D_5u526")
 
 [node name="VFX_Thunder" parent="." instance=ExtResource("3_2430s")]
@@ -39,5 +40,6 @@ collision_mask = 0
 
 [node name="CollisionShape2D2" type="CollisionShape2D" parent="Cloud"]
 light_mask = 8
-position = Vector2(0, 25)
+position = Vector2(0, 50)
+scale = Vector2(2, 2)
 shape = SubResource("RectangleShape2D_cocgj")
