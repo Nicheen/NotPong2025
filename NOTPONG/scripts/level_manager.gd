@@ -376,8 +376,8 @@ func spawn_boss_level(level: int, boss_type: String):
 		_:
 			print("ERROR: Unknown boss type: ", boss_type)
 
-func spawn_thunder_boss_with_teleport_limits(boss_name: String, level: int, position: Vector2, min_teleport: int, max_teleport: int):
-	"""Spawna en thunder boss med specifika teleport begränsningar"""
+func spawn_thunder_boss_with_teleport_limits(boss_name: String, level: int, position: Vector2, min_teleport: int, max_teleport: int, should_speak: bool = false):
+	"""Spawna en thunder boss med specifika teleport begränsningar och optional dialogue"""
 	var boss_scene = load(main_scene.BOSS_THUNDER_SCENE)
 	if not boss_scene:
 		print("ERROR: Could not load thunder boss scene")
@@ -390,6 +390,10 @@ func spawn_thunder_boss_with_teleport_limits(boss_name: String, level: int, posi
 	boss.min_teleport_position = min_teleport
 	boss.max_teleport_position = max_teleport
 	boss.current_teleport_position = 0  # Börja alltid i mitten
+	
+	# Set if this boss should speak
+	if should_speak:
+		boss.set("should_start_dialogue", true)
 	
 	print(boss_name, " teleport limits: min=", min_teleport, " max=", max_teleport)
 	
@@ -415,9 +419,46 @@ func spawn_thunder_boss_with_teleport_limits(boss_name: String, level: int, posi
 	var boss_positions: Array[Vector2] = [boss_position]
 	main_scene.spawn_manager.reserve_positions(boss_positions)
 	
-	print(boss_name, " spawned at ", position, " with health multiplier: ", boss_health_multiplier)
+	print(boss_name, " spawned at ", position, " with health multiplier: ", boss_health_multiplier, " (speaking: ", should_speak, ")")
 	
 	return boss
+
+# Then update the Boss_Thunder spawn case:
+	"Boss_Thunder"
+	# Spawna 3 thunder bosses med olika teleport begränsningar
+	var center_pos = Vector2(576, 280)
+	var left_pos = Vector2(576 - 150, 280)
+	var right_pos = Vector2(576 + 150, 280)
+	
+	# Spawn center boss - denna pratar med spelaren!
+	var center_boss = spawn_thunder_boss_with_teleport_limits(
+		"Boss_Thunder_Center", 
+		level, 
+		center_pos,
+		-1,  # min_teleport_position (1 steg vänster)
+		1,   # max_teleport_position (1 steg höger)
+		true # should_speak = true för center boss
+	)
+	
+	# Spawn left boss - pratar inte
+	var left_boss = spawn_thunder_boss_with_teleport_limits(
+		"Boss_Thunder_Left", 
+		level, 
+		left_pos,
+		-2,  # min_teleport_position (2 steg vänster)
+		1,   # max_teleport_position (1 steg höger)
+		false # should_speak = false
+	)
+	
+	# Spawn right boss - pratar inte
+	var right_boss = spawn_thunder_boss_with_teleport_limits(
+		"Boss_Thunder_Right", 
+		level, 
+		right_pos,
+		-1,  # min_teleport_position (1 steg vänster)
+		2,   # max_teleport_position (2 steg höger)
+		false # should_speak = false
+	)
 	
 func spawn_single_boss(boss_scene_path: String, boss_name: String, level: int, position: Vector2):
 	"""Spawna en enda boss på specifik position (för icke-thunder bosses)"""

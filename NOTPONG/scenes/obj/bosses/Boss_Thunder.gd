@@ -9,6 +9,9 @@ extends AnimatableBody2D
 @export var thunder_damage_per_second: float = 15.0
 @export var thunder_damage_interval: float = 0.1
 
+
+@export var should_start_dialogue: bool = false
+
 # Movement and teleportation settings
 @export var y_movement_range: float = 50.0  
 @export var teleport_distance: float = 50.0  
@@ -26,6 +29,11 @@ var y_direction: int = 1
 @onready var boss_collision: StaticBody2D = $Boss
 @onready var cloud_collision: StaticBody2D = $Cloud
 
+const lines: Array[String] = [
+	"Lightning strikes twice!",
+	"You cannot escape the storm!",
+	"Thunder roars above!"
+]
 # Textures for different states
 var textures = {
 	"normal": preload("res://images/bosses/Boss2.png"),
@@ -63,6 +71,17 @@ func _ready():
 	
 	thunder_timer = 0.0
 	
+	if should_start_dialogue:
+		print("Thunder boss starting dialogue")
+		DialogueManager.start_dialog(self, lines, Vector2(0, -150))
+	# Start dialogue if this is the center boss (check position)
+	# Center position is around x=576, with some tolerance
+	if abs(global_position.x - 576) < 10:
+		print("Thunder boss (center) starting dialogue")
+		DialogueManager.start_dialog(self, lines, Vector2(0, -150))
+	
+	# CRITICAL FIX: Set collision layers properly
+	# Boss part should be on damage layer (2)
 	if boss_collision:
 		boss_collision.collision_layer = 2  # Damage layer - projectiles deal damage and are destroyed
 		boss_collision.collision_mask = 0   # Don't detect anything
