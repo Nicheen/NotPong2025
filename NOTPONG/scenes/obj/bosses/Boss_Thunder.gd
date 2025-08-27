@@ -60,6 +60,10 @@ var original_color: Color
 # Signals
 signal block_destroyed(score: int)
 
+# In the _ready function of boss_thunder, update the thunder effect color section:
+
+# In the _ready function of boss_thunder, update the thunder effect color section:
+
 func _ready():
 	current_health = max_health
 	original_spawn_position = global_position
@@ -102,25 +106,40 @@ func _ready():
 		thunder_effect.setup_vertical_thunder(global_position)
 		thunder_effect.visible = false
 		
-		# Method 2: Modulate specific components (more control)
+		# BLUE LIGHTNING COLOR CHANGE
+		# Change the lightning line itself to blue
 		var lightning_line = thunder_effect.get_node_or_null("Lightning")
 		if lightning_line:
-			lightning_line.modulate = Color.PALE_TURQUOISE
+			lightning_line.modulate = Color(0.6, 0.9, 1.0)  # Changed from PALE_TURQUOISE to blue
+			lightning_line.default_color = Color(0.6, 0.9, 1.0)  # Also set default color if it exists
 
+		# Make sparks particles blue - these are the small particles
 		var sparks = thunder_effect.get_node_or_null("Sparks")
-		if sparks:
-			sparks.modulate = Color.MEDIUM_TURQUOISE
+		if sparks and sparks is GPUParticles2D:
+			sparks.modulate = Color.AQUA  # Blue particles
+			# Also modify the process material if accessible
+			if sparks.process_material:
+				sparks.process_material.color = Color.AQUA
 			
+		# Make flare particles bluish - these are the impact flare particles  
 		var flare = thunder_effect.get_node_or_null("Flare") 
-		if flare:
-			flare.modulate = Color.MEDIUM_TURQUOISE
+		if flare and flare is GPUParticles2D:
+			flare.modulate = Color.LIGHT_BLUE  # Light blue flare
+			# Also modify the process material if accessible
+			if flare.process_material:
+				flare.process_material.color = Color.LIGHT_BLUE
+		
+		# Also change the point light to blue if it exists
+		var point_light = thunder_effect.get_node_or_null("PointLight2D")
+		if point_light:
+			point_light.color = Color.DODGER_BLUE  # Blue light color
 
 		if thunder_effect.has_signal("thunder_activated"):
 			thunder_effect.thunder_activated.connect(_on_thunder_activated)
 		if thunder_effect.has_signal("thunder_deactivated"):
 			thunder_effect.thunder_deactivated.connect(_on_thunder_deactivated)
 		
-		print("Thunder effect configured at position: ", global_position)
+		print("Thunder effect configured with BLUE lightning at position: ", global_position)
 	
 	print("Thunder boss created with ", max_health, " health at spawn position: ", original_spawn_position)
 
