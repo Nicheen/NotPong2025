@@ -7,7 +7,7 @@ signal time_slow_started
 signal time_slow_ended
 
 # Perfect dodge inställningar
-var time_slow_duration: float = 0.1      # Hur länge slow motion varar
+var time_slow_duration: float = 0.12      # Hur länge slow motion varar
 var damage_multiplier: float = 5.0       # Skademultiplikator under slow motion
 var slow_motion_scale: float = 0.2       # Hur sakta tiden går (0.2 = 20% hastighet)
 
